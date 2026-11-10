@@ -1,0 +1,16 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Run Savora Restaurant (Spring Boot)",
+            "request": "launch",
+            "mainClass": "vn.edu.fpt.savora.SavoraApplication",
+            "projectName": "savora-restaurant",
+            "vmArgs": "-Dfile.encoding=UTF-8",
+            "env": {
+                "SPRING_OUTPUT_ANSI_ENABLED": "ALWAYS"
+            }
+        }
+    ]
+}

@@ -1,0 +1,10 @@
+{
+    "recommendations": [
+        "vscjava.vscode-java-pack",
+        "vmware.vscode-boot-dev-pack",
+        "GabrielBB.vscode-lombok",
+        "ritwickdey.liveserver",
+        "esbenp.prettier-vscode",
+        "cweijan.vscode-mysql-client2"
+    ]
+}

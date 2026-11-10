@@ -1,0 +1,31 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Savora: Run Spring Boot Server",
+            "type": "shell",
+            "command": "mvn spring-boot:run",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": [],
+            "detail": "Chạy server Spring Boot Savora trên cổng 8080"
+        },
+        {
+            "label": "Savora: Clean & Compile",
+            "type": "shell",
+            "command": "mvn clean compile",
+            "group": "build",
+            "problemMatcher": "$msCompile",
+            "detail": "Biên dịch lại toàn bộ mã nguồn Java 17"
+        },
+        {
+            "label": "Savora: Run Tests",
+            "type": "shell",
+            "command": "mvn test",
+            "group": "test",
+            "detail": "Chạy Unit Test cho dự án"
+        }
+    ]
+}

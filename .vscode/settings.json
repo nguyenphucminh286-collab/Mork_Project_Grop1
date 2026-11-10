@@ -1,0 +1,8 @@
+{
+    "java.configuration.updateBuildConfiguration": "automatic",
+    "java.compile.nullAnalysis.mode": "automatic",
+    "files.encoding": "utf8",
+    "editor.formatOnSave": true,
+    "editor.tabSize": 4,
+    "spring-boot.ls.problem.application-properties.PROP_UNKNOWN_PROPERTY": "IGNORE"
+}

@@ -1,0 +1,39 @@
+# Maven build output
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# Local environment / sensitive configs
+**/application-local.properties
+.env
+
+# Uploads directory (nếu lưu local tạm thời)
+uploads/*
+!uploads/.gitkeep
+
+# IDE files (giữ lại .vscode/launch.json, tasks.json, extensions.json để cả nhóm dùng chung trên VS Code)
+.vscode/*
+!.vscode/launch.json
+!.vscode/tasks.json
+!.vscode/extensions.json
+!.vscode/settings.json
+
+### IntelliJ IDEA ###
+.idea/
+*.iws
+*.iml
+*.ipr
+
+### Eclipse / STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### OS ###
+.DS_Store
+Thumbs.db
