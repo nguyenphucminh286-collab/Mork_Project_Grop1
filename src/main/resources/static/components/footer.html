@@ -1,28 +1,40 @@
 <!-- Reusable Footer Component -->
 <footer class="footer">
     <div class="container footer__inner">
-        <div>
-            <h3 style="font-family: var(--font-heading); font-size: 1.5rem; color: #e6a15c; margin-bottom: 10px;">SAVORA RESTAURANT</h3>
-            <p style="max-width: 360px; font-size: 0.9rem;">
-                Experience refined Asian-European fine dining crafted from fresh daily ingredients in a warm, elegant atmosphere.
+        <div class="footer__brand">
+            <div class="footer__logo">SAVORA RESTAURANT</div>
+            <p class="footer__desc">
+                Experience refined Asian-European culinary artistry crafted from locally sourced organic ingredients in an atmosphere of timeless sophistication.
             </p>
         </div>
         <div>
-            <h4 style="margin-bottom: 10px; color: #fff;">Quick Links</h4>
-            <ul style="display: flex; flex-direction: column; gap: 8px; font-size: 0.9rem;">
+            <h4 class="footer__heading">Navigation</h4>
+            <ul class="footer__links">
                 <li><a href="/home">Home</a></li>
-                <li><a href="/menu">Our Menu</a></li>
-                <li><a href="/reservation">Table Reservation</a></li>
+                <li><a href="/home#menu">Seasonal Menu</a></li>
+                <li><a href="/home#reservation">Book a Table</a></li>
+                <li><a href="/login">Member Portal</a></li>
             </ul>
         </div>
         <div>
-            <h4 style="margin-bottom: 10px; color: #fff;">Contact Us</h4>
-            <p style="font-size: 0.9rem;">Address: Hoa Lac Hi-Tech Park, Hanoi</p>
-            <p style="font-size: 0.9rem;">Hotline: 1900 6868</p>
-            <p style="font-size: 0.9rem;">Email: contact@savora.vn</p>
+            <h4 class="footer__heading">Opening Hours</h4>
+            <ul class="footer__links">
+                <li>Mon – Fri: 10:00 AM – 10:00 PM</li>
+                <li>Sat – Sun: 09:30 AM – 11:00 PM</li>
+                <li>Happy Hour: 05:00 PM – 07:00 PM</li>
+            </ul>
+        </div>
+        <div>
+            <h4 class="footer__heading">Contact &amp; Location</h4>
+            <ul class="footer__links">
+                <li>Hoa Lac Hi-Tech Park, Thach That, Hanoi</li>
+                <li>Reservation Hotline: 1900 6868</li>
+                <li>Email: concierge@savora.vn</li>
+            </ul>
         </div>
     </div>
     <div class="container footer__bottom">
-        &copy; 2026 Savora Restaurant Management System - Group 1 (Java 17 &amp; Spring Boot + MySQL).
+        <span>&copy; 2026 Savora Fine Dining &amp; Restaurant Management System — Group 1.</span>
+        <span>Built with Java 17, Spring Boot 3 &amp; MySQL 8.0</span>
     </div>
 </footer>

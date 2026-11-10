@@ -3,23 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home - Savora Restaurant</title>
+    <title>Home — Savora Fine Dining &amp; Restaurant</title>
     <link rel="stylesheet" href="/assets/css/public/global.css">
     <link rel="stylesheet" href="/assets/css/public/login.css">
 </head>
 <body>
     <div id="app-header"></div>
 
-    <main class="container" style="padding: 56px 20px;">
-        <div class="auth-wrapper" style="max-width: 620px; text-align: center;">
-            <h1 style="font-family: var(--font-heading); font-size: 2.2rem; color: var(--primary-color); margin-bottom: 12px;">
+    <main class="container" style="padding: 56px 24px;">
+        <div class="auth-wrapper" style="max-width: 680px; text-align: center;">
+            <span style="display:inline-block; font-size:0.74rem; font-weight:700; letter-spacing:2px; color:var(--primary-color); margin-bottom:8px;">
+                SAVORA FINE DINING PORTAL
+            </span>
+            <h1 style="font-family: var(--font-heading); font-size: 2.3rem; color: var(--secondary-color); margin-bottom: 10px;">
                 Welcome to Savora Restaurant
             </h1>
-            <p style="color: var(--text-muted); margin-bottom: 24px;">
-                The project template is ready. Below is your current authentication session status:
+            <p style="color: var(--text-muted); margin-bottom: 28px; font-size: 0.94rem;">
+                Your authentication module is active and connected to MySQL. Below is your active session profile:
             </p>
 
-            <div id="home-user-card" style="padding: 20px; border-radius: 10px; background: var(--bg-cream); border: 1px solid var(--border-color);">
+            <div id="home-user-card" style="padding: 28px; border-radius: 16px; background: var(--bg-cream); border: 1px solid var(--border-color);">
                 <p>Checking authentication status...</p>
             </div>
         </div>
@@ -37,16 +40,23 @@
                 box.innerHTML = `
                     <img src="${u.avatarUrl || 'https://res.cloudinary.com/dej5mxdrt/image/upload/v1780061324/OIP_dbbjuo.jpg'}"
                          alt="Avatar"
-                         style="width: 72px; height: 72px; border-radius: 50%; margin: 0 auto 12px; object-fit: cover; border: 2px solid var(--primary-color);">
-                    <h3 style="margin-bottom: 6px;">Signed In Successfully!</h3>
-                    <p><strong>Full Name:</strong> ${u.fullName}</p>
-                    <p><strong>Email:</strong> ${u.email}</p>
-                    <p><strong>Role:</strong> <span class="badge badge-available">${u.roleName}</span></p>
+                         style="width: 84px; height: 84px; border-radius: 50%; margin: 0 auto 14px; object-fit: cover; border: 3px solid var(--primary-color); box-shadow: 0 6px 18px rgba(184,92,56,0.22);">
+                    <h3 style="font-family: var(--font-heading); font-size: 1.45rem; margin-bottom: 6px; color: var(--secondary-color);">
+                        ${u.fullName}
+                    </h3>
+                    <div style="margin-bottom: 16px;">
+                        <span class="badge badge-available">ROLE: ${u.roleName}</span>
+                    </div>
+                    <div style="display: inline-flex; flex-direction: column; gap: 6px; text-align: left; background: #fff; padding: 14px 22px; border-radius: 12px; border: 1px solid var(--border-color); font-size: 0.9rem;">
+                        <div><strong>User ID:</strong> #${u.userId}</div>
+                        <div><strong>Email Address:</strong> ${u.email}</div>
+                        <div><strong>Status:</strong> <span style="color: var(--success-color); font-weight: 600;">Active Session</span></div>
+                    </div>
                 `;
             } catch (_) {
                 box.innerHTML = `
-                    <p style="margin-bottom: 14px;">You are not signed in.</p>
-                    <a href="/login" class="btn btn-primary">Go to Sign In</a>
+                    <p style="margin-bottom: 16px; color: var(--text-muted);">You are not currently signed in.</p>
+                    <a href="/login" class="btn btn-primary">Go to Sign In Portal</a>
                 `;
             }
         });
