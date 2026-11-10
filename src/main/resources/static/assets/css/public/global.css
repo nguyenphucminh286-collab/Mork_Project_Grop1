@@ -114,16 +114,9 @@ img {
 .header__logo-mark {
     width: 42px;
     height: 42px;
-    border-radius: 10px;
-    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-    color: #fff;
-    font-family: var(--font-heading);
-    font-size: 1.45rem;
-    font-weight: 700;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 6px 16px rgba(184, 92, 56, 0.28);
+    flex-shrink: 0;
+    border-radius: 50%;
+    object-fit: contain;
 }
 
 .header__logo-text {

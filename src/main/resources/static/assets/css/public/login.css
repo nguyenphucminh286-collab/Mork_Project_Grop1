@@ -280,7 +280,8 @@
     transition: color 0.2s ease;
 }
 
-.password-toggle:hover {
+.password-toggle:hover,
+.password-toggle[aria-pressed="true"] {
     color: var(--primary-color);
 }
 
