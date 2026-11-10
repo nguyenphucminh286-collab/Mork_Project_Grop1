@@ -10,15 +10,14 @@ document.addEventListener('DOMContentLoaded', () => {
         alertBox.style.display = 'block';
     }
 
-    // Show / Hide password toggle on Sign-In page
-    const togglePasswordBtn = document.getElementById('toggle-password');
-    if (togglePasswordBtn && passwordInput) {
-        togglePasswordBtn.addEventListener('click', () => {
-            const isPassword = passwordInput.type === 'password';
-            passwordInput.type = isPassword ? 'text' : 'password';
-            togglePasswordBtn.style.color = isPassword ? 'var(--primary-color)' : '';
+    document.querySelectorAll('.password-toggle[aria-controls]').forEach(button => {
+        const input = document.getElementById(button.getAttribute('aria-controls'));
+        button.addEventListener('click', () => {
+            const showPassword = input.type === 'password';
+            input.type = showPassword ? 'text' : 'password';
+            button.setAttribute('aria-pressed', String(showPassword));
         });
-    }
+    });
 
     // Forgot password prompt
     const forgotLink = document.getElementById('forgot-password-link');

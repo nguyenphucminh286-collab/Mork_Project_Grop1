@@ -20,6 +20,11 @@ public class PageController {
         return "forward:/public/auth/register.html";
     }
 
+    @GetMapping("/contact")
+    public String contactPage() {
+        return "forward:/public/contact/view-contact.html";
+    }
+
     @GetMapping("/home")
     public String homePage() {
         return "forward:/public/home/view-home.html";
