@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trang chủ - Nhà hàng Savora</title>
+    <title>Home - Savora Restaurant</title>
     <link rel="stylesheet" href="/assets/css/public/global.css">
     <link rel="stylesheet" href="/assets/css/public/login.css">
 </head>
@@ -13,14 +13,14 @@
     <main class="container" style="padding: 56px 20px;">
         <div class="auth-wrapper" style="max-width: 620px; text-align: center;">
             <h1 style="font-family: var(--font-heading); font-size: 2.2rem; color: var(--primary-color); margin-bottom: 12px;">
-                Chào mừng đến với Savora Restaurant
+                Welcome to Savora Restaurant
             </h1>
             <p style="color: var(--text-muted); margin-bottom: 24px;">
-                Khung dự án mẫu đã sẵn sàng. Dưới đây là trạng thái phiên đăng nhập hiện tại:
+                The project template is ready. Below is your current authentication session status:
             </p>
 
             <div id="home-user-card" style="padding: 20px; border-radius: 10px; background: var(--bg-cream); border: 1px solid var(--border-color);">
-                <p>Đang kiểm tra trạng thái đăng nhập...</p>
+                <p>Checking authentication status...</p>
             </div>
         </div>
     </main>
@@ -38,15 +38,15 @@
                     <img src="${u.avatarUrl || 'https://res.cloudinary.com/dej5mxdrt/image/upload/v1780061324/OIP_dbbjuo.jpg'}"
                          alt="Avatar"
                          style="width: 72px; height: 72px; border-radius: 50%; margin: 0 auto 12px; object-fit: cover; border: 2px solid var(--primary-color);">
-                    <h3 style="margin-bottom: 6px;">Đăng nhập thành công!</h3>
-                    <p><strong>Họ và tên:</strong> ${u.fullName}</p>
+                    <h3 style="margin-bottom: 6px;">Signed In Successfully!</h3>
+                    <p><strong>Full Name:</strong> ${u.fullName}</p>
                     <p><strong>Email:</strong> ${u.email}</p>
-                    <p><strong>Vai trò (Role):</strong> <span class="badge badge-available">${u.roleName}</span></p>
+                    <p><strong>Role:</strong> <span class="badge badge-available">${u.roleName}</span></p>
                 `;
             } catch (_) {
                 box.innerHTML = `
-                    <p style="margin-bottom: 14px;">Bạn chưa đăng nhập.</p>
-                    <a href="/login" class="btn btn-primary">Đi tới trang Đăng nhập</a>
+                    <p style="margin-bottom: 14px;">You are not signed in.</p>
+                    <a href="/login" class="btn btn-primary">Go to Sign In</a>
                 `;
             }
         });

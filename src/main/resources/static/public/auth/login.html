@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đăng nhập - Nhà hàng Savora</title>
+    <title>Sign In - Savora Restaurant</title>
     <link rel="stylesheet" href="/assets/css/public/global.css">
     <link rel="stylesheet" href="/assets/css/public/login.css">
 </head>
@@ -12,29 +12,29 @@
 
     <main class="container">
         <div class="auth-wrapper">
-            <h2 style="font-family: var(--font-heading); font-size: 1.85rem; text-align: center; margin-bottom: 6px;">Đăng Nhập Savora</h2>
+            <h2 style="font-family: var(--font-heading); font-size: 1.85rem; text-align: center; margin-bottom: 6px;">Sign In to Savora</h2>
             <p style="text-align: center; color: var(--text-muted); font-size: 0.88rem; margin-bottom: 22px;">
-                Hệ thống Quản lý Nhà hàng Savora
+                Savora Restaurant Management System
             </p>
 
             <div id="auth-alert" style="display:none; padding: 12px; border-radius: 8px; background: #ffebee; color: #c62828; margin-bottom: 16px; font-size: 0.9rem;"></div>
 
-            <!-- Form đăng nhập bằng Email & Mật khẩu (kết nối MySQL) -->
+            <!-- Email & Password Sign-In Form (connected to MySQL) -->
             <form id="login-form">
                 <div class="form-group">
-                    <label for="email">Email</label>
+                    <label for="email">Email Address</label>
                     <input type="email" id="email" name="username" class="form-control" placeholder="admin@savora.vn" required>
                 </div>
                 <div class="form-group">
-                    <label for="password">Mật khẩu</label>
-                    <input type="password" id="password" name="password" class="form-control" placeholder="Nhập mật khẩu" required>
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" class="form-control" placeholder="Enter your password" required>
                 </div>
-                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 6px;">Đăng nhập</button>
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 6px;">Sign In</button>
             </form>
 
-            <div class="divider">Hoặc đăng nhập bằng</div>
+            <div class="divider">Or continue with</div>
 
-            <!-- Đăng nhập bằng Google / Facebook OAuth2 -->
+            <!-- Google / Facebook OAuth2 Sign-In -->
             <div class="social-links">
                 <a href="/oauth2/authorization/google" class="btn-social btn-google">
                     <svg viewBox="0 0 48 48">
@@ -43,13 +43,13 @@
                         <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
                         <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
                     </svg>
-                    <span>Tiếp tục với Google</span>
+                    <span>Continue with Google</span>
                 </a>
                 <a href="/oauth2/authorization/facebook" class="btn-social btn-facebook">
                     <svg viewBox="0 0 48 48" width="20" height="20">
                         <path fill="#1877F2" d="M48 24C48 10.745 37.255 0 24 0S0 10.745 0 24c0 11.979 8.776 21.908 20.25 23.708v-16.77h-6.094V24h6.094v-5.288c0-6.014 3.583-9.337 9.065-9.337 2.625 0 5.372.469 5.372.469v5.906h-3.026c-2.981 0-3.911 1.85-3.911 3.75V24h6.656l-1.064 6.938H27.75v16.77C39.224 45.908 48 35.979 48 24z"/>
                     </svg>
-                    <span>Tiếp tục với Facebook</span>
+                    <span>Continue with Facebook</span>
                 </a>
             </div>
         </div>

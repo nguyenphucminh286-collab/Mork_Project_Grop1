@@ -1,9 +1,8 @@
 /**
  * SAVORA FRONTEND CORE UTILITY (assets/js/common/api.js)
- * Dùng chung cho toàn bộ các trang HTML để gọi REST API Spring Boot và nạp Header/Footer tự động
+ * Shared utility across all HTML pages to call Spring Boot REST APIs and load Header/Footer dynamically
  */
 const SavoraApp = {
-    // Tự động nhận diện base URL (hỗ trợ cả khi chạy trực tiếp cổng 8083 hoặc Live Server 5500 trên VS Code)
     getBaseUrl() {
         if (window.location.port === '5500' || window.location.port === '5501') {
             return 'http://localhost:8083';
@@ -28,14 +27,14 @@ const SavoraApp = {
         const response = await fetch(url, config);
         const result = await response.json();
         if (!response.ok || result.success === false) {
-            throw new Error(result.message || 'Có lỗi xảy ra khi kết nối máy chủ');
+            throw new Error(result.message || 'An error occurred while connecting to the server.');
         }
         return result;
     },
 
     formatCurrency(amount) {
-        if (amount == null) return '0 đ';
-        return Number(amount).toLocaleString('vi-VN') + ' đ';
+        if (amount == null) return '0 VND';
+        return Number(amount).toLocaleString('en-US') + ' VND';
     },
 
     async loadLayout() {
@@ -67,8 +66,8 @@ const SavoraApp = {
             const authArea = document.getElementById('header-auth-area');
             if (authArea) {
                 authArea.innerHTML = `
-                    <span style="font-size: 0.9rem; font-weight: 600;">Xin chào, ${user.fullName} (${user.roleName})</span>
-                    <button class="btn btn-outline" id="btn-logout" style="padding: 7px 14px;">Đăng xuất</button>
+                    <span style="font-size: 0.9rem; font-weight: 600;">Welcome, ${user.fullName} (${user.roleName})</span>
+                    <button class="btn btn-outline" id="btn-logout" style="padding: 7px 14px;">Sign Out</button>
                 `;
                 document.getElementById('btn-logout').addEventListener('click', async () => {
                     await this.fetchApi('/api/auth/logout', { method: 'POST' });
@@ -76,7 +75,7 @@ const SavoraApp = {
                 });
             }
         } catch (_) {
-            // Người dùng chưa đăng nhập
+            // User is not signed in
         }
     }
 };

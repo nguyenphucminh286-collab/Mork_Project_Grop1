@@ -31,18 +31,18 @@ public class AuthService {
     public AuthUserResponse login(LoginRequest request) {
         String email = request.getEmail().trim().toLowerCase();
         User user = userRepository.findByEmailIgnoreCase(email)
-                .orElseThrow(() -> new IllegalArgumentException("Email hoặc mật khẩu không đúng."));
+                .orElseThrow(() -> new IllegalArgumentException("Invalid email or password."));
 
         if (!PasswordUtils.checkPassword(request.getPassword(), user.getPasswordHash())) {
-            throw new IllegalArgumentException("Email hoặc mật khẩu không đúng.");
+            throw new IllegalArgumentException("Invalid email or password.");
         }
 
         if (user.getStatus() == UserStatus.LOCKED) {
-            throw new IllegalArgumentException("Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên.");
+            throw new IllegalArgumentException("Your account has been locked. Please contact the administrator.");
         }
 
         if (user.getStatus() == UserStatus.PENDING) {
-            throw new IllegalArgumentException("Tài khoản chưa được kích hoạt.");
+            throw new IllegalArgumentException("Your account has not been activated yet.");
         }
 
         return buildAuthUserResponse(user);
@@ -78,10 +78,10 @@ public class AuthService {
         if (user == null) {
             Role customerRole = roleRepository.findByRoleName("CUSTOMER")
                     .orElseGet(() -> roleRepository.save(
-                            Role.builder().roleName("CUSTOMER").description("Khách hàng").build()
+                            Role.builder().roleName("CUSTOMER").description("Customer").build()
                     ));
 
-            String firstName = (familyName != null && !familyName.isBlank()) ? familyName : "Khách hàng";
+            String firstName = (familyName != null && !familyName.isBlank()) ? familyName : "Customer";
             String lastName = (givenName != null && !givenName.isBlank())
                     ? givenName
                     : (fullNameAttr != null ? fullNameAttr : "Savora");

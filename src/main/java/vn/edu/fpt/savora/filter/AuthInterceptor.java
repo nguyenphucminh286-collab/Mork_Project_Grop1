@@ -76,7 +76,7 @@ public class AuthInterceptor implements HandlerInterceptor {
         if (req.getRequestURI().startsWith("/api/")) {
             resp.setContentType("application/json;charset=UTF-8");
             resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            resp.getWriter().write("{\"success\":false,\"message\":\"Vui lòng đăng nhập để tiếp tục.\",\"data\":null}");
+            resp.getWriter().write("{\"success\":false,\"message\":\"Please sign in to continue.\",\"data\":null}");
         } else {
             resp.sendRedirect("/login");
         }
@@ -87,7 +87,7 @@ public class AuthInterceptor implements HandlerInterceptor {
         if (req.getRequestURI().startsWith("/api/")) {
             resp.setContentType("application/json;charset=UTF-8");
             resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            resp.getWriter().write("{\"success\":false,\"message\":\"Bạn không có quyền truy cập chức năng này.\",\"data\":null}");
+            resp.getWriter().write("{\"success\":false,\"message\":\"You do not have permission to access this resource.\",\"data\":null}");
         } else {
             resp.sendRedirect("/home");
         }

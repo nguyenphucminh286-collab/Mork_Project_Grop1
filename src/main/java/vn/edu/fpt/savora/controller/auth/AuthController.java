@@ -29,7 +29,7 @@ public class AuthController {
         session.setAttribute("roleName", authUser.getRoleName());
         session.setAttribute("fullName", authUser.getFullName());
         session.setAttribute("authUser", authUser);
-        return ApiResponse.ok("Đăng nhập thành công!", authUser);
+        return ApiResponse.ok("Signed in successfully!", authUser);
     }
 
     @GetMapping("/me")
@@ -44,7 +44,7 @@ public class AuthController {
             session.setAttribute("fullName", authUser.getFullName());
         }
         if (authUser == null) {
-            return ApiResponse.error("Chưa đăng nhập");
+            return ApiResponse.error("Not signed in");
         }
         return ApiResponse.ok(authUser);
     }
@@ -52,6 +52,6 @@ public class AuthController {
     @PostMapping("/logout")
     public ApiResponse<Void> logout(HttpSession session) {
         session.invalidate();
-        return ApiResponse.ok("Đã đăng xuất thành công", null);
+        return ApiResponse.ok("Signed out successfully", null);
     }
 }

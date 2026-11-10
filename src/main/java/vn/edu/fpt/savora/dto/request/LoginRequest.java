@@ -7,10 +7,10 @@ import lombok.Data;
 @Data
 public class LoginRequest {
 
-    @NotBlank(message = "Vui lòng nhập email")
-    @Email(message = "Email không đúng định dạng")
+    @NotBlank(message = "Please enter your email address")
+    @Email(message = "Invalid email format")
     private String email;
 
-    @NotBlank(message = "Vui lòng nhập mật khẩu")
+    @NotBlank(message = "Please enter your password")
     private String password;
 }

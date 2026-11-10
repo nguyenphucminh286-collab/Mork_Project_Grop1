@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const alertBox = document.getElementById('auth-alert');
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('error') === 'google_failed' && alertBox) {
-        alertBox.textContent = 'Đăng nhập bằng Google không thành công. Vui lòng kiểm tra lại cấu hình Redirect URI trên Google Cloud Console.';
+        alertBox.textContent = 'Social sign-in failed. Please verify the OAuth2 Redirect URI configuration.';
         alertBox.style.display = 'block';
     }
 
