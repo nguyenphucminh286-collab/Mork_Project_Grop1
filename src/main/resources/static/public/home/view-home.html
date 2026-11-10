@@ -3,63 +3,247 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home — Savora Fine Dining &amp; Restaurant</title>
+    <title>Savora Fine Dining &amp; Restaurant — Official Home</title>
     <link rel="stylesheet" href="/assets/css/public/global.css">
-    <link rel="stylesheet" href="/assets/css/public/login.css">
+    <link rel="stylesheet" href="/assets/css/public/home.css">
 </head>
 <body>
+    <!-- Shared Header -->
     <div id="app-header"></div>
 
-    <main class="container" style="padding: 56px 24px;">
-        <div class="auth-wrapper" style="max-width: 680px; text-align: center;">
-            <span style="display:inline-block; font-size:0.74rem; font-weight:700; letter-spacing:2px; color:var(--primary-color); margin-bottom:8px;">
-                SAVORA FINE DINING PORTAL
-            </span>
-            <h1 style="font-family: var(--font-heading); font-size: 2.3rem; color: var(--secondary-color); margin-bottom: 10px;">
-                Welcome to Savora Restaurant
-            </h1>
-            <p style="color: var(--text-muted); margin-bottom: 28px; font-size: 0.94rem;">
-                Your authentication module is active and connected to MySQL. Below is your active session profile:
-            </p>
+    <!-- Active User Session Ribbon (Displayed automatically when signed in) -->
+    <section id="session-banner" class="session-banner" style="display: none;">
+        <div class="container session-banner__inner" id="session-banner-content"></div>
+    </section>
 
-            <div id="home-user-card" style="padding: 28px; border-radius: 16px; background: var(--bg-cream); border: 1px solid var(--border-color);">
-                <p>Checking authentication status...</p>
+    <!-- 1. Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero__content">
+                <span class="hero__eyebrow">★ MICHELIN GUIDE SELECTED • FINE DINING &amp; LOUNGE</span>
+                <h1 class="hero__title">
+                    An Unforgettable Symphony of <em>Culinary Artistry</em>
+                </h1>
+                <p class="hero__subtitle">
+                    Welcome to Savora Restaurant — where contemporary European technique meets authentic Asian heritage. Reserve your table in real time and indulge in our chef’s seasonal tasting menu.
+                </p>
+                <div class="hero__actions">
+                    <a href="#reservation" class="btn btn-primary" style="padding: 13px 28px; font-size: 0.96rem;">
+                        Reserve a Table Now
+                    </a>
+                    <a href="#menu" class="btn btn-hero-secondary">
+                        Explore Signature Menu
+                    </a>
+                </div>
             </div>
         </div>
-    </main>
+    </section>
 
+    <!-- 2. Key Restaurant Highlights Strip -->
+    <section class="stats-strip">
+        <div class="container">
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-item__number">15+</div>
+                    <div class="stat-item__label">Years of Culinary Excellence</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-item__number">50+</div>
+                    <div class="stat-item__label">Seasonal Signature Dishes</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-item__number">100%</div>
+                    <div class="stat-item__label">Real-Time Table Synchronization</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-item__number">4.9 ★</div>
+                    <div class="stat-item__label">Verified Guest Satisfaction</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. Signature Culinary Menu Section -->
+    <section class="home-section" id="menu">
+        <div class="container">
+            <div class="section-heading">
+                <span class="section-heading__eyebrow">CURATED GASTRONOMY</span>
+                <h2 class="section-heading__title">Chef’s Signature Menu</h2>
+                <p class="section-heading__desc">
+                    Crafted daily from premium imported Wagyu, Norwegian salmon, live Nha Trang seafood, and organic Da Lat produce.
+                </p>
+            </div>
+
+            <!-- Category Tabs & Search -->
+            <div class="menu-toolbar">
+                <div class="category-tabs">
+                    <button type="button" class="category-tab active" data-category="ALL">All Dishes</button>
+                    <button type="button" class="category-tab" data-category="Starters & Salads">Starters &amp; Salads</button>
+                    <button type="button" class="category-tab" data-category="Prime Steaks & Seafood">Prime Steaks &amp; Seafood</button>
+                    <button type="button" class="category-tab" data-category="Hotpot & Grill">Hotpot &amp; Grill</button>
+                    <button type="button" class="category-tab" data-category="Artisan Desserts">Artisan Desserts</button>
+                    <button type="button" class="category-tab" data-category="Wines & Cocktails">Wines &amp; Cocktails</button>
+                </div>
+
+                <div class="menu-search-box">
+                    <input type="text" id="menu-search-input" placeholder="Search dishes or ingredients...">
+                </div>
+            </div>
+
+            <!-- Dynamic Dish Grid -->
+            <div class="dish-grid" id="menu-grid"></div>
+        </div>
+    </section>
+
+    <!-- 4. Real-Time Floor Map & Table Availability Section -->
+    <section class="home-section" id="reservation">
+        <div class="container">
+            <div class="section-heading">
+                <span class="section-heading__eyebrow">REAL-TIME TABLE MANAGEMENT</span>
+                <h2 class="section-heading__title">Live Dining Table Availability</h2>
+                <p class="section-heading__desc">
+                    Filter by dining zone and party size. Tables in <strong>Occupied</strong>, <strong>Cleaning</strong>, or <strong>Maintenance</strong> states are automatically excluded from booking.
+                </p>
+            </div>
+
+            <div class="reservation-panel">
+                <!-- Filter Bar -->
+                <div class="table-filter-bar">
+                    <div class="filter-field">
+                        <label for="filter-date">Reservation Date</label>
+                        <input type="date" id="filter-date">
+                    </div>
+                    <div class="filter-field">
+                        <label for="filter-area">Dining Zone</label>
+                        <select id="filter-area">
+                            <option value="ALL">All Dining Zones</option>
+                            <option value="1st Floor">1st Floor — Main Hall</option>
+                            <option value="2nd Floor">2nd Floor — Garden Terrace</option>
+                            <option value="VIP Zone">VIP Private Suites</option>
+                        </select>
+                    </div>
+                    <div class="filter-field">
+                        <label for="filter-guests">Party Size (Guests)</label>
+                        <select id="filter-guests">
+                            <option value="0">Any Party Size</option>
+                            <option value="2">2+ Guests</option>
+                            <option value="4">4+ Guests</option>
+                            <option value="6">6+ Guests</option>
+                            <option value="10">10+ Guests (VIP)</option>
+                        </select>
+                    </div>
+                    <div class="filter-field">
+                        <label for="filter-only-available">Availability Filter</label>
+                        <select id="filter-only-available">
+                            <option value="ALL">Show All Table Statuses</option>
+                            <option value="AVAILABLE">Show Available Only</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Color Status Legend -->
+                <div class="status-legend">
+                    <span class="legend-item"><span class="legend-dot dot-available"></span> AVAILABLE (Ready to Book)</span>
+                    <span class="legend-item"><span class="legend-dot dot-reserved"></span> RESERVED (Booked Slot)</span>
+                    <span class="legend-item"><span class="legend-dot dot-occupied"></span> OCCUPIED (Active Dine-In)</span>
+                    <span class="legend-item"><span class="legend-dot dot-cleaning"></span> CLEANING (Sanitizing)</span>
+                    <span class="legend-item"><span class="legend-dot dot-maintenance"></span> MAINTENANCE (Out of Service)</span>
+                </div>
+
+                <!-- Dynamic Table Cards Grid -->
+                <div class="table-grid" id="table-grid"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 5. Exclusive Dining Vouchers -->
+    <section class="home-section">
+        <div class="container">
+            <div class="section-heading">
+                <span class="section-heading__eyebrow">EXCLUSIVE PRIVILEGES</span>
+                <h2 class="section-heading__title">Special Dining Vouchers</h2>
+                <p class="section-heading__desc">
+                    Apply these promotional voucher codes during checkout or table reservation.
+                </p>
+            </div>
+
+            <div class="voucher-grid">
+                <div class="voucher-card">
+                    <div>
+                        <span class="voucher-card__tag">LIMITED TIME OFFER</span>
+                        <h3 class="voucher-card__title">10% OFF Fine Dining Bill</h3>
+                        <p class="voucher-card__desc">Save up to 100,000 VND on dine-in orders from 500,000 VND.</p>
+                    </div>
+                    <div class="voucher-card__code-box">
+                        <span class="voucher-code">SAVORA10</span>
+                        <button type="button" class="btn btn-primary btn-copy-voucher" data-code="SAVORA10" style="padding: 7px 14px; font-size: 0.8rem;">
+                            Copy Code
+                        </button>
+                    </div>
+                </div>
+
+                <div class="voucher-card">
+                    <div>
+                        <span class="voucher-card__tag">NEW MEMBER PRIVILEGE</span>
+                        <h3 class="voucher-card__title">15% OFF First Table Booking</h3>
+                        <p class="voucher-card__desc">Save up to 150,000 VND for your first online table reservation from 300,000 VND.</p>
+                    </div>
+                    <div class="voucher-card__code-box">
+                        <span class="voucher-code">WELCOME50</span>
+                        <button type="button" class="btn btn-primary btn-copy-voucher" data-code="WELCOME50" style="padding: 7px 14px; font-size: 0.8rem;">
+                            Copy Code
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 6. About Savora Section -->
+    <section class="home-section" id="about" style="padding-bottom: 84px;">
+        <div class="container">
+            <div class="about-grid">
+                <div class="about-img-card">
+                    <img src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=1000&q=80" alt="Savora Restaurant Interior">
+                </div>
+                <div>
+                    <span class="section-heading__eyebrow">OUR HERITAGE &amp; PHILOSOPHY</span>
+                    <h2 class="section-heading__title" style="text-align: left; margin-bottom: 16px;">
+                        Crafted with Passion, Served with Grace
+                    </h2>
+                    <p style="color: var(--text-muted); margin-bottom: 16px;">
+                        Founded in Hanoi, Savora brings together award-winning chefs and sommeliers dedicated to elevating every meal into a celebration. From intimate candlelit dinners for two to grand corporate banquets in our VIP suites, every detail is orchestrated with precision.
+                    </p>
+                    <div class="about-features">
+                        <div class="about-feature-box">
+                            <strong>✦ Farm-to-Table Ingredients</strong>
+                            <span>100% certified organic vegetables and sustainably sourced seafood delivered daily.</span>
+                        </div>
+                        <div class="about-feature-box">
+                            <strong>✦ Smart Table Synchronization</strong>
+                            <span>Real-time 120-minute reservation slots with automated conflict prevention.</span>
+                        </div>
+                        <div class="about-feature-box">
+                            <strong>✦ Private VIP Suites</strong>
+                            <span>Soundproof luxury rooms equipped with projectors for business &amp; family events.</span>
+                        </div>
+                        <div class="about-feature-box">
+                            <strong>✦ Curated Wine Cellar</strong>
+                            <span>Over 80 vintage labels from Bordeaux, Tuscany, Napa Valley, and Marlborough.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Toast Notification -->
+    <div id="home-toast" class="toast-notification"></div>
+
+    <!-- Shared Footer -->
     <div id="app-footer"></div>
 
     <script src="/assets/js/common/api.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', async () => {
-            const box = document.getElementById('home-user-card');
-            try {
-                const res = await SavoraApp.fetchApi('/api/auth/me');
-                const u = res.data;
-                box.innerHTML = `
-                    <img src="${u.avatarUrl || 'https://res.cloudinary.com/dej5mxdrt/image/upload/v1780061324/OIP_dbbjuo.jpg'}"
-                         alt="Avatar"
-                         style="width: 84px; height: 84px; border-radius: 50%; margin: 0 auto 14px; object-fit: cover; border: 3px solid var(--primary-color); box-shadow: 0 6px 18px rgba(184,92,56,0.22);">
-                    <h3 style="font-family: var(--font-heading); font-size: 1.45rem; margin-bottom: 6px; color: var(--secondary-color);">
-                        ${u.fullName}
-                    </h3>
-                    <div style="margin-bottom: 16px;">
-                        <span class="badge badge-available">ROLE: ${u.roleName}</span>
-                    </div>
-                    <div style="display: inline-flex; flex-direction: column; gap: 6px; text-align: left; background: #fff; padding: 14px 22px; border-radius: 12px; border: 1px solid var(--border-color); font-size: 0.9rem;">
-                        <div><strong>User ID:</strong> #${u.userId}</div>
-                        <div><strong>Email Address:</strong> ${u.email}</div>
-                        <div><strong>Status:</strong> <span style="color: var(--success-color); font-weight: 600;">Active Session</span></div>
-                    </div>
-                `;
-            } catch (_) {
-                box.innerHTML = `
-                    <p style="margin-bottom: 16px; color: var(--text-muted);">You are not currently signed in.</p>
-                    <a href="/login" class="btn btn-primary">Go to Sign In Portal</a>
-                `;
-            }
-        });
-    </script>
+    <script src="/assets/js/public/home.js"></script>
 </body>
 </html>

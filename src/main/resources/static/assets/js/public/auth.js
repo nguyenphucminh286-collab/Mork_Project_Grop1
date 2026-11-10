@@ -20,21 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 1-Click Quick Demo Account Pills
-    const demoPills = document.querySelectorAll('.demo-pill');
-    demoPills.forEach((pill) => {
-        pill.addEventListener('click', () => {
-            demoPills.forEach((p) => p.classList.remove('active'));
-            pill.classList.add('active');
-            if (emailInput && passwordInput) {
-                emailInput.value = pill.dataset.email || '';
-                passwordInput.value = pill.dataset.pass || '';
-                if (alertBox) alertBox.style.display = 'none';
-            }
-        });
-    });
-
-    // Forgot password demo prompt
+    // Forgot password prompt
     const forgotLink = document.getElementById('forgot-password-link');
     if (forgotLink && alertBox) {
         forgotLink.addEventListener('click', () => {
