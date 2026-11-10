@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.edu.fpt.savora.common.PasswordUtils;
 import vn.edu.fpt.savora.dto.request.LoginRequest;
+import vn.edu.fpt.savora.dto.request.RegisterRequest;
 import vn.edu.fpt.savora.dto.response.AuthUserResponse;
 import vn.edu.fpt.savora.enums.Gender;
 import vn.edu.fpt.savora.enums.UserStatus;
@@ -46,6 +47,51 @@ public class AuthService {
         }
 
         return buildAuthUserResponse(user);
+    }
+
+    /**
+     * Register a new Customer account in MySQL
+     */
+    @Transactional
+    public AuthUserResponse register(RegisterRequest request) {
+        String email = request.getEmail().trim().toLowerCase();
+
+        if (!request.getPassword().equals(request.getConfirmPassword())) {
+            throw new IllegalArgumentException("Password confirmation does not match.");
+        }
+
+        if (userRepository.existsByEmailIgnoreCase(email)) {
+            throw new IllegalArgumentException("This email address is already registered.");
+        }
+
+        Role customerRole = roleRepository.findByRoleName("CUSTOMER")
+                .orElseGet(() -> roleRepository.save(
+                        Role.builder().roleName("CUSTOMER").description("Customer").build()
+                ));
+
+        Gender genderEnum = Gender.OTHER;
+        if (request.getGender() != null && !request.getGender().isBlank()) {
+            try {
+                genderEnum = Gender.valueOf(request.getGender().trim().toUpperCase());
+            } catch (IllegalArgumentException ignored) {
+                genderEnum = Gender.OTHER;
+            }
+        }
+
+        User newUser = User.builder()
+                .firstName(request.getFirstName().trim())
+                .lastName(request.getLastName().trim())
+                .email(email)
+                .phone(request.getPhone() != null ? request.getPhone().trim() : null)
+                .passwordHash(PasswordUtils.hashPassword(request.getPassword()))
+                .avatarUrl("https://res.cloudinary.com/dej5mxdrt/image/upload/v1780061324/OIP_dbbjuo.jpg")
+                .gender(genderEnum)
+                .status(UserStatus.ACTIVE)
+                .roles(Set.of(customerRole))
+                .build();
+
+        User savedUser = userRepository.save(newUser);
+        return buildAuthUserResponse(savedUser);
     }
 
     /**

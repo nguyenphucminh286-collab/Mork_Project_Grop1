@@ -8,11 +8,12 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
 import vn.edu.fpt.savora.common.ApiResponse;
 import vn.edu.fpt.savora.dto.request.LoginRequest;
+import vn.edu.fpt.savora.dto.request.RegisterRequest;
 import vn.edu.fpt.savora.dto.response.AuthUserResponse;
 import vn.edu.fpt.savora.service.AuthService;
 
 /**
- * REST API xác thực người dùng (Đăng nhập Email/Mật khẩu + Google/Facebook OAuth2 + Đăng xuất)
+ * REST API xác thực người dùng (Đăng nhập Email/Mật khẩu + Đăng ký + Google/Facebook OAuth2 + Đăng xuất)
  */
 @RestController
 @RequestMapping("/api/auth")
@@ -30,6 +31,17 @@ public class AuthController {
         session.setAttribute("fullName", authUser.getFullName());
         session.setAttribute("authUser", authUser);
         return ApiResponse.ok("Signed in successfully!", authUser);
+    }
+
+    @PostMapping("/register")
+    public ApiResponse<AuthUserResponse> register(@Valid @RequestBody RegisterRequest request, HttpSession session) {
+        AuthUserResponse authUser = authService.register(request);
+        session.setAttribute("userId", authUser.getUserId());
+        session.setAttribute("roleId", authUser.getRoleId());
+        session.setAttribute("roleName", authUser.getRoleName());
+        session.setAttribute("fullName", authUser.getFullName());
+        session.setAttribute("authUser", authUser);
+        return ApiResponse.ok("Account created successfully!", authUser);
     }
 
     @GetMapping("/me")

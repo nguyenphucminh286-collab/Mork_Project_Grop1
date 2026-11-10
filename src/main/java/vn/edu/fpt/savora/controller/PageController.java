@@ -15,6 +15,11 @@ public class PageController {
         return "forward:/public/auth/login.html";
     }
 
+    @GetMapping("/register")
+    public String registerPage() {
+        return "forward:/public/auth/register.html";
+    }
+
     @GetMapping("/home")
     public String homePage() {
         return "forward:/public/home/view-home.html";
