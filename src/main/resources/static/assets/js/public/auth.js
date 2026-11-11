@@ -69,13 +69,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const registerForm = document.getElementById('register-form');
     const registerBtn = document.getElementById('btn-register-submit');
     if (registerForm) {
+        const registerEmail = document.getElementById('reg-email');
+        registerEmail.addEventListener('invalid', () => {
+            registerEmail.setCustomValidity(registerEmail.title);
+        });
+        registerEmail.addEventListener('input', () => {
+            registerEmail.setCustomValidity('');
+        });
+
         registerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             resetAlert(alertBox);
 
             const firstName = document.getElementById('firstName').value.trim();
             const lastName = document.getElementById('lastName').value.trim();
-            const email = document.getElementById('reg-email').value.trim();
+            const email = registerEmail.value;
             const phone = document.getElementById('phone').value.trim();
             const gender = document.getElementById('gender').value;
             const password = document.getElementById('reg-password').value;
