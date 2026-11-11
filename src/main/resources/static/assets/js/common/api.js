@@ -67,8 +67,9 @@ const SavoraApp = {
 
             const authArea = document.getElementById('header-auth-area');
             if (authArea) {
+                const cleanName = (user.fullName || '').replace(/^Khách hàng\s+/i, '').trim();
                 authArea.innerHTML = `
-                    <span style="font-size: 0.9rem; font-weight: 600;">Welcome, ${user.fullName} (${user.roleName})</span>
+                    <span style="font-size: 0.9rem; font-weight: 600;">Welcome, ${cleanName}</span>
                     <button class="btn btn-outline" id="btn-logout" style="padding: 7px 14px;">Sign Out</button>
                 `;
                 document.getElementById('btn-logout').addEventListener('click', async () => {

@@ -93,59 +93,26 @@ const SAVORA_TABLES_DATA = [
     { code: 'VIP-02', name: 'VIP Royal Banquet Room', area: 'VIP Zone', capacity: 16, status: 'MAINTENANCE', note: 'Scheduled air-conditioning maintenance' }
 ];
 
-document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener('DOMContentLoaded', () => {
     let activeCategory = 'ALL';
     let searchKeyword = '';
 
-    // 1. Check current authenticated user session
-    await initSessionBanner();
-
-    // 2. Initialize default reservation date to today
+    // 1. Initialize default reservation date to today
     const dateInput = document.getElementById('filter-date');
     if (dateInput) {
         dateInput.value = new Date().toISOString().split('T')[0];
     }
 
-    // 3. Render Signature Menu & Category Tabs
+    // 2. Render Signature Menu & Category Tabs
     renderMenu();
     setupMenuFilters();
 
-    // 4. Render Live Dining Tables & Filters
+    // 3. Render Live Dining Tables & Filters
     renderTables();
     setupTableFilters();
 
-    // 5. Setup Voucher Copy Buttons
+    // 4. Setup Voucher Copy Buttons
     setupVoucherButtons();
-
-    async function initSessionBanner() {
-        const banner = document.getElementById('session-banner');
-        const content = document.getElementById('session-banner-content');
-        if (!banner || !content) return;
-
-        try {
-            const res = await SavoraApp.fetchApi('/api/auth/me');
-            const u = res.data;
-            if (!u) return;
-
-            banner.style.display = 'block';
-            content.innerHTML = `
-                <div class="session-user">
-                    <img src="${u.avatarUrl || 'https://res.cloudinary.com/dej5mxdrt/image/upload/v1780061324/OIP_dbbjuo.jpg'}"
-                         alt="${u.fullName}" class="session-user__avatar">
-                    <div class="session-user__info">
-                        <strong>Welcome back, ${u.fullName}!</strong>
-                        <span>Signed in as ${u.email} (User ID: #${u.userId})</span>
-                    </div>
-                </div>
-                <div class="session-badges">
-                    <span class="role-pill">ROLE: ${u.roleName}</span>
-                    <a href="#reservation" class="btn btn-primary" style="padding: 8px 16px; font-size: 0.82rem;">Book a Table</a>
-                </div>
-            `;
-        } catch (_) {
-            banner.style.display = 'none';
-        }
-    }
 
     function renderMenu() {
         const grid = document.getElementById('menu-grid');

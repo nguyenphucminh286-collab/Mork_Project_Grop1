@@ -179,9 +179,16 @@ public class AuthService {
         Role primaryRole = user.getRoles().stream().findFirst()
                 .orElseGet(() -> Role.builder().roleId(2).roleName("CUSTOMER").build());
 
+        String first = user.getFirstName() != null ? user.getFirstName().replace("Khách hàng", "").trim() : "";
+        String last = user.getLastName() != null ? user.getLastName().trim() : "";
+        String fullName = (first + " " + last).trim();
+        if (fullName.isEmpty()) {
+            fullName = user.getEmail();
+        }
+
         return AuthUserResponse.builder()
                 .userId(user.getUserId())
-                .fullName((user.getFirstName() + " " + user.getLastName()).trim())
+                .fullName(fullName)
                 .email(user.getEmail())
                 .phone(user.getPhone())
                 .avatarUrl(user.getAvatarUrl())
