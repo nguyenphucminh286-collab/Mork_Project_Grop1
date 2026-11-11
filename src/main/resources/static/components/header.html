@@ -25,9 +25,15 @@
             </ul>
         </nav>
 
-        <div class="header__actions" id="header-auth-area">
-            <a href="/login" class="btn btn-outline" style="padding: 9px 18px;">Sign In</a>
-            <a href="/register" class="btn btn-primary" style="padding: 9px 18px;">Sign Up</a>
+        <div class="header__actions">
+            <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Dark mode" aria-pressed="false">
+                <span class="theme-toggle__moon" aria-hidden="true">☾</span>
+                <span class="theme-toggle__sun" aria-hidden="true">☀</span>
+            </button>
+            <div class="header__actions" id="header-auth-area">
+                <a href="/login" class="btn btn-outline" style="padding: 9px 18px;">Sign In</a>
+                <a href="/register" class="btn btn-primary" style="padding: 9px 18px;">Sign Up</a>
+            </div>
         </div>
     </div>
 </header>

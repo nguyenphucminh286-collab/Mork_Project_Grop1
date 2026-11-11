@@ -152,7 +152,7 @@
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    background: #ffffff;
+    background: var(--bg-white);
     border-radius: 18px;
     padding: 28px 24px;
     box-shadow: var(--shadow-lg);
@@ -209,7 +209,7 @@
 .section-heading__title {
     font-family: var(--font-heading);
     font-size: 2.3rem;
-    color: var(--secondary-color);
+    color: var(--text-main);
     margin-bottom: 10px;
 }
 
@@ -238,7 +238,7 @@
     padding: 9px 18px;
     border-radius: 999px;
     border: 1.5px solid var(--border-color);
-    background: #ffffff;
+    background: var(--bg-white);
     color: var(--text-main);
     font-size: 0.86rem;
     font-weight: 600;
@@ -248,7 +248,7 @@
 
 .category-tab:hover,
 .category-tab.active {
-    background: var(--primary-color);
+    background: var(--brand-fill);
     border-color: var(--primary-color);
     color: #ffffff;
     box-shadow: 0 6px 16px rgba(184, 92, 56, 0.24);
@@ -264,7 +264,7 @@
     padding: 10px 16px;
     border-radius: 999px;
     border: 1.5px solid var(--border-color);
-    background: #ffffff;
+    background: var(--bg-white);
     font-size: 0.88rem;
     font-family: inherit;
 }
@@ -281,7 +281,7 @@
 }
 
 .menu-card {
-    background: #ffffff;
+    background: var(--bg-white);
     border-radius: 16px;
     overflow: hidden;
     border: 1px solid var(--border-color);
@@ -333,7 +333,7 @@
     right: 12px;
     padding: 4px 10px;
     border-radius: 999px;
-    background: rgba(255, 255, 255, 0.92);
+    background: var(--translucent-surface);
     color: var(--text-main);
     font-size: 0.74rem;
     font-weight: 600;
@@ -358,7 +358,7 @@
 .menu-card__title {
     font-family: var(--font-heading);
     font-size: 1.25rem;
-    color: var(--secondary-color);
+    color: var(--text-main);
     margin-bottom: 8px;
 }
 
@@ -397,7 +397,7 @@
 
 /* ===== 6. Live Dining Table Availability Section ===== */
 .reservation-panel {
-    background: #ffffff;
+    background: var(--bg-white);
     border-radius: 22px;
     padding: 36px;
     border: 1px solid rgba(212, 163, 115, 0.35);
@@ -431,7 +431,7 @@
     padding: 10px 12px;
     border-radius: 9px;
     border: 1.5px solid var(--border-color);
-    background: #ffffff;
+    background: var(--bg-white);
     font-family: inherit;
     font-size: 0.9rem;
     color: var(--text-main);
@@ -476,7 +476,7 @@
     border-radius: 14px;
     padding: 20px;
     border: 1.5px solid var(--border-color);
-    background: #ffffff;
+    background: var(--bg-white);
     transition: all 0.22s ease;
     display: flex;
     flex-direction: column;
@@ -510,6 +510,10 @@
     opacity: 0.85;
 }
 
+[data-theme="dark"] .table-card {
+    background: var(--bg-white);
+}
+
 .table-card__top {
     display: flex;
     justify-content: space-between;
@@ -521,8 +525,8 @@
     font-size: 0.82rem;
     padding: 4px 10px;
     border-radius: 6px;
-    background: rgba(24, 21, 18, 0.07);
-    color: var(--secondary-color);
+    background: var(--subtle-surface);
+    color: var(--text-main);
 }
 
 .table-status-badge {
@@ -542,7 +546,7 @@
 .table-card__name {
     font-family: var(--font-heading);
     font-size: 1.15rem;
-    color: var(--secondary-color);
+    color: var(--text-main);
 }
 
 .table-card__meta {
@@ -589,14 +593,14 @@
 
 .about-feature-box {
     padding: 16px;
-    background: #ffffff;
+    background: var(--bg-white);
     border-radius: 12px;
     border: 1px solid var(--border-color);
 }
 
 .about-feature-box strong {
     display: block;
-    color: var(--secondary-color);
+    color: var(--text-main);
     margin-bottom: 4px;
     font-size: 0.94rem;
 }

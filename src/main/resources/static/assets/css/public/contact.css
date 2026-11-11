@@ -15,7 +15,7 @@
     background-size: cover, cover, clamp(260px, 36vw, 470px);
     background-position: center, center, right 10% center;
     background-repeat: no-repeat;
-    color: var(--bg-cream);
+    color: #f8f4ee;
 }
 
 .contact__intro {
@@ -54,7 +54,7 @@
 
 .contact__directions {
     border: 1px solid var(--gold-accent);
-    color: var(--bg-cream);
+    color: #f8f4ee;
     background: rgba(21, 15, 11, 0.45);
 }
 

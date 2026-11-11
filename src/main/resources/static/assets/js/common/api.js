@@ -45,6 +45,8 @@ const SavoraApp = {
             const res = await fetch(this.getBaseUrl() + '/components/header.html');
             if (res.ok) {
                 headerContainer.innerHTML = await res.text();
+                const themeToggle = headerContainer.querySelector('#theme-toggle');
+                if (themeToggle) SavoraTheme.bind(themeToggle);
                 await this.syncAuthState();
             }
         }
