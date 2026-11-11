@@ -142,6 +142,16 @@
     margin-top: 8px;
 }
 
+/* ===== DARK MODE OVERRIDES — CONTACT PAGE ===== */
+[data-theme="dark"] .contact__card {
+    background: #231e1a;
+    border-color: #3a302a;
+}
+
+[data-theme="dark"] .contact__icon {
+    background: #2a2320;
+}
+
 @media (max-width: 760px) {
     .contact__hero {
         background-image:

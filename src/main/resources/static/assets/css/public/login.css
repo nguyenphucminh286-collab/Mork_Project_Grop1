@@ -472,6 +472,75 @@
     box-shadow: var(--shadow-lg);
 }
 
+/* ===== DARK MODE OVERRIDES — AUTH / LOGIN PAGE ===== */
+[data-theme="dark"] .auth-shell {
+    background: #231e1a;
+    border-color: rgba(212, 163, 115, 0.2);
+}
+
+[data-theme="dark"] .auth-panel {
+    background: #231e1a;
+}
+
+[data-theme="dark"] .form-control {
+    background-color: #2a2320;
+    border-color: #3a302a;
+    color: var(--text-main);
+}
+
+[data-theme="dark"] .form-control:focus {
+    background-color: #332a24;
+    border-color: var(--primary-color);
+}
+
+[data-theme="dark"] .auth-alert {
+    background: #3a1515;
+    border-color: #7f2020;
+    color: #ef9a9a;
+}
+
+[data-theme="dark"] .demo-accounts {
+    background: #1e1a16;
+    border-color: #3a302a;
+}
+
+[data-theme="dark"] .demo-pill {
+    background: #2a2320;
+    border-color: #3a302a;
+    color: var(--text-main);
+}
+
+[data-theme="dark"] .demo-pill:hover,
+[data-theme="dark"] .demo-pill.active {
+    background: #332a24;
+    border-color: var(--primary-color);
+    color: var(--primary-light);
+}
+
+[data-theme="dark"] .demo-accounts__label code {
+    background: #3a302a;
+    color: var(--primary-light);
+}
+
+[data-theme="dark"] .btn-social {
+    background: #2a2320;
+    border-color: #3a302a;
+}
+
+[data-theme="dark"] .btn-social:hover {
+    background: #332a24;
+    border-color: #5a4a40;
+}
+
+[data-theme="dark"] .auth-switch {
+    border-top-color: #3a302a;
+}
+
+[data-theme="dark"] .auth-wrapper {
+    background: #231e1a;
+    border-color: #3a302a;
+}
+
 @media (max-width: 920px) {
     .auth-shell {
         grid-template-columns: 1fr;
