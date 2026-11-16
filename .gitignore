@@ -37,3 +37,8 @@ uploads/*
 ### OS ###
 .DS_Store
 Thumbs.db
+
+.env
+application-local.properties
+application-local.yml
+target/

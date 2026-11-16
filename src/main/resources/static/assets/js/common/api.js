@@ -38,49 +38,13 @@ const SavoraApp = {
     },
 
     async loadLayout() {
-        const headerContainer = document.getElementById('app-header');
-        const footerContainer = document.getElementById('app-footer');
-
-        if (headerContainer) {
-            const res = await fetch(this.getBaseUrl() + '/components/header.html');
-            if (res.ok) {
-                headerContainer.innerHTML = await res.text();
-                const themeToggle = headerContainer.querySelector('#theme-toggle');
-                if (themeToggle) SavoraTheme.bind(themeToggle);
-                await this.syncAuthState();
-            }
-        }
-
-        if (footerContainer) {
-            const res = await fetch(this.getBaseUrl() + '/components/footer.html');
-            if (res.ok) {
-                footerContainer.innerHTML = await res.text();
-            }
-        }
+        const toggle = document.getElementById('theme-toggle');
+        if (toggle && window.SavoraTheme) SavoraTheme.bind(toggle);
     },
-
     async syncAuthState() {
-        try {
-            const res = await this.fetchApi('/api/auth/me');
-            const user = res.data;
-            if (!user) return;
-
-            const authArea = document.getElementById('header-auth-area');
-            if (authArea) {
-                const cleanName = (user.fullName || '').replace(/^Khách hàng\s+/i, '').trim();
-                authArea.innerHTML = `
-                    <span style="font-size: 0.9rem; font-weight: 600;">Welcome, ${cleanName}</span>
-                    <button class="btn btn-outline" id="btn-logout" style="padding: 7px 14px;">Sign Out</button>
-                `;
-                document.getElementById('btn-logout').addEventListener('click', async () => {
-                    await this.fetchApi('/api/auth/logout', { method: 'POST' });
-                    window.location.href = '/login';
-                });
-            }
-        } catch (_) {
-            // User is not signed in
-        }
+        // Thymeleaf renders the current session into the header fragment.
     }
+
 };
 
 document.addEventListener('DOMContentLoaded', () => {

@@ -1,5 +1,6 @@
 package vn.edu.fpt.savora.dto.request;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -8,20 +9,18 @@ import lombok.Data;
 @Data
 public class RegisterRequest {
 
-    private static final String INVALID_EMAIL = "Invalid email format (example: name@gmail.com)";
-
     @NotBlank(message = "Please enter your first name")
     private String firstName;
 
     @NotBlank(message = "Please enter your last name")
     private String lastName;
 
-    @NotBlank(message = INVALID_EMAIL)
-    @Pattern(regexp = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)+$", message = INVALID_EMAIL)
+    @NotBlank(message = "Please enter your email address")
+    @Email(regexp = "(?i)[^@]+@gmail\\.com", message = "Enter a valid @gmail.com address")
     private String email;
 
     @NotBlank(message = "Please enter your phone number")
-    @Pattern(regexp = "[0-9]{10,12}", message = "Phone number must contain 10 to 12 digits")
+    @Pattern(regexp = "[0-9]{10,15}", message = "Phone number must contain 10 to 15 digits")
     private String phone;
 
     private String gender;

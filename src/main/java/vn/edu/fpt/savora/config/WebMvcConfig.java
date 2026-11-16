@@ -5,7 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import vn.edu.fpt.savora.filter.AuthInterceptor;
+import vn.edu.fpt.savora.security.interceptor.AuthInterceptor;
 
 /**
  * Cấu hình Web MVC cho Spring Boot:
@@ -37,6 +37,8 @@ public class WebMvcConfig implements WebMvcConfigurer {
                         "/public/**",
                         "/api/public/**",
                         "/api/auth/**",
+                        "/oauth2/**",
+                        "/login/oauth2/**",
                         "/error",
                         "/favicon.ico"
                 );

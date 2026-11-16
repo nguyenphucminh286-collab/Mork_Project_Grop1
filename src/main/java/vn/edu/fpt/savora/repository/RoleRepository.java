@@ -2,7 +2,7 @@ package vn.edu.fpt.savora.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import vn.edu.fpt.savora.model.Role;
+import vn.edu.fpt.savora.entity.Role;
 
 import java.util.Optional;
 

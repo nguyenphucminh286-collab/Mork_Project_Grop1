@@ -1,0 +1,46 @@
+<div th:fragment="siteHeader">
+<!-- Reusable Header Component -->
+<div class="topbar">
+    <div class="container topbar__inner">
+        <span>✦ SAVORA FINE DINING &amp; LOUNGE — Hoa Lac Hi-Tech Park, Hanoi</span>
+        <span>Concierge: <strong>1900 6868</strong> &nbsp;|&nbsp; Open Daily: <strong>10:00 AM – 10:30 PM</strong></span>
+    </div>
+</div>
+<header class="header">
+    <div class="container header__inner">
+        <a href="/home" class="header__logo">
+            <img class="header__logo-mark" src="/assets/images/savora-logo.png" width="42" height="42" alt="">
+            <span class="header__logo-text">
+                SAVORA
+                <small>FINE DINING</small>
+            </span>
+        </a>
+
+        <nav class="header__nav">
+            <ul>
+                <li><a href="/home">Home</a></li>
+                <li><a href="/home#menu">Menu</a></li>
+                <li><a href="/home#reservation">Reservations</a></li>
+                <li><a href="/home#about">About Us</a></li>
+                <li><a href="/contact">Contact</a></li>
+            </ul>
+        </nav>
+
+        <div class="header__actions">
+            <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Dark mode" aria-pressed="false">
+                <span class="theme-toggle__moon" aria-hidden="true">☾</span>
+                <span class="theme-toggle__sun" aria-hidden="true">☀</span>
+            </button>
+            <div class="header__actions" id="header-auth-area">
+                <a th:if="${session.userId == null}" href="/login" class="btn btn-outline" style="padding: 9px 18px;">Sign In</a>
+                <a th:if="${session.userId == null}" href="/register" class="btn btn-primary" style="padding: 9px 18px;">Sign Up</a>
+              <span th:if="${session.userId != null}" th:text="${session.fullName}">User</span>
+              <form th:if="${session.userId != null}" th:action="@{/logout}" method="post">
+                <button type="submit" class="btn btn-outline">Sign Out</button>
+              </form>
+            </div>
+        </div>
+    </div>
+</header>
+
+</div>

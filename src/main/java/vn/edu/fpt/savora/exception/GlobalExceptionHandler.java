@@ -1,38 +1,35 @@
 package vn.edu.fpt.savora.exception;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import vn.edu.fpt.savora.common.ApiResponse;
-
-/**
- * Xử lý ngoại lệ tập trung cho toàn bộ các REST Controller trong dự án Savora
- */
-@RestControllerAdvice
+import java.util.LinkedHashMap;
+import java.util.Map;
+@RestControllerAdvice(annotations=RestController.class)
 public class GlobalExceptionHandler {
-
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ApiResponse<Void>> handleBadRequest(IllegalArgumentException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(ApiResponse.error(ex.getMessage()));
+    @ExceptionHandler(AppException.class)
+    public ResponseEntity<ApiResponse<Void>> handleApp(AppException ex) {
+        ErrorCode c=ex.getErrorCode();
+        return ResponseEntity.status(c.getStatus()).body(ApiResponse.error(c.getCode(),c.getMessage()));
     }
-
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ApiResponse<Void>> handleBad(IllegalArgumentException ex) {
+        return ResponseEntity.badRequest().body(ApiResponse.error("COMMON_400",ex.getMessage()));
+    }
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiResponse<Void>> handleValidation(MethodArgumentNotValidException ex) {
-        String message = ex.getBindingResult().getFieldErrors().stream()
-                .findFirst()
-                .map(err -> err.getDefaultMessage())
-                .orElse("Invalid input data.");
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(ApiResponse.error(message));
+        Map<String,String> errors=new LinkedHashMap<>();
+        ex.getBindingResult().getFieldErrors().forEach(e -> errors.putIfAbsent(e.getField(),e.getDefaultMessage()));
+        ApiResponse<Void> body=ApiResponse.error("VALIDATION_001","Validation failed.");
+        body.setErrors(errors);
+        return ResponseEntity.badRequest().body(body);
     }
-
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResponse<Void>> handleGeneralException(Exception ex) {
-        ex.printStackTrace();
+    public ResponseEntity<ApiResponse<Void>> handleUnexpected(Exception ex) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.error("System error: " + ex.getMessage()));
+            .body(ApiResponse.error("COMMON_500","Internal server error."));
     }
 }

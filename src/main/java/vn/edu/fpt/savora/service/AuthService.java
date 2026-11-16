@@ -4,15 +4,18 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import vn.edu.fpt.savora.common.PasswordUtils;
+import vn.edu.fpt.savora.security.util.PasswordUtils;
 import vn.edu.fpt.savora.dto.request.LoginRequest;
 import vn.edu.fpt.savora.dto.request.RegisterRequest;
 import vn.edu.fpt.savora.dto.response.AuthUserResponse;
 import vn.edu.fpt.savora.enums.Gender;
 import vn.edu.fpt.savora.enums.UserStatus;
-import vn.edu.fpt.savora.model.Role;
-import vn.edu.fpt.savora.model.User;
+import vn.edu.fpt.savora.entity.Role;
+import vn.edu.fpt.savora.entity.User;
 import vn.edu.fpt.savora.repository.RoleRepository;
+import vn.edu.fpt.savora.mapper.AuthUserMapper;
+import vn.edu.fpt.savora.exception.AppException;
+import vn.edu.fpt.savora.exception.ErrorCode;
 import vn.edu.fpt.savora.repository.UserRepository;
 
 import java.util.Map;
@@ -28,6 +31,7 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final AuthUserMapper authUserMapper;
 
     public AuthUserResponse login(LoginRequest request) {
         String email = request.getEmail().trim().toLowerCase();
@@ -35,15 +39,15 @@ public class AuthService {
                 .orElseThrow(() -> new IllegalArgumentException("Invalid email or password."));
 
         if (!PasswordUtils.checkPassword(request.getPassword(), user.getPasswordHash())) {
-            throw new IllegalArgumentException("Invalid email or password.");
+            throw new AppException(ErrorCode.INVALID_CREDENTIALS);
         }
 
         if (user.getStatus() == UserStatus.LOCKED) {
-            throw new IllegalArgumentException("Your account has been locked. Please contact the administrator.");
+            throw new AppException(ErrorCode.ACCOUNT_LOCKED);
         }
 
         if (user.getStatus() == UserStatus.PENDING) {
-            throw new IllegalArgumentException("Your account has not been activated yet.");
+            throw new AppException(ErrorCode.ACCOUNT_PENDING);
         }
 
         return buildAuthUserResponse(user);
@@ -57,11 +61,11 @@ public class AuthService {
         String email = request.getEmail().trim().toLowerCase();
 
         if (!request.getPassword().equals(request.getConfirmPassword())) {
-            throw new IllegalArgumentException("Password confirmation does not match.");
+            throw new AppException(ErrorCode.PASSWORD_MISMATCH);
         }
 
         if (userRepository.existsByEmailIgnoreCase(email)) {
-            throw new IllegalArgumentException("This email address is already registered.");
+            throw new AppException(ErrorCode.EMAIL_ALREADY_EXISTS);
         }
 
         Role customerRole = roleRepository.findByRoleName("CUSTOMER")
@@ -179,22 +183,10 @@ public class AuthService {
         Role primaryRole = user.getRoles().stream().findFirst()
                 .orElseGet(() -> Role.builder().roleId(2).roleName("CUSTOMER").build());
 
-        String first = user.getFirstName() != null ? user.getFirstName().replace("Khách hàng", "").trim() : "";
-        String last = user.getLastName() != null ? user.getLastName().trim() : "";
-        String fullName = (first + " " + last).trim();
-        if (fullName.isEmpty()) {
-            fullName = user.getEmail();
-        }
-
-        return AuthUserResponse.builder()
-                .userId(user.getUserId())
-                .fullName(fullName)
-                .email(user.getEmail())
-                .phone(user.getPhone())
-                .avatarUrl(user.getAvatarUrl())
-                .roleId(primaryRole.getRoleId())
-                .roleName(primaryRole.getRoleName())
-                .redirectUrl("/home")
-                .build();
+        AuthUserResponse result = authUserMapper.toResponse(user);
+        result.setRoleId(primaryRole.getRoleId());
+        result.setRoleName(primaryRole.getRoleName());
+        result.setRedirectUrl("/home");
+        return result;
     }
 }
