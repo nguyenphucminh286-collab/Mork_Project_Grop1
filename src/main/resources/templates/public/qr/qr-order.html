@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Table QR Digital Menu &amp; Ordering — Savora Fine Dining</title>
+    <script src="/assets/js/common/theme.js"></script>
+    <link rel="stylesheet" href="/assets/css/public/global.css?v=2">
+    <link rel="stylesheet" href="/assets/css/public/home.css?v=4">
+    <link rel="stylesheet" href="/assets/css/public/qr-order.css?v=2">
+</head>
+<body th:data-initial-table="${initialTableCode != null ? initialTableCode : 'T1-B01'}">
+    <main class="qr-page">
+        <div class="container">
+            <!-- 1. Table QR Session Banner (Locked to Scanned Table) -->
+            <section class="qr-banner">
+                <div class="qr-banner__left">
+                    <div class="qr-code-badge">
+                        <small>TABLE QR</small>
+                        <span id="qr-badge-code" th:text="${initialTableCode != null ? initialTableCode : 'T1-B01'}">T1-B01</span>
+                    </div>
+                    <div>
+                        <div class="qr-table-title">
+                            <span id="qr-table-name"
+                                  th:text="${tableSession != null ? (tableSession.tableCode + ' — ' + tableSession.tableName) : initialTableCode}">
+                                T1-B01 — Table 01 Window Side
+                            </span>
+                            <span class="table-status-badge badge-status-AVAILABLE"
+                                  id="qr-table-status"
+                                  th:text="${tableSession != null ? tableSession.tableStatus : 'AVAILABLE'}">
+                                AVAILABLE
+                            </span>
+                        </div>
+                        <div class="qr-table-meta">
+                            <span id="qr-table-area" th:text="${tableSession != null ? ('📍 ' + tableSession.area) : '📍 1st Floor'}">📍 1st Floor</span>
+                            <span id="qr-table-capacity" th:text="${tableSession != null ? ('👥 Max ' + tableSession.capacity + ' Seats') : '👥 Max 2 Seats'}">👥 Max 2 Seats</span>
+                            <span id="qr-table-note" th:text="${tableSession != null and tableSession.tableNote != null ? tableSession.tableNote : 'Scan QR at table to place your dine-in order directly to the kitchen'}">
+                                Scan QR at table to place your dine-in order directly to the kitchen
+                            </span>
+                        </div>
+                        <div id="qr-linked-reservation" class="qr-reservation-pill" style="display: none;"></div>
+                    </div>
+                </div>
+
+                <div class="qr-banner__right">
+                    <button type="button" class="btn btn-outline" id="btn-show-qr-modal" style="padding: 8px 14px; font-size: 0.82rem;">
+                        📱 Show Table QR Code
+                    </button>
+                </div>
+            </section>
+
+            <!-- 2. Main 2-Column QR Ordering Layout -->
+            <div class="qr-layout">
+                <!-- LEFT COLUMN: Interactive Digital Menu -->
+                <section class="qr-menu-card">
+                    <div class="pasgo-card__header">
+                        <div>
+                            <h2 class="pasgo-card__title">🍽️ Digital Table Menu</h2>
+                            <p class="pasgo-card__subtitle">Select dishes and add cooking notes — your order goes straight to the Executive Chef</p>
+                        </div>
+                    </div>
+
+                    <div class="menu-toolbar">
+                        <div class="category-tabs" id="qr-category-tabs">
+                            <button type="button" class="category-tab active" data-category="ALL">All Dishes</button>
+                        </div>
+                        <div class="menu-search-box">
+                            <input type="text" id="qr-menu-search" placeholder="Search dishes or ingredients...">
+                        </div>
+                    </div>
+
+                    <div class="qr-dish-grid" id="qr-dish-grid"></div>
+                </section>
+
+                <!-- RIGHT COLUMN: Sticky Cart & Live Kitchen Status -->
+                <aside class="qr-order-sidebar">
+                    <div class="qr-order-panel">
+                        <!-- Panel Tabs -->
+                        <div class="qr-panel-tabs">
+                            <button type="button" class="qr-panel-tab active" data-tab="cart" id="tab-btn-cart">
+                                🛒 New Order (<span id="qr-cart-count">0</span>)
+                            </button>
+                            <button type="button" class="qr-panel-tab" data-tab="kitchen" id="tab-btn-kitchen">
+                                👨‍🍳 Kitchen Status (<span id="qr-placed-count">0</span>)
+                            </button>
+                        </div>
+
+                        <!-- TAB 1: Current Selection Cart -->
+                        <div class="qr-panel-body" id="tab-content-cart">
+                            <div id="qr-order-alert" style="display:none; padding: 9px 12px; border-radius: 8px; background: #fff1f0; border: 1px solid #ffa39e; color: #cf1322; font-size: 0.8rem; margin-bottom: 12px; font-weight: 600;"></div>
+
+                            <div id="qr-cart-items" class="qr-cart-list"></div>
+
+                            <div class="pasgo-field" style="margin-top: 10px;">
+                                <label for="qr-voucher-select">🎁 Apply Promotional Voucher</label>
+                                <select id="qr-voucher-select" class="pasgo-control">
+                                    <option value="">No promotional voucher</option>
+                                </select>
+                            </div>
+
+                            <div class="pasgo-field">
+                                <label for="qr-general-note">📝 General Table Note for Waiter / Chef</label>
+                                <input type="text" id="qr-general-note" class="pasgo-control" placeholder="e.g. Serve starters first, extra napkins...">
+                            </div>
+
+                            <div class="qr-bill-summary" id="qr-cart-summary">
+                                <div class="qr-bill-row">
+                                    <span>New Round Subtotal:</span>
+                                    <strong id="qr-cart-subtotal">0 VND</strong>
+                                </div>
+                                <div class="qr-bill-row" id="qr-cart-discount-row" style="display: none; color: #2e7d32;">
+                                    <span id="qr-cart-discount-label">Voucher Discount:</span>
+                                    <strong id="qr-cart-discount-amount">-0 VND</strong>
+                                </div>
+                                <div class="qr-bill-row qr-bill-row--total">
+                                    <span>Total After Discount:</span>
+                                    <span id="qr-cart-final-total">0 VND</span>
+                                </div>
+                            </div>
+
+                            <button type="button" class="btn-pasgo-submit" id="btn-submit-qr-order" style="margin-top: 14px;">
+                                🔥 Send Order to Kitchen
+                            </button>
+                        </div>
+
+                        <!-- TAB 2: Live Kitchen Tracker & Running Bill -->
+                        <div class="qr-panel-body" id="tab-content-kitchen" style="display: none;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted);" id="qr-active-order-code">No active order yet</span>
+                                <button type="button" class="btn btn-outline" id="btn-refresh-kitchen" style="padding: 5px 10px; font-size: 0.75rem;">
+                                    🔄 Refresh Status
+                                </button>
+                            </div>
+
+                            <!-- Status Flow Legend -->
+                            <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; font-size: 0.7rem;">
+                                <span class="kitchen-badge k-status-PENDING">1. PENDING (Sent)</span>
+                                <span class="kitchen-badge k-status-COOKING">2. COOKING (Chef)</span>
+                                <span class="kitchen-badge k-status-READY">3. READY (Waiter)</span>
+                                <span class="kitchen-badge k-status-SERVED">4. SERVED</span>
+                            </div>
+
+                            <div id="qr-kitchen-items-list"></div>
+
+                            <div class="qr-bill-summary" id="qr-running-bill" style="margin-top: 14px;"></div>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+        </div>
+    </main>
+
+    <!-- Scannable Table QR Code Modal -->
+    <div class="pasgo-modal-backdrop" id="qr-preview-modal">
+        <div class="pasgo-modal" style="max-width: 380px; text-align: center;">
+            <div class="pasgo-modal__header" style="background: linear-gradient(135deg, #181512 0%, #302820 100%);">
+                <h3 style="font-family: var(--font-heading); font-size: 1.35rem; color: #f3c68f;" id="qr-modal-title">Table QR Code</h3>
+                <p style="font-size: 0.8rem; opacity: 0.85;">Scan with smartphone camera to open this table’s ordering menu</p>
+            </div>
+            <div class="pasgo-modal__body">
+                <img id="qr-modal-img" src="" alt="Table QR Code" style="width: 210px; height: 210px; margin: 0 auto 14px; border-radius: 12px; border: 1px solid var(--border-color); padding: 10px; background: #fff;">
+                <p style="font-size: 0.8rem; color: var(--text-muted); word-break: break-all; margin-bottom: 16px;" id="qr-modal-url"></p>
+                <button type="button" class="btn btn-primary" id="btn-close-qr-modal" style="width: 100%;">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="home-toast" class="toast-notification"></div>
+
+    <!-- Shared Footer -->
+    <div th:replace="~{fragments/footer :: siteFooter}"></div>
+
+    <script src="/assets/js/common/api.js"></script>
+    <script src="/assets/js/public/qr-order.js?v=3"></script>
+</body>
+</html>
