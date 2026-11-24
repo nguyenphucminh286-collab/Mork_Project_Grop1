@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Profile — Savora Waiter Portal</title>
+    <script src="/assets/js/common/theme.js"></script>
+    <link rel="stylesheet" href="/assets/css/public/global.css?v=2">
+    <link rel="stylesheet" href="/assets/css/public/home.css?v=4">
+</head>
+<body>
+    <!-- Shared Role-Aware Header -->
+    <div th:replace="~{fragments/header :: siteHeader}"></div>
+
+    <main class="pasgo-page">
+        <div class="container" style="max-width: 780px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+                <div>
+                    <span style="font-size: 0.75rem; font-weight: 800; letter-spacing: 1.5px; color: var(--primary-color);"
+                          th:text="${session.roleId == 4 ? 'CHEF ACCOUNT' : 'WAITER ACCOUNT'}">STAFF ACCOUNT</span>
+                    <h1 style="font-family: var(--font-heading); font-size: 1.85rem; color: var(--text-main);">My Staff Profile</h1>
+                </div>
+                <a th:href="${session.roleId == 4 ? '/staff/kitchen' : '/staff/tables'}" class="btn btn-outline" style="padding: 8px 16px;"
+                   th:text="${session.roleId == 4 ? '← Back to Kitchen Display' : '← Back to Floor Dashboard'}">
+                    ← Back to Dashboard
+                </a>
+            </div>
+
+            <section class="pasgo-card" th:if="${staffUser != null}">
+                <div style="display: flex; align-items: center; gap: 20px; padding-bottom: 20px; margin-bottom: 22px; border-bottom: 1px solid var(--border-color); flex-wrap: wrap;">
+                    <img th:src="${staffUser.avatarUrl != null ? staffUser.avatarUrl : 'https://res.cloudinary.com/dej5mxdrt/image/upload/v1780061324/OIP_dbbjuo.jpg'}"
+                         alt="Staff Avatar"
+                         style="width: 78px; height: 78px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary-color);">
+                    <div>
+                        <h2 style="font-family: var(--font-heading); font-size: 1.45rem; color: var(--text-main);"
+                            th:text="${staffUser.firstName + ' ' + staffUser.lastName}">Staff Name</h2>
+                        <div style="display: flex; gap: 10px; align-items: center; margin-top: 6px; flex-wrap: wrap;">
+                            <span class="table-status-badge badge-status-AVAILABLE"
+                                  th:text="'ROLE: ' + ${session.roleName != null ? session.roleName : 'STAFF'}">ROLE: STAFF</span>
+                            <span class="table-status-badge badge-status-CLEANING" th:text="'ID: #' + ${staffUser.userId}">ID: #3</span>
+                            <span class="table-status-badge badge-status-AVAILABLE" th:text="'STATUS: ' + ${staffUser.status}">STATUS: ACTIVE</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="profile-alert" style="display:none; padding: 10px 14px; border-radius: 8px; margin-bottom: 16px; font-size: 0.86rem; font-weight: 600;"></div>
+
+                <form id="staff-profile-form">
+                    <div class="pasgo-row-2" style="margin-bottom: 14px;">
+                        <div class="pasgo-field" style="margin-bottom: 0;">
+                            <label for="pf-firstName">First Name *</label>
+                            <input type="text" id="pf-firstName" class="pasgo-control" th:value="${staffUser.firstName}" required>
+                        </div>
+                        <div class="pasgo-field" style="margin-bottom: 0;">
+                            <label for="pf-lastName">Last Name *</label>
+                            <input type="text" id="pf-lastName" class="pasgo-control" th:value="${staffUser.lastName}" required>
+                        </div>
+                    </div>
+
+                    <div class="pasgo-row-2" style="margin-bottom: 14px;">
+                        <div class="pasgo-field" style="margin-bottom: 0;">
+                            <label for="pf-email">Email Address (Read-Only)</label>
+                            <input type="email" id="pf-email" class="pasgo-control" th:value="${staffUser.email}" readonly style="opacity: 0.75; cursor: not-allowed;">
+                        </div>
+                        <div class="pasgo-field" style="margin-bottom: 0;">
+                            <label for="pf-phone">Phone Number</label>
+                            <input type="tel" id="pf-phone" class="pasgo-control" th:value="${staffUser.phone}" placeholder="0901 000 003">
+                        </div>
+                    </div>
+
+                    <div class="pasgo-row-2" style="margin-bottom: 18px;">
+                        <div class="pasgo-field" style="margin-bottom: 0;">
+                            <label for="pf-gender">Gender</label>
+                            <select id="pf-gender" class="pasgo-control">
+                                <option value="MALE" th:selected="${staffUser.gender != null and staffUser.gender.name() == 'MALE'}">Male</option>
+                                <option value="FEMALE" th:selected="${staffUser.gender != null and staffUser.gender.name() == 'FEMALE'}">Female</option>
+                                <option value="OTHER" th:selected="${staffUser.gender == null or staffUser.gender.name() == 'OTHER'}">Other</option>
+                            </select>
+                        </div>
+                        <div class="pasgo-field" style="margin-bottom: 0;">
+                            <label for="pf-address">Address</label>
+                            <input type="text" id="pf-address" class="pasgo-control" th:value="${staffUser.address}" placeholder="Hoa Lac, Hanoi">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" id="btn-save-profile" style="padding: 10px 24px;">
+                        Save Profile Changes
+                    </button>
+                </form>
+            </section>
+        </div>
+    </main>
+
+    <script src="/assets/js/common/api.js"></script>
+    <script>
+        document.getElementById('staff-profile-form')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const alertBox = document.getElementById('profile-alert');
+            const btn = document.getElementById('btn-save-profile');
+            btn.disabled = true;
+            try {
+                const res = await SavoraApp.fetchApi('/api/staff/profile', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        firstName: document.getElementById('pf-firstName').value.trim(),
+                        lastName: document.getElementById('pf-lastName').value.trim(),
+                        phone: document.getElementById('pf-phone').value.trim(),
+                        gender: document.getElementById('pf-gender').value,
+                        address: document.getElementById('pf-address').value.trim()
+                    })
+                });
+                alertBox.style.background = '#e8f5e9';
+                alertBox.style.border = '1px solid #a5d6a7';
+                alertBox.style.color = '#1b5e20';
+                alertBox.textContent = res.message || 'Profile updated successfully!';
+                alertBox.style.display = 'block';
+            } catch (err) {
+                alertBox.style.background = '#fff1f0';
+                alertBox.style.border = '1px solid #ffa39e';
+                alertBox.style.color = '#cf1322';
+                alertBox.textContent = err.message;
+                alertBox.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

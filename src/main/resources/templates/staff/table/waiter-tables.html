@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Waiter Floor &amp; Order Portal — Savora Fine Dining</title>
+    <script src="/assets/js/common/theme.js"></script>
+    <link rel="stylesheet" href="/assets/css/public/global.css?v=2">
+    <link rel="stylesheet" href="/assets/css/public/home.css?v=4">
+    <link rel="stylesheet" href="/assets/css/public/qr-order.css?v=2">
+    <link rel="stylesheet" href="/assets/css/staff/waiter.css?v=1">
+</head>
+<body>
+    <!-- Shared Header -->
+    <div th:replace="~{fragments/header :: siteHeader}"></div>
+
+    <main class="waiter-page">
+        <div class="container">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 18px;">
+                <div>
+                    <span style="font-size: 0.75rem; font-weight: 800; letter-spacing: 1.5px; color: var(--primary-color);">SERVICE STAFF WORKSPACE</span>
+                    <h1 style="font-family: var(--font-heading); font-size: 1.9rem; color: var(--text-main);">Waiter Floor &amp; Table Order Management</h1>
+                </div>
+                <button type="button" class="btn btn-outline" id="btn-waiter-refresh" style="padding: 8px 16px;">
+                    🔄 Refresh Floor &amp; Kitchen Status
+                </button>
+            </div>
+
+            <!-- 1. Top KPI Summary Cards -->
+            <section class="waiter-kpis">
+                <div class="waiter-kpi">
+                    <div>
+                        <div class="waiter-kpi__label">🟢 Available</div>
+                        <div class="waiter-kpi__val" id="kpi-available" style="color: #2e7d32;">0</div>
+                    </div>
+                </div>
+                <div class="waiter-kpi">
+                    <div>
+                        <div class="waiter-kpi__label">🟡 Reserved</div>
+                        <div class="waiter-kpi__val" id="kpi-reserved" style="color: #ed6c02;">0</div>
+                    </div>
+                </div>
+                <div class="waiter-kpi">
+                    <div>
+                        <div class="waiter-kpi__label">🔴 Occupied</div>
+                        <div class="waiter-kpi__val" id="kpi-occupied" style="color: #d32f2f;">0</div>
+                    </div>
+                </div>
+                <div class="waiter-kpi">
+                    <div>
+                        <div class="waiter-kpi__label">🔵 Cleaning</div>
+                        <div class="waiter-kpi__val" id="kpi-cleaning" style="color: #0288d1;">0</div>
+                    </div>
+                </div>
+                <div class="waiter-kpi" style="border-color: #2e7d32;">
+                    <div>
+                        <div class="waiter-kpi__label">🔔 Ready to Serve</div>
+                        <div class="waiter-kpi__val" id="kpi-ready-dishes" style="color: #2e7d32;">0</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2. Main Two-Column Waiter Layout -->
+            <div class="waiter-layout">
+                <!-- LEFT COLUMN: Floor Map & Table Status Grid -->
+                <section class="waiter-floor-card">
+                    <div class="waiter-toolbar">
+                        <div class="zone-filter-pills" id="waiter-zone-pills" style="margin-bottom: 0;">
+                            <button type="button" class="zone-pill active" data-zone="ALL">All Zones</button>
+                        </div>
+
+                        <select id="waiter-status-filter" class="pasgo-control" style="width: auto; padding: 7px 14px;">
+                            <option value="ALL">All Statuses</option>
+                            <option value="AVAILABLE">🟢 AVAILABLE</option>
+                            <option value="RESERVED">🟡 RESERVED (Booked)</option>
+                            <option value="OCCUPIED">🔴 OCCUPIED (Dining)</option>
+                            <option value="CLEANING">🔵 CLEANING</option>
+                            <option value="MAINTENANCE">⚪ MAINTENANCE</option>
+                        </select>
+                    </div>
+
+                    <div class="status-legend">
+                        <span class="legend-item"><span class="legend-dot dot-available"></span> AVAILABLE (Empty)</span>
+                        <span class="legend-item"><span class="legend-dot dot-reserved"></span> RESERVED (Do Not Seat Walk-Ins)</span>
+                        <span class="legend-item"><span class="legend-dot dot-occupied"></span> OCCUPIED (Active Order)</span>
+                        <span class="legend-item"><span class="legend-dot dot-cleaning"></span> CLEANING</span>
+                        <span class="legend-item"><span class="legend-dot dot-maintenance"></span> MAINTENANCE</span>
+                    </div>
+
+                    <div class="waiter-table-grid" id="waiter-table-grid"></div>
+                </section>
+
+                <!-- RIGHT COLUMN: Selected Table Order & Dish Manager -->
+                <aside class="waiter-inspector">
+                    <div class="waiter-inspector__header">
+                        <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
+                            <h3 style="font-family: var(--font-heading); font-size: 1.35rem; color: #f3c68f;" id="insp-table-title">
+                                Select a Table
+                            </h3>
+                            <span class="table-status-badge badge-status-AVAILABLE" id="insp-table-status">AVAILABLE</span>
+                        </div>
+                        <p style="font-size: 0.8rem; color: rgba(255,255,255,0.85); margin-top: 4px;" id="insp-table-meta">
+                            Click any table card on the left to inspect orders, add dishes, or remove pending items
+                        </p>
+                    </div>
+
+                    <div class="waiter-inspector__body">
+                        <div id="waiter-alert" style="display:none; padding: 9px 12px; border-radius: 8px; background: #fff1f0; border: 1px solid #ffa39e; color: #cf1322; font-size: 0.8rem; margin-bottom: 12px; font-weight: 600;"></div>
+
+                        <!-- Operational Table Status Quick Buttons -->
+                        <div class="waiter-status-actions" id="insp-status-actions"></div>
+
+                        <!-- Linked Online Reservation Info (if any) -->
+                        <div id="insp-reservation-box" class="w-res-box" style="display: none; margin-bottom: 14px;"></div>
+
+                        <!-- Section A: Add Dish for Guest (Waiter Quick Order Form) -->
+                        <div class="waiter-add-dish-box">
+                            <h4 style="font-size: 0.88rem; font-weight: 800; margin-bottom: 8px; color: var(--text-main);">
+                                ➕ Add Dish for Guest
+                            </h4>
+                            <div class="pasgo-field" style="margin-bottom: 8px;">
+                                <select id="waiter-dish-select" class="pasgo-control"></select>
+                            </div>
+                            <div class="pasgo-row-2" style="margin-bottom: 8px;">
+                                <div>
+                                    <input type="number" id="waiter-dish-qty" class="pasgo-control" value="1" min="1" max="20" placeholder="Qty">
+                                </div>
+                                <div>
+                                    <input type="text" id="waiter-dish-note" class="pasgo-control" placeholder="Note (e.g. less spicy)...">
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-primary" id="btn-waiter-add-dish" style="width: 100%; padding: 8px 14px; font-size: 0.84rem;">
+                                + Add Dish to Table Order
+                            </button>
+                        </div>
+
+                        <!-- Section B: Ordered Dishes List & Pending Removal / Serve Actions -->
+                        <div style="margin-top: 16px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                <h4 style="font-size: 0.9rem; font-weight: 800; color: var(--text-main);">
+                                    📋 Table Ordered Dishes (<span id="insp-item-count">0</span>)
+                                </h4>
+                                <span style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted);" id="insp-order-code"></span>
+                            </div>
+
+                            <div id="insp-items-list"></div>
+
+                            <div class="qr-bill-summary" id="insp-bill-summary" style="margin-top: 12px;"></div>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+        </div>
+    </main>
+
+    <!-- Toast Notification -->
+    <div id="home-toast" class="toast-notification"></div>
+
+    <!-- Shared Footer -->
+    <div th:replace="~{fragments/footer :: siteFooter}"></div>
+
+    <script src="/assets/js/common/api.js"></script>
+    <script src="/assets/js/staff/waiter.js?v=2"></script>
+</body>
+</html>

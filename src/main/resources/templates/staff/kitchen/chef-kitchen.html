@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chef Kitchen Display System (KDS) — Savora Fine Dining</title>
+    <script src="/assets/js/common/theme.js"></script>
+    <link rel="stylesheet" href="/assets/css/public/global.css?v=2">
+    <link rel="stylesheet" href="/assets/css/public/home.css?v=4">
+    <link rel="stylesheet" href="/assets/css/staff/chef.css?v=1">
+</head>
+<body>
+<div th:replace="~{fragments/header :: siteHeader}"></div>
+
+<main class="container chef-main">
+    <!-- Top Kitchen Header -->
+    <section class="chef-top-banner">
+        <div>
+            <span class="chef-banner-tag">👨‍🍳 EXECUTIVE KITCHEN DISPLAY SYSTEM (KDS)</span>
+            <h1>Live Culinary Queue &amp; Dish Preparation</h1>
+            <p>Incoming orders from table QR codes and Waiter staff appear here in real time. Start cooking and mark dishes READY to alert Waiters.</p>
+        </div>
+        <div class="chef-top-controls">
+            <button type="button" class="btn btn-outline btn-sm" id="btnRefreshKitchen" style="background:rgba(255,255,255,0.12);color:#fff;border-color:rgba(255,255,255,0.28);">
+                🔄 Refresh Queue
+            </button>
+        </div>
+    </section>
+
+    <!-- 4 Kitchen KPI Cards -->
+    <section class="chef-kpi-row">
+        <div class="chef-kpi-card kpi-pending">
+            <span>⏳ 1. Pending to Cook</span>
+            <strong id="kpiChefPending">0</strong>
+        </div>
+        <div class="chef-kpi-card kpi-cooking">
+            <span>🔥 2. Currently Cooking</span>
+            <strong id="kpiChefCooking">0</strong>
+        </div>
+        <div class="chef-kpi-card kpi-ready">
+            <span>🔔 3. Ready for Waiter</span>
+            <strong id="kpiChefReady">0</strong>
+        </div>
+        <div class="chef-kpi-card kpi-served">
+            <span>✓ 4. Served Today</span>
+            <strong id="kpiChefServed">0</strong>
+        </div>
+    </section>
+
+    <!-- Table Filter Pills -->
+    <section class="chef-filter-bar">
+        <div class="chef-table-pills" id="chefTableFilterPills">
+            <button type="button" class="chef-pill active" data-table="ALL">All Active Tables</button>
+        </div>
+        <div style="font-size:0.78rem;color:var(--text-muted);font-weight:700;">
+            Auto-syncing every 6 seconds • Workflow: <strong>PENDING → COOKING → READY (Waiter Serves)</strong>
+        </div>
+    </section>
+
+    <div id="chefActionAlert" class="alert" style="display:none;margin-bottom:16px;"></div>
+
+    <!-- 3-Column Kitchen Kanban Board -->
+    <section class="chef-board-grid">
+        <!-- Column 1: PENDING -->
+        <div class="chef-column col-pending">
+            <div class="chef-col-header">
+                <h2>⏳ 1. PENDING — New Orders</h2>
+                <span class="chef-col-badge" id="badgePendingCount">0</span>
+            </div>
+            <div class="chef-col-body" id="colPendingList">
+                <div class="chef-empty-col">Loading incoming dish tickets...</div>
+            </div>
+        </div>
+
+        <!-- Column 2: COOKING -->
+        <div class="chef-column col-cooking">
+            <div class="chef-col-header">
+                <h2>🔥 2. COOKING — On the Stove</h2>
+                <span class="chef-col-badge" id="badgeCookingCount">0</span>
+            </div>
+            <div class="chef-col-body" id="colCookingList">
+                <div class="chef-empty-col">No dishes currently cooking.</div>
+            </div>
+        </div>
+
+        <!-- Column 3: READY -->
+        <div class="chef-column col-ready">
+            <div class="chef-col-header">
+                <h2>🔔 3. READY — Awaiting Waiter Pickup</h2>
+                <span class="chef-col-badge" id="badgeReadyCount">0</span>
+            </div>
+            <div class="chef-col-body" id="colReadyList">
+                <div class="chef-empty-col">No dishes waiting at pass window.</div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<div th:replace="~{fragments/footer :: siteFooter}"></div>
+
+<script src="/assets/js/common/api.js"></script>
+<script src="/assets/js/staff/chef.js?v=1"></script>
+</body>
+</html>
