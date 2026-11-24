@@ -1,13 +1,29 @@
 package vn.edu.fpt.savora.mapper;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import vn.edu.fpt.savora.entity.User;
+
+import org.springframework.stereotype.Component;
 import vn.edu.fpt.savora.dto.response.AuthUserResponse;
-@Mapper(componentModel = "spring")
-public interface AuthUserMapper {
-    @Mapping(
-            target = "fullName",
-            expression = "java((user.getFirstName() + \" \" + user.getLastName()).trim())"
-    )
-    AuthUserResponse toResponse(User user);
+import vn.edu.fpt.savora.entity.User;
+
+@Component
+public class AuthUserMapper {
+
+    public AuthUserResponse toResponse(User user) {
+        if (user == null) {
+            return null;
+        }
+        String first = user.getFirstName() != null ? user.getFirstName().replace("Khách hàng", "").trim() : "";
+        String last = user.getLastName() != null ? user.getLastName().trim() : "";
+        String fullName = (first + " " + last).trim();
+        if (fullName.isEmpty()) {
+            fullName = user.getEmail();
+        }
+
+        return AuthUserResponse.builder()
+                .userId(user.getUserId())
+                .fullName(fullName)
+                .email(user.getEmail())
+                .phone(user.getPhone())
+                .avatarUrl(user.getAvatarUrl())
+                .build();
+    }
 }

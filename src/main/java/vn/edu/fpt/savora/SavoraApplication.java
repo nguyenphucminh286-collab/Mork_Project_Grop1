@@ -18,7 +18,7 @@ public class SavoraApplication {
     public static void main(String[] args) {
         ConfigurableApplicationContext context = SpringApplication.run(SavoraApplication.class, args);
         Environment env = context.getEnvironment();
-        String port = env.getProperty("server.port", "8083");
+        String port = env.getProperty("server.port", "8080");
         System.out.println("===============================================================");
         System.out.println("  SAVORA RESTAURANT SYSTEM IS RUNNING AT: http://localhost:" + port);
         System.out.println("===============================================================");
