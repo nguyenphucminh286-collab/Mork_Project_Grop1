@@ -1,46 +1,62 @@
 <div th:fragment="siteHeader">
-<!-- Reusable Header Component -->
-<div class="topbar">
+<!-- Customer Topbar (Hidden for Staff/Chef/Admin internal portals) -->
+<div class="topbar" th:if="${session.roleId == null or session.roleId == 2}">
     <div class="container topbar__inner">
         <span>✦ SAVORA FINE DINING &amp; LOUNGE — Hoa Lac Hi-Tech Park, Hanoi</span>
-        <span>Concierge: <strong>1900 6868</strong> &nbsp;|&nbsp; Open Daily: <strong>10:00 AM – 10:30 PM</strong></span>
+        <span>Reservation Hotline: <strong>1900 6868</strong> &nbsp;|&nbsp; Open Daily: <strong>10:00 AM – 10:30 PM</strong></span>
     </div>
 </div>
+
 <header class="header">
     <div class="container header__inner">
-        <a href="/home" class="header__logo">
-            <img class="header__logo-mark" src="/assets/images/savora-logo.png" width="42" height="42" alt="">
+        <!-- Logo -->
+        <a th:href="${session.roleId == 3 ? '/staff/tables' : (session.roleId == 4 ? '/staff/kitchen' : '/home')}" class="header__logo">
+            <img class="header__logo-mark" src="/assets/images/savora-logo.png" width="42" height="42" alt="Savora">
             <span class="header__logo-text">
                 SAVORA
-                <small>FINE DINING</small>
+                <small th:text="${session.roleId == 3 ? 'WAITER PORTAL' : (session.roleId == 4 ? 'CHEF KITCHEN' : 'FINE DINING')}">FINE DINING</small>
             </span>
         </a>
 
-        <nav class="header__nav">
+        <!-- Customer Navigation Links (Only shown for Guests / Customers, completely hidden for Waiter & Chef) -->
+        <nav class="header__nav" th:if="${session.roleId == null or session.roleId == 2}">
             <ul>
                 <li><a href="/home">Home</a></li>
+                <li><a href="/home#deals">Deals</a></li>
+                <li><a href="/home#tables-section">Floor Map</a></li>
                 <li><a href="/home#menu">Menu</a></li>
-                <li><a href="/home#reservation">Reservations</a></li>
-                <li><a href="/home#about">About Us</a></li>
                 <li><a href="/contact">Contact</a></li>
             </ul>
         </nav>
 
+        <!-- Right Actions -->
         <div class="header__actions">
             <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Dark mode" aria-pressed="false">
                 <span class="theme-toggle__moon" aria-hidden="true">☾</span>
                 <span class="theme-toggle__sun" aria-hidden="true">☀</span>
             </button>
+
             <div class="header__actions" id="header-auth-area">
-                <a th:if="${session.userId == null}" href="/login" class="btn btn-outline" style="padding: 9px 18px;">Sign In</a>
-                <a th:if="${session.userId == null}" href="/register" class="btn btn-primary" style="padding: 9px 18px;">Sign Up</a>
-              <span th:if="${session.userId != null}" th:text="${session.fullName}">User</span>
-              <form th:if="${session.userId != null}" th:action="@{/logout}" method="post">
-                <button type="submit" class="btn btn-outline">Sign Out</button>
-              </form>
+                <!-- Unauthenticated -->
+                <a th:if="${session.userId == null}" href="/login" class="btn btn-outline" style="padding: 9px 18px; white-space: nowrap;">Sign In</a>
+                <a th:if="${session.userId == null}" href="/register" class="btn btn-primary" style="padding: 9px 18px; white-space: nowrap;">Sign Up</a>
+
+                <!-- Waiter (roleId == 3) or Chef (roleId == 4): Only Profile button & Sign Out -->
+                <a th:if="${session.userId != null and (session.roleId == 3 or session.roleId == 4)}" href="/staff/profile" class="btn btn-primary" style="padding: 8px 14px; font-size: 0.84rem; white-space: nowrap;">
+                    👤 Profile
+                </a>
+
+                <!-- Customer (roleId == 2): My Bookings -->
+                <a th:if="${session.userId != null and session.roleId == 2}" href="/customer/reservations" class="btn btn-primary" style="padding: 8px 14px; font-size: 0.84rem; white-space: nowrap;">
+                    📅 My Bookings
+                </a>
+
+                <span th:if="${session.userId != null}" style="font-size: 0.88rem; font-weight: 600; white-space: nowrap;" th:text="${session.fullName}">User</span>
+                <form th:if="${session.userId != null}" th:action="@{/logout}" method="post" style="display:inline;">
+                    <button type="submit" class="btn btn-outline" style="padding: 8px 14px; white-space: nowrap;">Sign Out</button>
+                </form>
             </div>
         </div>
     </div>
 </header>
-
 </div>

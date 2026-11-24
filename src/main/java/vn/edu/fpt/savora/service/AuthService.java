@@ -186,7 +186,13 @@ public class AuthService {
         AuthUserResponse result = authUserMapper.toResponse(user);
         result.setRoleId(primaryRole.getRoleId());
         result.setRoleName(primaryRole.getRoleName());
-        result.setRedirectUrl("/home");
+        String redirect = "/home";
+        if ("STAFF".equalsIgnoreCase(primaryRole.getRoleName()) || Integer.valueOf(3).equals(primaryRole.getRoleId())) {
+            redirect = "/staff/tables";
+        } else if ("CHEF".equalsIgnoreCase(primaryRole.getRoleName()) || Integer.valueOf(4).equals(primaryRole.getRoleId())) {
+            redirect = "/staff/kitchen";
+        }
+        result.setRedirectUrl(redirect);
         return result;
     }
 }
