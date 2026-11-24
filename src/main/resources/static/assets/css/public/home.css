@@ -1,462 +1,307 @@
-/* ===== SAVORA FINE DINING - HOME PAGE STYLES (assets/css/public/home.css) ===== */
+/* ===== SAVORA PASGO-STYLE RESERVATION & HOME PAGE STYLES (assets/css/public/home.css) ===== */
 
-/* ===== 1. Active Session Welcome Ribbon ===== */
-.session-banner {
-    background: linear-gradient(90deg, #1f1915 0%, #2e231c 50%, #1f1915 100%);
-    border-bottom: 1px solid rgba(212, 163, 115, 0.3);
-    color: #f8efe4;
-    padding: 12px 0;
+.pasgo-page {
+    padding: 24px 0 72px;
 }
 
-.session-banner__inner {
+/* ===== 1. PasGo Top Restaurant Header & 5-Photo Mosaic Gallery ===== */
+.pasgo-breadcrumb {
+    font-size: 0.84rem;
+    color: var(--text-muted);
+    margin-bottom: 12px;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 14px;
-}
-
-.session-user {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-}
-
-.session-user__avatar {
-    width: 42px;
-    height: 42px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid #f3c68f;
-}
-
-.session-user__info {
-    display: flex;
-    flex-direction: column;
-    font-size: 0.86rem;
-}
-
-.session-user__info strong {
-    color: #ffffff;
-    font-size: 0.95rem;
-}
-
-.session-user__info span {
-    color: #cbbba8;
-    font-size: 0.78rem;
-}
-
-.session-badges {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.role-pill {
-    padding: 5px 12px;
-    border-radius: 999px;
-    background: rgba(243, 198, 143, 0.18);
-    border: 1px solid rgba(243, 198, 143, 0.5);
-    color: #f3c68f;
-    font-size: 0.75rem;
-    font-weight: 700;
-    letter-spacing: 0.8px;
-}
-
-/* ===== 2. Hero Section ===== */
-.hero {
-    position: relative;
-    min-height: 580px;
-    display: flex;
-    align-items: center;
-    color: #ffffff;
-    background-color: #16120e;
-    background-image:
-        linear-gradient(110deg, rgba(16, 12, 9, 0.88) 0%, rgba(24, 18, 13, 0.76) 55%, rgba(16, 12, 9, 0.62) 100%),
-        url('https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=1800&q=85');
-    background-size: cover;
-    background-position: center;
-    padding: 80px 0 110px;
-}
-
-.hero__content {
-    max-width: 680px;
-}
-
-.hero__eyebrow {
-    display: inline-flex;
     align-items: center;
     gap: 8px;
-    padding: 7px 16px;
-    border-radius: 999px;
-    background: rgba(212, 163, 115, 0.2);
-    border: 1px solid rgba(243, 198, 143, 0.45);
-    color: #f3c68f;
-    font-size: 0.76rem;
-    font-weight: 700;
-    letter-spacing: 1.5px;
-    margin-bottom: 22px;
-}
-
-.hero__title {
-    font-family: var(--font-heading);
-    font-size: 3.35rem;
-    line-height: 1.15;
-    font-weight: 700;
-    margin-bottom: 20px;
-    color: #ffffff;
-}
-
-.hero__title em {
-    color: #f3c68f;
-    font-style: italic;
-}
-
-.hero__subtitle {
-    font-size: 1.05rem;
-    color: rgba(255, 255, 255, 0.84);
-    line-height: 1.75;
-    margin-bottom: 34px;
-}
-
-.hero__actions {
-    display: flex;
     flex-wrap: wrap;
-    gap: 16px;
 }
 
-.btn-hero-secondary {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(8px);
-    color: #ffffff;
-    border: 1.5px solid rgba(255, 255, 255, 0.35);
-    padding: 13px 26px;
-    border-radius: 10px;
-    font-weight: 600;
+.pasgo-breadcrumb strong {
+    color: var(--text-main);
 }
 
-.btn-hero-secondary:hover {
-    background: rgba(255, 255, 255, 0.2);
-    border-color: #f3c68f;
-    color: #f3c68f;
+.pasgo-breadcrumb a:hover {
+    color: var(--primary-color);
 }
 
-/* ===== 3. Floating Stats Strip ===== */
-.stats-strip {
-    margin-top: -54px;
-    position: relative;
-    z-index: 10;
-    margin-bottom: 64px;
-}
-
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
+.pasgo-hero-card {
     background: var(--bg-white);
+    color: var(--text-main);
     border-radius: 18px;
-    padding: 28px 24px;
-    box-shadow: var(--shadow-lg);
-    border: 1px solid rgba(212, 163, 115, 0.28);
+    padding: 24px;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 26px;
+}
+
+.pasgo-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
     gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
 }
 
-.stat-item {
-    text-align: center;
-    border-right: 1px solid var(--border-color);
-    padding: 0 12px;
-}
-
-.stat-item:last-child {
-    border-right: none;
-}
-
-.stat-item__number {
+.pasgo-restaurant-title {
     font-family: var(--font-heading);
-    font-size: 2.1rem;
-    font-weight: 700;
-    color: var(--primary-color);
-    line-height: 1.1;
-    margin-bottom: 6px;
-}
-
-.stat-item__label {
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--text-muted);
-}
-
-/* ===== 4. Section Layout ===== */
-.home-section {
-    padding: 56px 0;
-}
-
-.section-heading {
-    text-align: center;
-    max-width: 640px;
-    margin: 0 auto 38px;
-}
-
-.section-heading__eyebrow {
-    display: inline-block;
-    font-size: 0.75rem;
-    font-weight: 700;
-    letter-spacing: 2.2px;
-    text-transform: uppercase;
-    color: var(--primary-color);
+    font-size: 2rem;
+    color: var(--text-main);
     margin-bottom: 8px;
 }
 
-.section-heading__title {
-    font-family: var(--font-heading);
-    font-size: 2.3rem;
-    color: var(--text-main);
-    margin-bottom: 10px;
-}
-
-.section-heading__desc {
+.pasgo-meta-tags {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.86rem;
     color: var(--text-muted);
-    font-size: 0.95rem;
 }
 
-/* ===== 5. Menu Filter Toolbar & Dish Cards ===== */
-.menu-toolbar {
+.pasgo-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 999px;
+    background: var(--subtle-surface);
+    border: 1px solid var(--border-color);
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+.pasgo-tag--deal {
+    background: #fff1f0;
+    border-color: #ffa39e;
+    color: #cf1322 !important;
+}
+
+.pasgo-tag--open {
+    background: #e8f5e9;
+    border-color: #a5d6a7;
+    color: #1b5e20 !important;
+}
+
+.pasgo-gallery {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr 1fr;
+    grid-template-rows: 175px 175px;
+    gap: 10px;
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+.pasgo-gallery__main {
+    grid-row: 1 / 3;
+    position: relative;
+    overflow: hidden;
+}
+
+.pasgo-gallery__item {
+    position: relative;
+    overflow: hidden;
+}
+
+.pasgo-gallery img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+}
+
+.pasgo-gallery div:hover img {
+    transform: scale(1.05);
+}
+
+.pasgo-gallery__caption {
+    position: absolute;
+    bottom: 12px;
+    left: 12px;
+    padding: 5px 12px;
+    border-radius: 999px;
+    background: rgba(24, 21, 18, 0.82);
+    color: #f3c68f;
+    font-size: 0.74rem;
+    font-weight: 700;
+}
+
+/* ===== 2. Two-Column PasGo Layout (Left Content + Right Sticky Booking Widget) ===== */
+.pasgo-layout {
+    display: grid;
+    grid-template-columns: 1fr 415px;
+    gap: 26px;
+    align-items: start;
+}
+
+/* Sticky Sub-nav Tabs */
+.pasgo-subnav {
+    display: flex;
+    gap: 8px;
+    background: var(--bg-white);
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    margin-bottom: 22px;
+    position: sticky;
+    top: 86px;
+    z-index: 90;
+    box-shadow: var(--shadow-sm);
+    overflow-x: auto;
+}
+
+.pasgo-subnav a {
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--text-main);
+    background: var(--subtle-surface);
+    border: 1px solid var(--border-color);
+    white-space: nowrap;
+}
+
+.pasgo-subnav a:hover,
+.pasgo-subnav a.active {
+    background: #d32f2f;
+    border-color: #d32f2f;
+    color: #ffffff !important;
+}
+
+.pasgo-card {
+    background: var(--bg-white);
+    color: var(--text-main);
+    border-radius: 16px;
+    padding: 26px;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 24px;
+}
+
+.pasgo-card__header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
-    gap: 16px;
-    margin-bottom: 30px;
+    gap: 10px;
+    padding-bottom: 14px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid var(--border-color);
 }
 
-.category-tabs {
+.pasgo-card__title {
+    font-family: var(--font-heading);
+    font-size: 1.45rem;
+    color: var(--text-main);
     display: flex;
-    flex-wrap: wrap;
+    align-items: center;
     gap: 10px;
 }
 
-.category-tab {
-    padding: 9px 18px;
+.pasgo-card__subtitle {
+    font-size: 0.86rem;
+    color: var(--text-muted);
+}
+
+/* ===== 3. PasGo Deals / Vouchers Table ===== */
+.pasgo-deals-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.pasgo-deal-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 20px;
+    border-radius: 12px;
+    border: 1.5px solid var(--border-color);
+    background: var(--subtle-surface);
+    color: var(--text-main);
+    transition: all 0.2s ease;
+}
+
+.pasgo-deal-item.selected {
+    border-color: #d32f2f;
+    background: rgba(211, 47, 47, 0.08);
+    box-shadow: 0 6px 18px rgba(211, 47, 47, 0.12);
+}
+
+.pasgo-deal-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 6px;
+    background: #d32f2f;
+    color: #ffffff !important;
+    font-size: 0.74rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+
+.pasgo-deal-title {
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--text-main);
+    margin-bottom: 4px;
+}
+
+.pasgo-deal-desc {
+    font-size: 0.84rem;
+    color: var(--text-muted);
+}
+
+/* ===== 4. Live Floor Map & Table Selection ===== */
+.zone-filter-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.zone-pill {
+    padding: 8px 16px;
     border-radius: 999px;
     border: 1.5px solid var(--border-color);
-    background: var(--bg-white);
+    background: var(--input-surface);
     color: var(--text-main);
-    font-size: 0.86rem;
-    font-weight: 600;
+    font-size: 0.84rem;
+    font-weight: 700;
     cursor: pointer;
     transition: all 0.2s ease;
 }
 
-.category-tab:hover,
-.category-tab.active {
-    background: var(--brand-fill);
-    border-color: var(--primary-color);
-    color: #ffffff;
-    box-shadow: 0 6px 16px rgba(184, 92, 56, 0.24);
-}
-
-.menu-search-box {
-    position: relative;
-    min-width: 260px;
-}
-
-.menu-search-box input {
-    width: 100%;
-    padding: 10px 16px;
-    border-radius: 999px;
-    border: 1.5px solid var(--border-color);
-    background: var(--bg-white);
-    font-size: 0.88rem;
-    font-family: inherit;
-}
-
-.menu-search-box input:focus {
-    outline: none;
-    border-color: var(--primary-color);
-}
-
-.dish-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 26px;
-}
-
-.menu-card {
-    background: var(--bg-white);
-    border-radius: 16px;
-    overflow: hidden;
-    border: 1px solid var(--border-color);
-    box-shadow: var(--shadow-sm);
-    display: flex;
-    flex-direction: column;
-    transition: all 0.28s ease;
-}
-
-.menu-card:hover {
-    transform: translateY(-6px);
-    box-shadow: var(--shadow-lg);
-}
-
-.menu-card__media {
-    position: relative;
-    height: 220px;
-    overflow: hidden;
-}
-
-.menu-card__img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.45s ease;
-}
-
-.menu-card:hover .menu-card__img {
-    transform: scale(1.06);
-}
-
-.menu-card__badge {
-    position: absolute;
-    top: 14px;
-    left: 14px;
-    padding: 5px 12px;
-    border-radius: 999px;
-    background: rgba(24, 21, 18, 0.82);
-    backdrop-filter: blur(6px);
-    color: #f3c68f;
-    font-size: 0.72rem;
-    font-weight: 700;
-    letter-spacing: 0.6px;
-}
-
-.menu-card__time {
-    position: absolute;
-    bottom: 12px;
-    right: 12px;
-    padding: 4px 10px;
-    border-radius: 999px;
-    background: var(--translucent-surface);
-    color: var(--text-main);
-    font-size: 0.74rem;
-    font-weight: 600;
-}
-
-.menu-card__body {
-    padding: 22px;
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-}
-
-.menu-card__cat {
-    font-size: 0.74rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: var(--primary-color);
-    margin-bottom: 6px;
-}
-
-.menu-card__title {
-    font-family: var(--font-heading);
-    font-size: 1.25rem;
-    color: var(--text-main);
-    margin-bottom: 8px;
-}
-
-.menu-card__desc {
-    font-size: 0.88rem;
-    color: var(--text-muted);
-    margin-bottom: 18px;
-    flex: 1;
-}
-
-.menu-card__footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-top: 14px;
-    border-top: 1px solid var(--border-color);
-}
-
-.menu-card__price-group {
-    display: flex;
-    align-items: baseline;
-    gap: 8px;
-}
-
-.menu-card__price {
-    font-size: 1.15rem;
-    font-weight: 700;
-    color: var(--primary-color);
-}
-
-.menu-card__old-price {
-    font-size: 0.84rem;
-    color: #9e9489;
-    text-decoration: line-through;
-}
-
-/* ===== 6. Live Dining Table Availability Section ===== */
-.reservation-panel {
-    background: var(--bg-white);
-    border-radius: 22px;
-    padding: 36px;
-    border: 1px solid rgba(212, 163, 115, 0.35);
-    box-shadow: var(--shadow-lg);
-}
-
-.table-filter-bar {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
-    padding: 20px;
-    background: var(--bg-cream);
-    border-radius: 14px;
-    border: 1px solid var(--border-color);
-    margin-bottom: 24px;
-}
-
-.filter-field label {
-    display: block;
-    font-size: 0.78rem;
-    font-weight: 700;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.6px;
-    margin-bottom: 6px;
-}
-
-.filter-field select,
-.filter-field input {
-    width: 100%;
-    padding: 10px 12px;
-    border-radius: 9px;
-    border: 1.5px solid var(--border-color);
-    background: var(--bg-white);
-    font-family: inherit;
-    font-size: 0.9rem;
-    color: var(--text-main);
+.zone-pill.active,
+.zone-pill:hover {
+    background: #d32f2f;
+    border-color: #d32f2f;
+    color: #ffffff !important;
 }
 
 .status-legend {
     display: flex;
     flex-wrap: wrap;
-    gap: 18px;
-    margin-bottom: 24px;
-    padding-bottom: 16px;
-    border-bottom: 1px solid var(--border-color);
-    font-size: 0.83rem;
+    gap: 14px;
+    margin-bottom: 18px;
+    padding: 12px 16px;
+    background: var(--subtle-surface);
+    color: var(--text-main);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    font-size: 0.8rem;
     font-weight: 600;
 }
 
 .legend-item {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
+    color: var(--text-main);
 }
 
 .legend-dot {
-    width: 11px;
-    height: 11px;
+    width: 10px;
+    height: 10px;
     border-radius: 50%;
 }
 
@@ -468,50 +313,43 @@
 
 .table-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(245px, 1fr));
-    gap: 18px;
+    grid-template-columns: repeat(auto-fill, minmax(215px, 1fr));
+    gap: 14px;
 }
 
 .table-card {
-    border-radius: 14px;
-    padding: 20px;
+    border-radius: 12px;
+    padding: 16px;
     border: 1.5px solid var(--border-color);
-    background: var(--bg-white);
-    transition: all 0.22s ease;
+    background: var(--input-surface);
+    color: var(--text-main);
+    transition: all 0.2s ease;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    gap: 12px;
+    gap: 10px;
 }
 
-.table-card.status-AVAILABLE {
-    border-color: rgba(46, 125, 50, 0.35);
-    background: linear-gradient(180deg, #ffffff 0%, #f4fbf5 100%);
+.table-card.bookable {
+    border-color: rgba(46, 125, 50, 0.55);
+    background: var(--subtle-surface);
+    cursor: pointer;
 }
 
-.table-card.status-RESERVED {
-    border-color: rgba(237, 108, 2, 0.35);
-    background: linear-gradient(180deg, #ffffff 0%, #fffaf2 100%);
+.table-card.bookable:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(46, 125, 50, 0.18);
 }
 
-.table-card.status-OCCUPIED {
-    border-color: rgba(211, 47, 47, 0.35);
-    background: linear-gradient(180deg, #ffffff 0%, #fff5f5 100%);
+.table-card.selected-table {
+    border: 2px solid #d32f2f !important;
+    background: rgba(211, 47, 47, 0.1) !important;
+    box-shadow: 0 8px 22px rgba(211, 47, 47, 0.22);
 }
 
-.table-card.status-CLEANING {
-    border-color: rgba(2, 136, 209, 0.35);
-    background: linear-gradient(180deg, #ffffff 0%, #f2faff 100%);
-}
-
-.table-card.status-MAINTENANCE {
-    border-color: rgba(117, 117, 117, 0.35);
-    background: #f5f5f5;
-    opacity: 0.85;
-}
-
-[data-theme="dark"] .table-card {
-    background: var(--bg-white);
+.table-card.unbookable {
+    background: var(--input-surface);
+    opacity: 0.72;
 }
 
 .table-card__top {
@@ -522,148 +360,422 @@
 
 .table-card__code {
     font-weight: 700;
-    font-size: 0.82rem;
-    padding: 4px 10px;
+    font-size: 0.78rem;
+    padding: 3px 9px;
     border-radius: 6px;
-    background: var(--subtle-surface);
+    background: var(--border-color);
     color: var(--text-main);
 }
 
 .table-status-badge {
-    padding: 4px 10px;
+    padding: 3px 9px;
     border-radius: 999px;
-    font-size: 0.72rem;
+    font-size: 0.69rem;
     font-weight: 700;
-    letter-spacing: 0.5px;
 }
 
-.badge-status-AVAILABLE { background: #e8f5e9; color: #2e7d32; }
-.badge-status-RESERVED { background: #fff3e0; color: #ef6c00; }
-.badge-status-OCCUPIED { background: #ffebee; color: #c62828; }
-.badge-status-CLEANING { background: #e1f5fe; color: #0277bd; }
-.badge-status-MAINTENANCE { background: #eeeeee; color: #616161; }
+.badge-status-AVAILABLE { background: #e8f5e9; color: #1b5e20 !important; }
+.badge-status-RESERVED { background: #fff3e0; color: #e65100 !important; }
+.badge-status-OCCUPIED { background: #ffebee; color: #b71c1c !important; }
+.badge-status-CLEANING { background: #e1f5fe; color: #01579b !important; }
+.badge-status-MAINTENANCE { background: #e0e0e0; color: #424242 !important; }
 
 .table-card__name {
     font-family: var(--font-heading);
-    font-size: 1.15rem;
+    font-size: 1.05rem;
     color: var(--text-main);
 }
 
 .table-card__meta {
     display: flex;
-    gap: 14px;
-    font-size: 0.83rem;
-    color: var(--text-muted);
-    font-weight: 500;
-}
-
-.table-card__note {
+    justify-content: space-between;
     font-size: 0.8rem;
     color: var(--text-muted);
-    font-style: italic;
+    font-weight: 600;
 }
 
-/* ===== 7. About & Vouchers Section ===== */
-.about-grid {
-    display: grid;
-    grid-template-columns: 1fr 1.05fr;
-    gap: 44px;
-    align-items: center;
+.table-card__reason {
+    font-size: 0.78rem;
+    color: #ef5350;
+    font-weight: 600;
 }
 
-.about-img-card {
-    position: relative;
-    border-radius: 20px;
-    overflow: hidden;
-    box-shadow: var(--shadow-lg);
+/* ===== 5. Right Column — Sticky PasGo Booking Box ===== */
+.pasgo-booking-sidebar {
+    position: sticky;
+    top: 86px;
 }
 
-.about-img-card img {
-    width: 100%;
-    height: 440px;
-    object-fit: cover;
-}
-
-.about-features {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 18px;
-    margin-top: 24px;
-}
-
-.about-feature-box {
-    padding: 16px;
+.pasgo-widget {
     background: var(--bg-white);
-    border-radius: 12px;
-    border: 1px solid var(--border-color);
-}
-
-.about-feature-box strong {
-    display: block;
     color: var(--text-main);
-    margin-bottom: 4px;
-    font-size: 0.94rem;
-}
-
-.about-feature-box span {
-    font-size: 0.83rem;
-    color: var(--text-muted);
-}
-
-.voucher-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 24px;
-}
-
-.voucher-card {
-    background: linear-gradient(135deg, #211b16 0%, #33261d 100%);
-    color: #ffffff;
     border-radius: 16px;
-    padding: 26px 28px;
+    overflow: hidden;
+    border: 2px solid #d32f2f;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.22);
+    max-height: calc(100vh - 96px);
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 20px;
-    border: 1px solid rgba(243, 198, 143, 0.35);
-    box-shadow: var(--shadow-sm);
+    flex-direction: column;
 }
 
-.voucher-card__tag {
-    display: inline-block;
-    color: #f3c68f;
-    font-size: 0.74rem;
-    font-weight: 700;
-    letter-spacing: 1.5px;
-    margin-bottom: 6px;
-}
-
-.voucher-card__title {
-    font-family: var(--font-heading);
-    font-size: 1.4rem;
-    margin-bottom: 6px;
-}
-
-.voucher-card__desc {
-    font-size: 0.85rem;
-    color: #cfc4b6;
-}
-
-.voucher-card__code-box {
+.pasgo-widget__header {
+    background: linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%);
+    color: #ffffff !important;
+    padding: 12px 16px;
     text-align: center;
     flex-shrink: 0;
 }
 
-.voucher-code {
+.pasgo-widget__header h3 {
+    font-family: var(--font-heading);
+    font-size: 1.2rem;
+    margin-bottom: 2px;
+    color: #ffffff !important;
+}
+
+.pasgo-widget__header p {
+    font-size: 0.76rem;
+    color: rgba(255, 255, 255, 0.92) !important;
+}
+
+.pasgo-widget__body {
+    padding: 14px 16px;
+    background: var(--bg-white);
+    color: var(--text-main);
+    overflow-y: auto;
+}
+
+.pasgo-row-3 {
+    display: grid;
+    grid-template-columns: 0.85fr 0.95fr 1.2fr;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.pasgo-row-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.pasgo-field {
+    margin-bottom: 10px;
+}
+
+.pasgo-field label {
     display: block;
-    padding: 8px 16px;
-    border-radius: 8px;
-    background: rgba(243, 198, 143, 0.16);
-    border: 1px dashed #f3c68f;
-    color: #f3c68f;
+    font-size: 0.76rem;
     font-weight: 700;
-    letter-spacing: 1.5px;
-    margin-bottom: 8px;
+    color: var(--text-main);
+    margin-bottom: 4px;
+}
+
+.pasgo-control {
+    width: 100%;
+    padding: 7px 9px;
+    border-radius: 7px;
+    border: 1.5px solid var(--border-color);
+    font-family: inherit;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--text-main);
+    background-color: var(--input-surface);
+}
+
+.pasgo-control option {
+    background-color: var(--bg-white);
+    color: var(--text-main);
+}
+
+.pasgo-control::placeholder {
+    color: var(--text-muted);
+    opacity: 0.8;
+}
+
+.pasgo-control:focus {
+    outline: none;
+    border-color: #d32f2f;
+    box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.15);
+}
+
+/* PasGo Time Slot Grid (6 Columns Compact) */
+.timeslot-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 4px;
+    margin-top: 4px;
+}
+
+.timeslot-btn {
+    padding: 4px 2px;
+    border-radius: 5px;
+    border: 1.5px solid var(--border-color);
+    background: var(--input-surface);
+    font-size: 0.73rem;
+    font-weight: 700;
+    color: var(--text-main);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-align: center;
+}
+
+.timeslot-btn:hover:not(:disabled) {
+    border-color: #d32f2f;
+    color: #d32f2f;
+}
+
+.timeslot-btn.active {
+    background: #d32f2f;
+    border-color: #d32f2f;
+    color: #ffffff !important;
+    box-shadow: 0 2px 8px rgba(211, 47, 47, 0.3);
+}
+
+.timeslot-btn:disabled,
+.timeslot-btn.past-slot {
+    opacity: 0.38;
+    text-decoration: line-through;
+    cursor: not-allowed;
+    background: var(--subtle-surface);
+    color: var(--text-muted);
+    border-color: var(--border-color);
+}
+
+.slot-window-hint {
+    font-size: 0.74rem;
+    color: #4caf50;
+    font-weight: 700;
+    margin-top: 4px;
+    display: inline-block;
+}
+
+/* Occasion Tags (Single Row of 5) */
+.occasion-pills {
+    display: grid;
+    grid-template-columns: repeat(5, auto);
+    gap: 5px;
+}
+
+.occasion-pill {
+    padding: 5px 6px;
+    border-radius: 999px;
+    border: 1.5px solid var(--border-color);
+    background: var(--input-surface);
+    color: var(--text-main);
+    font-size: 0.73rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.occasion-pill:hover {
+    border-color: var(--primary-color);
+}
+
+.occasion-pill.active {
+    background: #d32f2f;
+    border-color: #d32f2f;
+    color: #ffffff !important;
+}
+
+.btn-pasgo-submit {
+    width: 100%;
+    padding: 10px 16px;
+    border-radius: 9px;
+    border: none;
+    background: linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%);
+    color: #ffffff !important;
+    font-size: 0.92rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 6px 16px rgba(211, 47, 47, 0.28);
+    transition: all 0.2s ease;
+    margin-top: 2px;
+}
+
+.btn-pasgo-submit:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 12px 26px rgba(211, 47, 47, 0.36);
+}
+
+/* ===== 6. Signature Menu Grid inside Left Column ===== */
+.menu-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.category-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.category-tab {
+    padding: 7px 14px;
+    border-radius: 999px;
+    border: 1.5px solid var(--border-color);
+    background: var(--input-surface);
+    color: var(--text-main);
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.category-tab.active,
+.category-tab:hover {
+    background: #d32f2f;
+    border-color: #d32f2f;
+    color: #ffffff !important;
+}
+
+.menu-search-box input {
+    padding: 8px 14px;
+    border-radius: 999px;
+    border: 1.5px solid var(--border-color);
+    background: var(--input-surface);
+    color: var(--text-main);
+    font-size: 0.84rem;
+}
+
+.dish-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(245px, 1fr));
+    gap: 18px;
+}
+
+.menu-card {
+    background: var(--subtle-surface);
+    color: var(--text-main);
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+}
+
+.menu-card__media {
+    position: relative;
+    height: 165px;
+    overflow: hidden;
+}
+
+.menu-card__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.menu-card__badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    padding: 3px 9px;
+    border-radius: 999px;
+    background: rgba(24, 21, 18, 0.85);
+    color: #f3c68f;
+    font-size: 0.68rem;
+    font-weight: 700;
+}
+
+.menu-card__body {
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.menu-card__cat {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    text-transform: uppercase;
+}
+
+.menu-card__title {
+    font-family: var(--font-heading);
+    font-size: 1.05rem;
+    color: var(--text-main);
+    margin: 4px 0 6px;
+}
+
+.menu-card__desc {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+    flex: 1;
+}
+
+.menu-card__footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 10px;
+    border-top: 1px solid var(--border-color);
+}
+
+.menu-card__price {
+    font-weight: 700;
+    color: var(--primary-color);
+    font-size: 0.98rem;
+}
+
+.menu-card__old-price {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    text-decoration: line-through;
+    margin-left: 6px;
+}
+
+/* ===== 7. PasGo Booking Confirmation Modal ===== */
+.pasgo-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(18, 15, 12, 0.72);
+    backdrop-filter: blur(5px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 3000;
+    padding: 20px;
+}
+
+.pasgo-modal {
+    background: var(--bg-white);
+    color: var(--text-main);
+    max-width: 520px;
+    width: 100%;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border-color);
+}
+
+.pasgo-modal__header {
+    background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%);
+    color: #ffffff;
+    padding: 22px 26px;
+    text-align: center;
+}
+
+.pasgo-modal__body {
+    padding: 24px 26px;
+    color: var(--text-main);
+}
+
+.pasgo-ticket-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 9px 0;
+    border-bottom: 1px dashed var(--border-color);
+    font-size: 0.9rem;
+    color: var(--text-main);
 }
 
 .toast-notification {
@@ -674,38 +786,27 @@
     color: #ffffff;
     padding: 14px 22px;
     border-radius: 12px;
-    border-left: 4px solid var(--primary-color);
+    border-left: 4px solid #d32f2f;
     box-shadow: var(--shadow-lg);
     font-size: 0.9rem;
     font-weight: 500;
-    z-index: 2000;
+    z-index: 2500;
     display: none;
 }
 
-@media (max-width: 920px) {
-    .hero__title {
-        font-size: 2.5rem;
+@media (max-width: 980px) {
+    .pasgo-layout {
+        grid-template-columns: 1fr;
     }
-    .stats-grid,
-    .table-filter-bar,
-    .about-grid,
-    .voucher-grid {
+    .pasgo-booking-sidebar {
+        position: static;
+    }
+    .pasgo-gallery {
         grid-template-columns: 1fr 1fr;
+        grid-template-rows: 200px 140px;
     }
-    .about-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
-@media (max-width: 600px) {
-    .stats-grid,
-    .table-filter-bar,
-    .voucher-grid {
-        grid-template-columns: 1fr;
-    }
-    .stat-item {
-        border-right: none;
-        border-bottom: 1px solid var(--border-color);
-        padding-bottom: 12px;
+    .pasgo-gallery__main {
+        grid-column: 1 / 3;
+        grid-row: 1 / 2;
     }
 }

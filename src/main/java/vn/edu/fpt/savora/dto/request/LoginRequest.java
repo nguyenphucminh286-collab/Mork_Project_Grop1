@@ -8,7 +8,7 @@ import lombok.Data;
 public class LoginRequest {
 
     @NotBlank(message = "Please enter your email address")
-    @Email(regexp = "(?i)[^@]+@gmail\\.com", message = "Enter a valid @gmail.com address")
+    @Email(message = "Invalid email format")
     private String email;
 
     @NotBlank(message = "Please enter your password")

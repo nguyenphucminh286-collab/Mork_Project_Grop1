@@ -28,8 +28,9 @@ public class AuthPageController {
                         BindingResult errors, Model model, HttpSession session) {
         if (errors.hasErrors()) return "public/auth/login";
         try {
-            storeUser(session, authService.login(form));
-            return "redirect:/home";
+            AuthUserResponse authUser = authService.login(form);
+            storeUser(session, authUser);
+            return "redirect:" + (authUser.getRedirectUrl() != null ? authUser.getRedirectUrl() : "/home");
         } catch (AppException | IllegalArgumentException e) {
             model.addAttribute("errorMessage", e.getMessage());
             return "public/auth/login";

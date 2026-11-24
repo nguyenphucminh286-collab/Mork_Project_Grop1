@@ -4,14 +4,14 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import vn.edu.fpt.savora.enums.OrderStatus;
 import vn.edu.fpt.savora.enums.OrderType;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(
@@ -38,10 +38,14 @@ public class RestaurantOrder {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id")
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private User customer;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "staff_id")
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private User staff;
 
     @ManyToOne(fetch = FetchType.EAGER)
@@ -50,7 +54,13 @@ public class RestaurantOrder {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "reservation_id")
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private Reservation reservation;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "voucher_id")
+    private Voucher voucher;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "order_type", nullable = false)
@@ -83,10 +93,6 @@ public class RestaurantOrder {
 
     @Column(name = "closed_at")
     private LocalDateTime closedAt;
-
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Builder.Default
-    private List<OrderItem> items = new ArrayList<>();
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

@@ -55,6 +55,16 @@ public class Reservation {
     @JoinColumn(name = "table_id")
     private DiningTable diningTable;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "voucher_id")
+    private Voucher voucher;
+
+    @Column(name = "preferred_area", length = 100)
+    private String preferredArea;
+
+    @Column(name = "occasion", length = 100)
+    private String occasion;
+
     @Column(name = "reservation_date", nullable = false)
     private LocalDate reservationDate;
 
@@ -68,12 +78,23 @@ public class Reservation {
     @Column(name = "end_time", nullable = false)
     private LocalTime endTime;
 
+    @Column(name = "adult_count", nullable = false)
+    @Builder.Default
+    private Integer adultCount = 2;
+
+    @Column(name = "child_count", nullable = false)
+    @Builder.Default
+    private Integer childCount = 0;
+
     @Column(name = "guest_count", nullable = false)
     @Builder.Default
     private Integer guestCount = 2;
 
     @Column(name = "special_request", length = 500)
     private String specialRequest;
+
+    @Column(name = "cancel_reason", length = 255)
+    private String cancelReason;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
@@ -90,7 +111,7 @@ public class Reservation {
     private LocalDateTime updatedAt;
 
     /**
-     * Tính toán giờ kết thúc dự kiến của lượt đặt bàn
+     * Calculate expected reservation end time
      */
     public LocalTime calculateEndTime() {
         int duration = (this.durationMinutes != null && this.durationMinutes > 0)
@@ -100,8 +121,8 @@ public class Reservation {
     }
 
     /**
-     * Kiểm tra 2 khung giờ đặt bàn trong cùng 1 ngày có bị giao nhau (overlap) hay không:
-     * [startA, endA) giao với [startB, endB) <=> startA < endB && endA > startB
+     * Check if two reservations on the same date overlap:
+     * [startA, endA) overlaps with [startB, endB) <=> startA < endB && endA > startB
      */
     public boolean overlapsWith(LocalTime requestedStart, int requestedDurationMinutes) {
         LocalTime existingEnd = this.endTime != null ? this.endTime : calculateEndTime();
@@ -113,6 +134,13 @@ public class Reservation {
 
     @PrePersist
     protected void onCreate() {
+        if (this.adultCount == null || this.adultCount <= 0) {
+            this.adultCount = 2;
+        }
+        if (this.childCount == null || this.childCount < 0) {
+            this.childCount = 0;
+        }
+        this.guestCount = this.adultCount + this.childCount;
         if (this.durationMinutes == null || this.durationMinutes <= 0) {
             this.durationMinutes = DEFAULT_DURATION_MINUTES;
         }
@@ -126,6 +154,13 @@ public class Reservation {
 
     @PreUpdate
     protected void onUpdate() {
+        if (this.adultCount == null || this.adultCount <= 0) {
+            this.adultCount = 2;
+        }
+        if (this.childCount == null || this.childCount < 0) {
+            this.childCount = 0;
+        }
+        this.guestCount = this.adultCount + this.childCount;
         if (this.durationMinutes == null || this.durationMinutes <= 0) {
             this.durationMinutes = DEFAULT_DURATION_MINUTES;
         }

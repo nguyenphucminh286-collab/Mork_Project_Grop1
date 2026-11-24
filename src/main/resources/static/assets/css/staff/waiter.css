@@ -1,0 +1,237 @@
+/* ===== SAVORA WAITER / SERVICE STAFF PORTAL STYLES (assets/css/staff/waiter.css) ===== */
+
+.waiter-page {
+    padding: 24px 0 64px;
+}
+
+/* ===== 1. Top KPI Summary Cards ===== */
+.waiter-kpis {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 14px;
+    margin-bottom: 22px;
+}
+
+.waiter-kpi {
+    background: var(--bg-white);
+    color: var(--text-main);
+    border-radius: 14px;
+    padding: 14px 18px;
+    border: 1.5px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.waiter-kpi__label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.waiter-kpi__val {
+    font-family: var(--font-heading);
+    font-size: 1.65rem;
+    font-weight: 700;
+    line-height: 1.1;
+    margin-top: 2px;
+}
+
+/* ===== 2. Two-Column Layout (Floor Grid Left + Selected Table Manager Right) ===== */
+.waiter-layout {
+    display: grid;
+    grid-template-columns: 1fr 440px;
+    gap: 24px;
+    align-items: start;
+}
+
+.waiter-floor-card {
+    background: var(--bg-white);
+    color: var(--text-main);
+    border-radius: 18px;
+    padding: 24px;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+}
+
+.waiter-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.waiter-table-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(225px, 1fr));
+    gap: 14px;
+}
+
+.w-table-card {
+    border-radius: 14px;
+    padding: 16px;
+    border: 2px solid var(--border-color);
+    background: var(--input-surface);
+    color: var(--text-main);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.w-table-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}
+
+.w-table-card.active-table {
+    border-color: #d32f2f !important;
+    box-shadow: 0 8px 24px rgba(211, 47, 47, 0.2);
+}
+
+.w-table-card.st-AVAILABLE { border-left: 5px solid #2e7d32; }
+.w-table-card.st-RESERVED { border-left: 5px solid #ed6c02; }
+.w-table-card.st-OCCUPIED { border-left: 5px solid #d32f2f; }
+.w-table-card.st-CLEANING { border-left: 5px solid #0288d1; }
+.w-table-card.st-MAINTENANCE { border-left: 5px solid #757575; opacity: 0.78; }
+
+.w-res-box {
+    padding: 7px 10px;
+    border-radius: 8px;
+    background: #fff3e0;
+    color: #e65100 !important;
+    font-size: 0.76rem;
+    font-weight: 600;
+    line-height: 1.35;
+}
+
+.w-order-box {
+    padding: 8px 10px;
+    border-radius: 8px;
+    background: var(--subtle-surface);
+    border: 1px solid var(--border-color);
+    font-size: 0.77rem;
+}
+
+.w-ready-alert {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: #2e7d32;
+    color: #ffffff !important;
+    font-size: 0.7rem;
+    font-weight: 800;
+    margin-top: 4px;
+}
+
+/* ===== 3. Right Sidebar — Table Inspector & Waiter Order Actions ===== */
+.waiter-inspector {
+    position: sticky;
+    top: 86px;
+    background: var(--bg-white);
+    color: var(--text-main);
+    border-radius: 18px;
+    border: 2px solid var(--primary-color);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+    max-height: calc(100vh - 96px);
+    display: flex;
+    flex-direction: column;
+}
+
+.waiter-inspector__header {
+    background: linear-gradient(135deg, #181512 0%, #2e241d 100%);
+    color: #ffffff;
+    padding: 16px 20px;
+    flex-shrink: 0;
+}
+
+.waiter-inspector__body {
+    padding: 16px 20px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.waiter-status-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 14px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.waiter-item-card {
+    padding: 11px 12px;
+    border-radius: 10px;
+    background: var(--subtle-surface);
+    border: 1px solid var(--border-color);
+    margin-bottom: 9px;
+}
+
+.waiter-item-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.btn-remove-pending {
+    padding: 4px 10px;
+    border-radius: 6px;
+    border: 1px solid #d32f2f;
+    background: #fff1f0;
+    color: #c62828 !important;
+    font-size: 0.74rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.btn-remove-pending:hover {
+    background: #d32f2f;
+    color: #ffffff !important;
+}
+
+.btn-serve-item {
+    padding: 4px 10px;
+    border-radius: 6px;
+    border: 1px solid #2e7d32;
+    background: #e8f5e9;
+    color: #1b5e20 !important;
+    font-size: 0.74rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.btn-serve-item:hover {
+    background: #2e7d32;
+    color: #ffffff !important;
+}
+
+.waiter-add-dish-box {
+    margin-top: 14px;
+    padding: 14px;
+    border-radius: 12px;
+    background: var(--subtle-surface);
+    border: 1.5px dashed var(--border-color);
+}
+
+@media (max-width: 980px) {
+    .waiter-kpis {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .waiter-layout {
+        grid-template-columns: 1fr;
+    }
+    .waiter-inspector {
+        position: static;
+        max-height: none;
+    }
+}
