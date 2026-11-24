@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Table Reservations — Savora Fine Dining</title>
+    <script src="/assets/js/common/theme.js"></script>
+    <link rel="stylesheet" href="/assets/css/public/global.css?v=2">
+    <link rel="stylesheet" href="/assets/css/public/home.css?v=2">
+</head>
+<body>
+    <!-- Shared Header -->
+    <div th:replace="~{fragments/header :: siteHeader}"></div>
+
+    <main class="pasgo-page">
+        <div class="container">
+            <nav class="pasgo-breadcrumb">
+                <a href="/home">Home</a>
+                <span>›</span>
+                <strong>My Table Reservations</strong>
+            </nav>
+
+            <section class="pasgo-card">
+                <div class="pasgo-card__header">
+                    <div>
+                        <h1 class="pasgo-card__title" style="font-size: 1.75rem;">📅 My Table Reservations</h1>
+                        <p class="pasgo-card__subtitle">
+                            Track your upcoming table reservations, applied promotional deals, and reservation status
+                        </p>
+                    </div>
+                    <a href="/home#reservation" class="btn btn-primary">
+                        + Book Another Table
+                    </a>
+                </div>
+
+                <div th:if="${#lists.isEmpty(reservations)}" style="text-align: center; padding: 48px 20px;">
+                    <h3 style="font-family: var(--font-heading); font-size: 1.4rem; margin-bottom: 8px;">
+                        You don’t have any table reservations yet
+                    </h3>
+                    <p style="color: var(--text-muted); margin-bottom: 20px;">
+                        Reserve your table online before arrival to enjoy up to 20% OFF with Savora vouchers!
+                    </p>
+                    <a href="/home#reservation" class="btn btn-primary">Book a Table Now</a>
+                </div>
+
+                <div th:if="${!#lists.isEmpty(reservations)}" style="display: flex; flex-direction: column; gap: 16px;">
+                    <div th:each="r : ${reservations}" class="pasgo-deal-item" style="align-items: flex-start; flex-wrap: wrap;">
+                        <div style="flex: 1; min-width: 280px;">
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px; flex-wrap: wrap;">
+                                <span style="font-weight: 800; color: #d32f2f; font-size: 1rem;" th:text="${r.reservationCode}">PASGO-SAV-1001</span>
+                                <span class="table-status-badge"
+                                      th:classappend="${r.status == 'CONFIRMED' or r.status == 'SEATED'} ? 'badge-status-AVAILABLE' : (${r.status == 'PENDING'} ? 'badge-status-RESERVED' : 'badge-status-OCCUPIED')"
+                                      th:text="${r.status}">CONFIRMED</span>
+                                <span th:if="${r.voucherCode != null}" class="pasgo-deal-badge" style="margin-bottom: 0;"
+                                      th:text="'🎁 ' + ${r.voucherCode} + ' (-' + ${r.discountPercent} + '%)'">🎁 WELCOME50</span>
+                                <span th:if="${r.occasion != null and !r.occasion.isEmpty()}" class="pasgo-tag" style="font-size: 0.75rem; padding: 2px 10px;"
+                                      th:text="'🎉 ' + ${r.occasion}">🎉 Birthday</span>
+                            </div>
+
+                            <h3 style="font-family: var(--font-heading); font-size: 1.2rem; margin-bottom: 6px;"
+                                th:text="${r.tableCode} + ' — ' + ${r.tableName} + ' (' + ${r.preferredArea} + ')'">
+                                T2-B01 — Table 01 Garden Terrace
+                            </h3>
+
+                            <div style="display: flex; flex-wrap: wrap; gap: 18px; font-size: 0.88rem; color: var(--text-main); margin-bottom: 6px;">
+                                <span>📅 <strong>Date:</strong> <span th:text="${r.reservationDate}">2026-11-18</span></span>
+                                <span>⏰ <strong>Slot:</strong> <span th:text="${r.reservationTime} + ' – ' + ${r.endTime} + ' (120 mins)'">19:00 – 21:00</span></span>
+                                <span>👥 <strong>Party:</strong> <span th:text="${r.guestCount} + ' Guests (' + ${r.adultCount} + ' Adults, ' + ${r.childCount} + ' Children)'">4 Guests</span></span>
+                            </div>
+
+                            <div style="font-size: 0.84rem; color: var(--text-muted);">
+                                <span>👤 Contact: <strong th:text="${r.customerName} + ' — ' + ${r.customerPhone}">Minh Nguyen</strong></span>
+                                <span th:if="${r.specialRequest != null and !r.specialRequest.isEmpty()}"
+                                      th:text="' | 📝 Note: ' + ${r.specialRequest}"></span>
+                            </div>
+
+                            <div th:if="${r.cancelReason != null and !r.cancelReason.isEmpty()}"
+                                 style="margin-top: 6px; font-size: 0.82rem; color: #c62828; font-weight: 600;"
+                                 th:text="'Cancellation Reason: ' + ${r.cancelReason}">
+                            </div>
+                        </div>
+
+                        <div th:if="${r.status == 'PENDING' or r.status == 'CONFIRMED'}">
+                            <button type="button"
+                                    class="btn btn-outline btn-cancel-res"
+                                    th:data-id="${r.reservationId}"
+                                    th:data-code="${r.reservationCode}"
+                                    style="border-color: #c62828; color: #c62828; padding: 8px 14px; font-size: 0.82rem;">
+                                Cancel Booking
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Shared Footer -->
+    <div th:replace="~{fragments/footer :: siteFooter}"></div>
+
+    <script src="/assets/js/common/api.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.btn-cancel-res').forEach((btn) => {
+                btn.addEventListener('click', async () => {
+                    const id = btn.dataset.id;
+                    const code = btn.dataset.code;
+                    const reason = window.prompt(`Please enter the reason for cancelling booking ${code}:`, 'Changed dining schedule');
+                    if (reason === null) return;
+
+                    btn.disabled = true;
+                    btn.textContent = 'Cancelling...';
+                    try {
+                        await SavoraApp.fetchApi(`/api/customer/reservations/${id}/cancel`, {
+                            method: 'POST',
+                            body: JSON.stringify({ cancelReason: reason })
+                        });
+                        window.location.reload();
+                    } catch (err) {
+                        alert(err.message || 'Failed to cancel reservation.');
+                        btn.disabled = false;
+                        btn.textContent = 'Cancel Booking';
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

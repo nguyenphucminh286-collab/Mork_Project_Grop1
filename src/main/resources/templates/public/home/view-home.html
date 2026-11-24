@@ -3,240 +3,378 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Savora Fine Dining &amp; Restaurant — Official Home</title>
+    <title>Savora Fine Dining &amp; Lounge — Online Table Reservation &amp; Deals</title>
     <script src="/assets/js/common/theme.js"></script>
     <link rel="stylesheet" href="/assets/css/public/global.css?v=2">
-    <link rel="stylesheet" href="/assets/css/public/home.css">
+    <link rel="stylesheet" href="/assets/css/public/home.css?v=4">
 </head>
 <body>
     <!-- Shared Header -->
     <div th:replace="~{fragments/header :: siteHeader}"></div>
 
-    <!-- Active User Session Ribbon (Displayed automatically when signed in) -->
-    <section id="session-banner" class="session-banner" style="display: none;">
-        <div class="container session-banner__inner" id="session-banner-content"></div>
-    </section>
-
-    <!-- 1. Hero Section -->
-    <section class="hero">
+    <main class="pasgo-page">
         <div class="container">
-            <div class="hero__content">
-                <span class="hero__eyebrow">★ MICHELIN GUIDE SELECTED • FINE DINING &amp; LOUNGE</span>
-                <h1 class="hero__title">
-                    An Unforgettable Symphony of <em>Culinary Artistry</em>
-                </h1>
-                <p class="hero__subtitle">
-                    Welcome to Savora Restaurant — where contemporary European technique meets authentic Asian heritage. Reserve your table in real time and indulge in our chef’s seasonal tasting menu.
-                </p>
-                <div class="hero__actions">
-                    <a href="#reservation" class="btn btn-primary" style="padding: 13px 28px; font-size: 0.96rem;">
-                        Reserve a Table Now
-                    </a>
-                    <a href="#menu" class="btn btn-hero-secondary">
-                        Explore Signature Menu
-                    </a>
-                </div>
-            </div>
-        </div>
-    </section>
+            <!-- Breadcrumb -->
+            <nav class="pasgo-breadcrumb">
+                <a href="/home">Home</a>
+                <span>›</span>
+                <a href="/home">Hanoi Fine Dining</a>
+                <span>›</span>
+                <strong>Savora Fine Dining &amp; Lounge — Hoa Lac Hi-Tech Park</strong>
+            </nav>
 
-    <!-- 2. Key Restaurant Highlights Strip -->
-    <section class="stats-strip">
-        <div class="container">
-            <div class="stats-grid">
-                <div class="stat-item">
-                    <div class="stat-item__number">15+</div>
-                    <div class="stat-item__label">Years of Culinary Excellence</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-item__number">50+</div>
-                    <div class="stat-item__label">Seasonal Signature Dishes</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-item__number">100%</div>
-                    <div class="stat-item__label">Real-Time Table Synchronization</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-item__number">4.9 ★</div>
-                    <div class="stat-item__label">Verified Guest Satisfaction</div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- 3. Signature Culinary Menu Section -->
-    <section class="home-section" id="menu">
-        <div class="container">
-            <div class="section-heading">
-                <span class="section-heading__eyebrow">CURATED GASTRONOMY</span>
-                <h2 class="section-heading__title">Chef’s Signature Menu</h2>
-                <p class="section-heading__desc">
-                    Crafted daily from premium imported Wagyu, Norwegian salmon, live Nha Trang seafood, and organic Da Lat produce.
-                </p>
-            </div>
-
-            <!-- Category Tabs & Search -->
-            <div class="menu-toolbar">
-                <div class="category-tabs">
-                    <button type="button" class="category-tab active" data-category="ALL">All Dishes</button>
-                    <button type="button" class="category-tab" data-category="Starters & Salads">Starters &amp; Salads</button>
-                    <button type="button" class="category-tab" data-category="Prime Steaks & Seafood">Prime Steaks &amp; Seafood</button>
-                    <button type="button" class="category-tab" data-category="Hotpot & Grill">Hotpot &amp; Grill</button>
-                    <button type="button" class="category-tab" data-category="Artisan Desserts">Artisan Desserts</button>
-                    <button type="button" class="category-tab" data-category="Wines & Cocktails">Wines &amp; Cocktails</button>
-                </div>
-
-                <div class="menu-search-box">
-                    <input type="text" id="menu-search-input" placeholder="Search dishes or ingredients...">
-                </div>
-            </div>
-
-            <!-- Dynamic Dish Grid -->
-            <div class="dish-grid" id="menu-grid"></div>
-        </div>
-    </section>
-
-    <!-- 4. Real-Time Floor Map & Table Availability Section -->
-    <section class="home-section" id="reservation">
-        <div class="container">
-            <div class="section-heading">
-                <span class="section-heading__eyebrow">REAL-TIME TABLE MANAGEMENT</span>
-                <h2 class="section-heading__title">Live Dining Table Availability</h2>
-                <p class="section-heading__desc">
-                    Filter by dining zone and party size. Tables in <strong>Occupied</strong>, <strong>Cleaning</strong>, or <strong>Maintenance</strong> states are automatically excluded from booking.
-                </p>
-            </div>
-
-            <div class="reservation-panel">
-                <!-- Filter Bar -->
-                <div class="table-filter-bar">
-                    <div class="filter-field">
-                        <label for="filter-date">Reservation Date</label>
-                        <input type="date" id="filter-date">
-                    </div>
-                    <div class="filter-field">
-                        <label for="filter-area">Dining Zone</label>
-                        <select id="filter-area">
-                            <option value="ALL">All Dining Zones</option>
-                            <option value="1st Floor">1st Floor — Main Hall</option>
-                            <option value="2nd Floor">2nd Floor — Garden Terrace</option>
-                            <option value="VIP Zone">VIP Private Suites</option>
-                        </select>
-                    </div>
-                    <div class="filter-field">
-                        <label for="filter-guests">Party Size (Guests)</label>
-                        <select id="filter-guests">
-                            <option value="0">Any Party Size</option>
-                            <option value="2">2+ Guests</option>
-                            <option value="4">4+ Guests</option>
-                            <option value="6">6+ Guests</option>
-                            <option value="10">10+ Guests (VIP)</option>
-                        </select>
-                    </div>
-                    <div class="filter-field">
-                        <label for="filter-only-available">Availability Filter</label>
-                        <select id="filter-only-available">
-                            <option value="ALL">Show All Table Statuses</option>
-                            <option value="AVAILABLE">Show Available Only</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Color Status Legend -->
-                <div class="status-legend">
-                    <span class="legend-item"><span class="legend-dot dot-available"></span> AVAILABLE (Ready to Book)</span>
-                    <span class="legend-item"><span class="legend-dot dot-reserved"></span> RESERVED (Booked Slot)</span>
-                    <span class="legend-item"><span class="legend-dot dot-occupied"></span> OCCUPIED (Active Dine-In)</span>
-                    <span class="legend-item"><span class="legend-dot dot-cleaning"></span> CLEANING (Sanitizing)</span>
-                    <span class="legend-item"><span class="legend-dot dot-maintenance"></span> MAINTENANCE (Out of Service)</span>
-                </div>
-
-                <!-- Dynamic Table Cards Grid -->
-                <div class="table-grid" id="table-grid"></div>
-            </div>
-        </div>
-    </section>
-
-    <!-- 5. Exclusive Dining Vouchers -->
-    <section class="home-section">
-        <div class="container">
-            <div class="section-heading">
-                <span class="section-heading__eyebrow">EXCLUSIVE PRIVILEGES</span>
-                <h2 class="section-heading__title">Special Dining Vouchers</h2>
-                <p class="section-heading__desc">
-                    Apply these promotional voucher codes during checkout or table reservation.
-                </p>
-            </div>
-
-            <div class="voucher-grid">
-                <div class="voucher-card">
+            <!-- 1. PasGo Top Restaurant Summary Card & 5-Photo Mosaic Gallery -->
+            <section class="pasgo-hero-card">
+                <div class="pasgo-title-row">
                     <div>
-                        <span class="voucher-card__tag">LIMITED TIME OFFER</span>
-                        <h3 class="voucher-card__title">10% OFF Fine Dining Bill</h3>
-                        <p class="voucher-card__desc">Save up to 100,000 VND on dine-in orders from 500,000 VND.</p>
+                        <h1 class="pasgo-restaurant-title">Savora Fine Dining &amp; Lounge — Hoa Lac</h1>
+                        <div class="pasgo-meta-tags">
+                            <span class="pasgo-tag pasgo-tag--deal">🔥 Save up to 20% via Online Booking</span>
+                            <span class="pasgo-tag pasgo-tag--open">● Open Daily: 10:00 – 22:30</span>
+                            <span class="pasgo-tag">★ 4.9 / 5.0 (128 Verified Reviews)</span>
+                            <span class="pasgo-tag">💲 250,000 – 650,000 VND / guest</span>
+                            <span>📍 Hoa Lac Hi-Tech Park, Thach That, Hanoi</span>
+                        </div>
                     </div>
-                    <div class="voucher-card__code-box">
-                        <span class="voucher-code">SAVORA10</span>
-                        <button type="button" class="btn btn-primary btn-copy-voucher" data-code="SAVORA10" style="padding: 7px 14px; font-size: 0.8rem;">
-                            Copy Code
-                        </button>
+                    <div th:if="${session.userId != null}">
+                        <a href="/customer/reservations" class="btn btn-outline" style="padding: 9px 16px;">
+                            📋 View My Booking History
+                        </a>
                     </div>
                 </div>
 
-                <div class="voucher-card">
-                    <div>
-                        <span class="voucher-card__tag">NEW MEMBER PRIVILEGE</span>
-                        <h3 class="voucher-card__title">15% OFF First Table Booking</h3>
-                        <p class="voucher-card__desc">Save up to 150,000 VND for your first online table reservation from 300,000 VND.</p>
+                <!-- 5-Photo Mosaic Gallery -->
+                <div class="pasgo-gallery">
+                    <div class="pasgo-gallery__main">
+                        <img src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=85" alt="Savora Main Dining Hall">
+                        <span class="pasgo-gallery__caption">✦ Main Fine Dining Hall (1st Floor)</span>
                     </div>
-                    <div class="voucher-card__code-box">
-                        <span class="voucher-code">WELCOME50</span>
-                        <button type="button" class="btn btn-primary btn-copy-voucher" data-code="WELCOME50" style="padding: 7px 14px; font-size: 0.8rem;">
-                            Copy Code
-                        </button>
+                    <div class="pasgo-gallery__item">
+                        <img src="https://images.unsplash.com/photo-1558030006-450675393462?auto=format&fit=crop&w=600&q=80" alt="Australian Wagyu Tenderloin">
+                        <span class="pasgo-gallery__caption">Prime Australian Steak</span>
+                    </div>
+                    <div class="pasgo-gallery__item">
+                        <img src="https://images.unsplash.com/photo-1559737558-2f5a35f4523b?auto=format&fit=crop&w=600&q=80" alt="Baked Spiny Lobster">
+                        <span class="pasgo-gallery__caption">Oven-Baked Lobster</span>
+                    </div>
+                    <div class="pasgo-gallery__item">
+                        <img src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=600&q=80" alt="Garden Terrace">
+                        <span class="pasgo-gallery__caption">2nd Floor Garden Terrace</span>
+                    </div>
+                    <div class="pasgo-gallery__item">
+                        <img src="https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=600&q=80" alt="VIP Suite">
+                        <span class="pasgo-gallery__caption">VIP Private Suite</span>
                     </div>
                 </div>
-            </div>
-        </div>
-    </section>
+            </section>
 
-    <!-- 6. About Savora Section -->
-    <section class="home-section" id="about" style="padding-bottom: 84px;">
-        <div class="container">
-            <div class="about-grid">
-                <div class="about-img-card">
-                    <img src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=1000&q=80" alt="Savora Restaurant Interior">
+            <!-- 2. Main 2-Column PasGo Layout -->
+            <div class="pasgo-layout">
+                <!-- LEFT COLUMN: Deals, Real-Time Table Map, Menu & Rules -->
+                <div class="pasgo-left-col">
+                    <!-- Section A: Exclusive Booking Deals -->
+                    <section class="pasgo-card" id="deals">
+                        <div class="pasgo-card__header">
+                            <div>
+                                <h2 class="pasgo-card__title">🔥 Exclusive Booking Deals</h2>
+                                <p class="pasgo-card__subtitle">Select an offer below to attach it automatically to your table reservation</p>
+                            </div>
+                        </div>
+
+                        <div class="pasgo-deals-list" id="pasgo-deals-container">
+                            <div class="pasgo-deal-item selected" data-voucher-id="2" data-voucher-code="WELCOME50">
+                                <div>
+                                    <span class="pasgo-deal-badge">SAVE 15% • FIRST BOOKING</span>
+                                    <div class="pasgo-deal-title">Code: WELCOME50 — 15% OFF Online Table Reservation</div>
+                                    <div class="pasgo-deal-desc">Maximum discount 150,000 VND for dine-in bills from 300,000 VND. Valid all week.</div>
+                                </div>
+                                <button type="button" class="btn btn-primary btn-select-deal" data-voucher-id="2" data-voucher-code="WELCOME50" style="padding: 8px 16px; font-size: 0.82rem; white-space: nowrap;">
+                                    ✓ Selected
+                                </button>
+                            </div>
+
+                            <div class="pasgo-deal-item" data-voucher-id="1" data-voucher-code="SAVORA10">
+                                <div>
+                                    <span class="pasgo-deal-badge">SAVE 10% • ALL SLOTS</span>
+                                    <div class="pasgo-deal-title">Code: SAVORA10 — 10% OFF Total Fine Dining Bill</div>
+                                    <div class="pasgo-deal-desc">Maximum discount 100,000 VND for dine-in orders from 500,000 VND.</div>
+                                </div>
+                                <button type="button" class="btn btn-outline btn-select-deal" data-voucher-id="1" data-voucher-code="SAVORA10" style="padding: 8px 16px; font-size: 0.82rem; white-space: nowrap;">
+                                    Apply Deal
+                                </button>
+                            </div>
+
+                            <div class="pasgo-deal-item" data-voucher-id="3" data-voucher-code="VIPPARTY20">
+                                <div>
+                                    <span class="pasgo-deal-badge">SAVE 20% • VIP &amp; BIRTHDAY</span>
+                                    <div class="pasgo-deal-title">Code: VIPPARTY20 — 20% OFF VIP Suite &amp; Group Celebrations</div>
+                                    <div class="pasgo-deal-desc">Maximum discount 300,000 VND for group bookings from 1,000,000 VND.</div>
+                                </div>
+                                <button type="button" class="btn btn-outline btn-select-deal" data-voucher-id="3" data-voucher-code="VIPPARTY20" style="padding: 8px 16px; font-size: 0.82rem; white-space: nowrap;">
+                                    Apply Deal
+                                </button>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Section B: Visual Floor Map & Real-Time Table Selection -->
+                    <section class="pasgo-card" id="tables-section">
+                        <div class="pasgo-card__header">
+                            <div>
+                                <h2 class="pasgo-card__title">🪑 Live Floor Map &amp; Table Availability</h2>
+                                <p class="pasgo-card__subtitle" id="table-slot-summary">
+                                    Showing real-time table availability for your selected date, arrival time &amp; party size
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Zone Filter Pills -->
+                        <div class="zone-filter-pills">
+                            <button type="button" class="zone-pill active" data-area="ALL">All Zones (8 Tables)</button>
+                            <button type="button" class="zone-pill" data-area="1st Floor">1st Floor — Main Hall</button>
+                            <button type="button" class="zone-pill" data-area="2nd Floor">2nd Floor — Garden Terrace</button>
+                            <button type="button" class="zone-pill" data-area="VIP Zone">VIP Private Suites</button>
+                        </div>
+
+                        <!-- Status Legend -->
+                        <div class="status-legend">
+                            <span class="legend-item"><span class="legend-dot dot-available"></span> AVAILABLE (Click to Select)</span>
+                            <span class="legend-item"><span class="legend-dot dot-reserved"></span> RESERVED (Booked Slot)</span>
+                            <span class="legend-item"><span class="legend-dot dot-occupied"></span> OCCUPIED (Dine-In)</span>
+                            <span class="legend-item"><span class="legend-dot dot-cleaning"></span> CLEANING</span>
+                            <span class="legend-item"><span class="legend-dot dot-maintenance"></span> MAINTENANCE</span>
+                        </div>
+
+                        <!-- Dynamic Real-Time Table Cards -->
+                        <div class="table-grid" id="table-grid"></div>
+                    </section>
+
+                    <!-- Section C: Signature Menu -->
+                    <section class="pasgo-card" id="menu">
+                        <div class="pasgo-card__header">
+                            <div>
+                                <h2 class="pasgo-card__title">🍽️ Chef’s Signature Menu</h2>
+                                <p class="pasgo-card__subtitle">Preview our signature dishes crafted daily from organic &amp; imported ingredients</p>
+                            </div>
+                        </div>
+
+                        <div class="menu-toolbar">
+                            <div class="category-tabs">
+                                <button type="button" class="category-tab active" data-category="ALL">All</button>
+                                <button type="button" class="category-tab" data-category="Starters & Salads">Starters</button>
+                                <button type="button" class="category-tab" data-category="Prime Steaks & Seafood">Steaks &amp; Seafood</button>
+                                <button type="button" class="category-tab" data-category="Hotpot & Grill">Hotpot &amp; Grill</button>
+                                <button type="button" class="category-tab" data-category="Artisan Desserts">Desserts</button>
+                                <button type="button" class="category-tab" data-category="Wines & Cocktails">Drinks</button>
+                            </div>
+                            <div class="menu-search-box">
+                                <input type="text" id="menu-search-input" placeholder="Search dishes...">
+                            </div>
+                        </div>
+
+                        <div class="dish-grid" id="menu-grid"></div>
+                    </section>
+
+                    <!-- Section D: Reservation Rules & Restaurant Info -->
+                    <section class="pasgo-card" id="rules">
+                        <div class="pasgo-card__header">
+                            <div>
+                                <h2 class="pasgo-card__title">📋 Reservation Terms &amp; Dining Policy</h2>
+                                <p class="pasgo-card__subtitle">Please review the following guidelines before confirming your table</p>
+                            </div>
+                        </div>
+                        <ul style="display: flex; flex-direction: column; gap: 10px; font-size: 0.9rem; color: var(--text-main); padding-left: 18px; list-style: disc;">
+                            <li><strong>100% Free Online Booking:</strong> No booking fee is charged when reserving through Savora’s online portal.</li>
+                            <li><strong>Standard Dining Duration:</strong> Each table reservation includes a <strong>120-minute (2-hour)</strong> dining window so you can enjoy your meal comfortably.</li>
+                            <li><strong>Table Hold Policy:</strong> Your reserved table is held for up to <strong>15 minutes</strong> past your selected arrival time. Please contact Hotline <strong>1900 6868</strong> if you are running late.</li>
+                            <li><strong>Children &amp; Baby Chairs:</strong> Please specify the exact number of children so our staff can prepare complimentary baby high chairs prior to your arrival.</li>
+                            <li><strong>VIP Private Suites:</strong> Equipped with soundproofing, projectors, and dedicated butler service for birthdays and corporate meetings.</li>
+                        </ul>
+                    </section>
                 </div>
-                <div>
-                    <span class="section-heading__eyebrow">OUR HERITAGE &amp; PHILOSOPHY</span>
-                    <h2 class="section-heading__title" style="text-align: left; margin-bottom: 16px;">
-                        Crafted with Passion, Served with Grace
-                    </h2>
-                    <p style="color: var(--text-muted); margin-bottom: 16px;">
-                        Founded in Hanoi, Savora brings together award-winning chefs and sommeliers dedicated to elevating every meal into a celebration. From intimate candlelit dinners for two to grand corporate banquets in our VIP suites, every detail is orchestrated with precision.
-                    </p>
-                    <div class="about-features">
-                        <div class="about-feature-box">
-                            <strong>✦ Farm-to-Table Ingredients</strong>
-                            <span>100% certified organic vegetables and sustainably sourced seafood delivered daily.</span>
+
+                <!-- RIGHT COLUMN: Sticky Booking Widget -->
+                <aside class="pasgo-booking-sidebar" id="reservation">
+                    <div class="pasgo-widget">
+                        <div class="pasgo-widget__header">
+                            <h3>Book a Table</h3>
+                            <p>Reserve before arrival to secure your table &amp; discount</p>
                         </div>
-                        <div class="about-feature-box">
-                            <strong>✦ Smart Table Synchronization</strong>
-                            <span>Real-time 120-minute reservation slots with automated conflict prevention.</span>
-                        </div>
-                        <div class="about-feature-box">
-                            <strong>✦ Private VIP Suites</strong>
-                            <span>Soundproof luxury rooms equipped with projectors for business &amp; family events.</span>
-                        </div>
-                        <div class="about-feature-box">
-                            <strong>✦ Curated Wine Cellar</strong>
-                            <span>Over 80 vintage labels from Bordeaux, Tuscany, Napa Valley, and Marlborough.</span>
+
+                        <div class="pasgo-widget__body">
+                            <div id="pasgo-form-alert" style="display:none; padding: 8px 10px; border-radius: 8px; background: #fff1f0; border: 1px solid #ffa39e; color: #cf1322; font-size: 0.78rem; margin-bottom: 8px; font-weight: 600;"></div>
+
+                            <form id="pasgo-booking-form">
+                                <!-- Row 1: Adults, Children & Arrival Date (3 Compact Columns) -->
+                                <div class="pasgo-row-3">
+                                    <div class="pasgo-field" style="margin-bottom:0;">
+                                        <label for="pasgo-adults">👤 Adults *</label>
+                                        <select id="pasgo-adults" class="pasgo-control" required>
+                                            <option value="1">1 Adult</option>
+                                            <option value="2" selected>2 Adults</option>
+                                            <option value="3">3 Adults</option>
+                                            <option value="4">4 Adults</option>
+                                            <option value="5">5 Adults</option>
+                                            <option value="6">6 Adults</option>
+                                            <option value="8">8 Adults</option>
+                                            <option value="10">10 Adults</option>
+                                            <option value="12">12 Adults</option>
+                                            <option value="16">16 Adults</option>
+                                        </select>
+                                    </div>
+                                    <div class="pasgo-field" style="margin-bottom:0;">
+                                        <label for="pasgo-children">👶 Children</label>
+                                        <select id="pasgo-children" class="pasgo-control">
+                                            <option value="0" selected>0 Children</option>
+                                            <option value="1">1 Child</option>
+                                            <option value="2">2 Children</option>
+                                            <option value="3">3 Children</option>
+                                            <option value="4">4 Children</option>
+                                            <option value="5">5 Children</option>
+                                            <option value="6">6 Children</option>
+                                        </select>
+                                    </div>
+                                    <div class="pasgo-field" style="margin-bottom:0;">
+                                        <label for="pasgo-date">📅 Arrival Date *</label>
+                                        <input type="date" id="pasgo-date" class="pasgo-control" required>
+                                    </div>
+                                </div>
+
+                                <!-- Row 2: Arrival Time Slot Grid (10:30 to 21:00) -->
+                                <div class="pasgo-field">
+                                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                                        <label style="margin-bottom:0;">⏰ Arrival Time (10:30 – 21:00) *</label>
+                                        <span class="slot-window-hint" id="slot-window-label" style="margin-top:0;">
+                                            ✓ 19:00 – 21:00 (120m)
+                                        </span>
+                                    </div>
+                                    <input type="hidden" id="pasgo-time" value="19:00">
+                                    <div class="timeslot-grid" id="pasgo-timeslot-grid">
+                                        <button type="button" class="timeslot-btn" data-time="10:30">10:30</button>
+                                        <button type="button" class="timeslot-btn" data-time="11:00">11:00</button>
+                                        <button type="button" class="timeslot-btn" data-time="11:30">11:30</button>
+                                        <button type="button" class="timeslot-btn" data-time="12:00">12:00</button>
+                                        <button type="button" class="timeslot-btn" data-time="12:30">12:30</button>
+                                        <button type="button" class="timeslot-btn" data-time="13:00">13:00</button>
+                                        <button type="button" class="timeslot-btn" data-time="13:30">13:30</button>
+                                        <button type="button" class="timeslot-btn" data-time="14:00">14:00</button>
+                                        <button type="button" class="timeslot-btn" data-time="14:30">14:30</button>
+                                        <button type="button" class="timeslot-btn" data-time="15:00">15:00</button>
+                                        <button type="button" class="timeslot-btn" data-time="15:30">15:30</button>
+                                        <button type="button" class="timeslot-btn" data-time="16:00">16:00</button>
+                                        <button type="button" class="timeslot-btn" data-time="16:30">16:30</button>
+                                        <button type="button" class="timeslot-btn" data-time="17:00">17:00</button>
+                                        <button type="button" class="timeslot-btn" data-time="17:30">17:30</button>
+                                        <button type="button" class="timeslot-btn" data-time="18:00">18:00</button>
+                                        <button type="button" class="timeslot-btn" data-time="18:30">18:30</button>
+                                        <button type="button" class="timeslot-btn active" data-time="19:00">19:00</button>
+                                        <button type="button" class="timeslot-btn" data-time="19:30">19:30</button>
+                                        <button type="button" class="timeslot-btn" data-time="20:00">20:00</button>
+                                        <button type="button" class="timeslot-btn" data-time="20:30">20:30</button>
+                                        <button type="button" class="timeslot-btn" data-time="21:00">21:00</button>
+                                    </div>
+                                </div>
+
+                                <!-- Row 3: Selected Table & Promotional Offer Side-by-Side -->
+                                <div class="pasgo-row-2">
+                                    <div class="pasgo-field" style="margin-bottom:0;">
+                                        <label for="pasgo-table-select" style="display:flex; justify-content:space-between; align-items:center;">
+                                            <span>🪑 Selected Table *</span>
+                                            <span id="selected-table-cap-hint" style="font-size:0.7rem; color:#4caf50;">Max 2 seats</span>
+                                        </label>
+                                        <select id="pasgo-table-select" class="pasgo-control" required></select>
+                                    </div>
+                                    <div class="pasgo-field" style="margin-bottom:0;">
+                                        <label for="pasgo-voucher-select">🎁 Promotional Offer</label>
+                                        <select id="pasgo-voucher-select" class="pasgo-control">
+                                            <option value="2" selected>WELCOME50 (-15%)</option>
+                                            <option value="1">SAVORA10 (-10%)</option>
+                                            <option value="3">VIPPARTY20 (-20%)</option>
+                                            <option value="">No offer</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- Row 4: Dining Occasion (Single Row) -->
+                                <div class="pasgo-field">
+                                    <label>🎉 Dining Occasion</label>
+                                    <input type="hidden" id="pasgo-occasion" value="Family Dining">
+                                    <div class="occasion-pills">
+                                        <button type="button" class="occasion-pill active" data-occasion="Family Dining">Family</button>
+                                        <button type="button" class="occasion-pill" data-occasion="Birthday">Birthday</button>
+                                        <button type="button" class="occasion-pill" data-occasion="Dating">Dating</button>
+                                        <button type="button" class="occasion-pill" data-occasion="Business">Business</button>
+                                        <button type="button" class="occasion-pill" data-occasion="Anniversary">Anniversary</button>
+                                    </div>
+                                </div>
+
+                                <!-- Row 5: Full Name & Phone Number -->
+                                <div class="pasgo-row-2">
+                                    <div class="pasgo-field" style="margin-bottom:0;">
+                                        <label for="pasgo-name">Full Name *</label>
+                                        <input type="text" id="pasgo-name" class="pasgo-control"
+                                               th:value="${session.authUser != null ? session.authUser.fullName : ''}"
+                                               placeholder="Your full name" required>
+                                    </div>
+                                    <div class="pasgo-field" style="margin-bottom:0;">
+                                        <label for="pasgo-phone">Phone Number *</label>
+                                        <input type="tel" id="pasgo-phone" class="pasgo-control"
+                                               th:value="${session.authUser != null and session.authUser.phone != null ? session.authUser.phone : ''}"
+                                               placeholder="0901 234 567" required>
+                                    </div>
+                                </div>
+
+                                <!-- Row 6: Email & Special Requests Side-by-Side -->
+                                <div class="pasgo-row-2">
+                                    <div class="pasgo-field" style="margin-bottom:0;">
+                                        <label for="pasgo-email">Email Address</label>
+                                        <input type="email" id="pasgo-email" class="pasgo-control"
+                                               th:value="${session.authUser != null ? session.authUser.email : ''}"
+                                               placeholder="you@example.com">
+                                    </div>
+                                    <div class="pasgo-field" style="margin-bottom:0;">
+                                        <label for="pasgo-note">Special Requests</label>
+                                        <input type="text" id="pasgo-note" class="pasgo-control"
+                                               placeholder="Baby chair, window seat...">
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="btn-pasgo-submit" id="btn-pasgo-submit">
+                                    Reserve Table Now (Free)
+                                </button>
+                            </form>
                         </div>
                     </div>
+                </aside>
+            </div>
+        </div>
+    </main>
+
+    <!-- Instant Booking Confirmation Ticket Modal -->
+    <div class="pasgo-modal-backdrop" id="pasgo-success-modal">
+        <div class="pasgo-modal">
+            <div class="pasgo-modal__header">
+                <div style="font-size: 2rem; margin-bottom: 4px;">✓</div>
+                <h3 style="font-family: var(--font-heading); font-size: 1.5rem;">Table Reservation Confirmed!</h3>
+                <p style="font-size: 0.85rem; opacity: 0.9;">Your table has been locked and reserved at Savora Restaurant</p>
+            </div>
+            <div class="pasgo-modal__body" id="pasgo-modal-details"></div>
+        </div>
+    </div>
+
+    <!-- Centered Sign-In Required Prompt Modal -->
+    <div class="pasgo-modal-backdrop" id="signin-prompt-modal">
+        <div class="pasgo-modal" style="max-width: 380px; text-align: center;">
+            <div class="pasgo-modal__body" style="padding: 28px 24px;">
+                <div style="width: 48px; height: 48px; border-radius: 50%; background: rgba(211, 47, 47, 0.12); color: #d32f2f; display: inline-flex; align-items: center; justify-content: center; font-size: 1.4rem; font-weight: 700; margin-bottom: 12px;">!</div>
+                <h3 style="font-family: var(--font-heading); font-size: 1.35rem; margin-bottom: 20px; color: var(--text-main);">Please sign in to continue.</h3>
+                <div style="display: flex; gap: 12px; justify-content: center;">
+                    <button type="button" class="btn btn-outline" id="btn-signin-cancel" style="flex: 1; padding: 9px 16px;">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="btn-signin-yes" style="flex: 1; padding: 9px 16px; background: #d32f2f;">Yes</button>
                 </div>
             </div>
         </div>
-    </section>
+    </div>
 
     <!-- Toast Notification -->
     <div id="home-toast" class="toast-notification"></div>
@@ -245,6 +383,6 @@
     <div th:replace="~{fragments/footer :: siteFooter}"></div>
 
     <script src="/assets/js/common/api.js"></script>
-    <script src="/assets/js/public/home.js"></script>
+    <script src="/assets/js/public/home.js?v=10"></script>
 </body>
 </html>
