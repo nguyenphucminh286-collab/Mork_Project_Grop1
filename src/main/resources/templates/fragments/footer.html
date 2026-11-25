@@ -38,4 +38,48 @@
         <span>&copy; 2026 Savora Fine Dining &amp; Restaurant Management System — Group 1.</span>
         <span>Built with Java 21, Spring Boot 4 &amp; MySQL 8.0</span>
     </div>
+
+    <!-- Savora AI Concierge Chatbot (Shown only on Customer / Public Pages) -->
+    <div th:if="${session.roleId == null or session.roleId == 2}" id="savora-chatbot-root" class="savora-chat-root no-print">
+        <!-- Floating Chat Launcher Button -->
+        <button type="button" id="savora-chat-launcher" class="savora-chat-launcher" aria-label="Open Savora AI Assistant">
+            <span class="savora-chat-launcher__icon">🤖</span>
+            <span class="savora-chat-launcher__label">Savora AI</span>
+        </button>
+
+        <!-- Chat Window Panel -->
+        <div id="savora-chat-window" class="savora-chat-window" style="display: none;">
+            <div class="savora-chat-header">
+                <div class="savora-chat-header__left">
+                    <div class="savora-chat-avatar">🤖</div>
+                    <div>
+                        <div class="savora-chat-title">Savora AI Concierge</div>
+                        <div class="savora-chat-subtitle">🟢 Strictly Savora Restaurant Assistant</div>
+                    </div>
+                </div>
+                <button type="button" id="savora-chat-close" class="savora-chat-close" aria-label="Close chat">✕</button>
+            </div>
+
+            <!-- Quick Topic Chips -->
+            <div class="savora-chat-chips" id="savora-chat-chips">
+                <button type="button" class="savora-chat-chip" data-q="What signature dishes and prices are on the menu?">🍽️ Menu &amp; Prices</button>
+                <button type="button" class="savora-chat-chip" data-q="Which dining tables are available right now?">🪑 Available Tables</button>
+                <button type="button" class="savora-chat-chip" data-q="What promotional vouchers and deals do you have?">🎁 Vouchers</button>
+                <button type="button" class="savora-chat-chip" data-q="How do I book a table online?">📅 How to Book</button>
+                <button type="button" class="savora-chat-chip" data-q="Where is Savora located and how do I send feedback?">📍 Contact &amp; Hours</button>
+            </div>
+
+            <!-- Messages Stream -->
+            <div class="savora-chat-messages" id="savora-chat-messages"></div>
+
+            <!-- Input Form -->
+            <form id="savora-chat-form" class="savora-chat-form">
+                <input type="text" id="savora-chat-input" class="savora-chat-input"
+                       placeholder="Ask about Savora menu, tables, booking, deals..." autocomplete="off" required>
+                <button type="submit" class="savora-chat-send" id="savora-chat-send" aria-label="Send message">➤</button>
+            </form>
+        </div>
+
+        <script src="/assets/js/public/chatbot.js?v=1"></script>
+    </div>
 </footer>

@@ -382,3 +382,246 @@ img {
         text-align: center;
     }
 }
+
+/* ===== Savora AI Concierge Chatbot Widget (Customer Pages) ===== */
+.savora-chat-root {
+    position: fixed;
+    bottom: 92px;
+    right: 26px;
+    z-index: 2750;
+    font-family: var(--font-main);
+}
+
+.savora-chat-launcher {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 18px;
+    border-radius: 999px;
+    border: 1.5px solid rgba(244, 201, 131, 0.55);
+    background: linear-gradient(135deg, #1b130f 0%, #8f4223 55%, #b85c38 100%);
+    color: #fff8f0;
+    font-family: var(--font-main);
+    font-size: 0.86rem;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 10px 26px rgba(24, 21, 18, 0.34);
+    transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+
+.savora-chat-launcher:hover {
+    transform: translateY(-3px) scale(1.03);
+    box-shadow: 0 14px 32px rgba(184, 92, 56, 0.48);
+}
+
+.savora-chat-launcher__icon {
+    font-size: 1.15rem;
+}
+
+.savora-chat-window {
+    position: fixed;
+    bottom: 148px;
+    right: 26px;
+    width: 380px;
+    max-width: calc(100vw - 32px);
+    height: 515px;
+    max-height: calc(100vh - 170px);
+    background: var(--bg-white);
+    color: var(--text-main);
+    border-radius: 20px;
+    border: 1.5px solid var(--border-color);
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.36);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.savora-chat-header {
+    background: linear-gradient(135deg, #181512 0%, #3d2314 100%);
+    color: #fff8f0;
+    padding: 14px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.savora-chat-header__left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.savora-chat-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(212, 163, 115, 0.22);
+    border: 1px solid rgba(244, 201, 131, 0.45);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+}
+
+.savora-chat-title {
+    font-weight: 800;
+    font-size: 0.94rem;
+    color: #fff8f0;
+}
+
+.savora-chat-subtitle {
+    font-size: 0.71rem;
+    color: #a5d6a7;
+    font-weight: 600;
+}
+
+.savora-chat-close {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff8f0;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.savora-chat-close:hover {
+    background: rgba(255, 255, 255, 0.24);
+}
+
+.savora-chat-chips {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding: 9px 12px;
+    background: var(--subtle-surface);
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+}
+
+.savora-chat-chip {
+    padding: 5px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-white);
+    color: var(--text-main);
+    font-family: var(--font-main);
+    font-size: 0.72rem;
+    font-weight: 700;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.savora-chat-chip:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+.savora-chat-messages {
+    flex: 1;
+    padding: 14px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.savora-chat-msg {
+    max-width: 89%;
+    padding: 11px 13px;
+    border-radius: 14px;
+    font-size: 0.82rem;
+    line-height: 1.5;
+    word-wrap: break-word;
+}
+
+.savora-chat-msg--bot {
+    align-self: flex-start;
+    background: var(--subtle-surface);
+    color: var(--text-main);
+    border: 1px solid var(--border-color);
+    border-bottom-left-radius: 4px;
+}
+
+.savora-chat-msg--blocked {
+    border-color: #ef9a9a;
+    background: rgba(211, 47, 47, 0.08);
+}
+
+.savora-chat-msg--user {
+    align-self: flex-end;
+    background: linear-gradient(135deg, #b85c38 0%, #8f4223 100%);
+    color: #ffffff;
+    border-bottom-right-radius: 4px;
+}
+
+.savora-chat-nav-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 9px;
+    padding-top: 8px;
+    border-top: 1px dashed var(--border-color);
+}
+
+.savora-chat-nav-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 10px;
+    border-radius: 8px;
+    background: var(--bg-white);
+    border: 1px solid var(--primary-color);
+    color: var(--primary-color) !important;
+    font-size: 0.74rem;
+    font-weight: 800;
+    text-decoration: none !important;
+    transition: all 0.16s ease;
+}
+
+.savora-chat-nav-link:hover {
+    background: var(--primary-color);
+    color: #ffffff !important;
+}
+
+.savora-chat-form {
+    display: flex;
+    gap: 8px;
+    padding: 10px 12px;
+    background: var(--subtle-surface);
+    border-top: 1px solid var(--border-color);
+    flex-shrink: 0;
+}
+
+.savora-chat-input {
+    flex: 1;
+    padding: 9px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    background: var(--input-surface);
+    color: var(--text-main);
+    font-family: var(--font-main);
+    font-size: 0.82rem;
+}
+
+.savora-chat-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.savora-chat-send {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    border: none;
+    background: var(--primary-color);
+    color: #ffffff;
+    font-size: 0.95rem;
+    font-weight: 800;
+    cursor: pointer;
+    flex-shrink: 0;
+}
