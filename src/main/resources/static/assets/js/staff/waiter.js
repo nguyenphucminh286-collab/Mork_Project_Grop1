@@ -491,5 +491,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     loadMenuDishes();
     loadFloorTables();
-    setInterval(loadFloorTables, 12000);
+    if (window.SavoraApp && SavoraApp.onRealtimeSync) {
+        SavoraApp.onRealtimeSync(loadFloorTables);
+    }
+    setInterval(loadFloorTables, 3000);
 });

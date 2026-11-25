@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Table QR Digital Menu &amp; Ordering — Savora Fine Dining</title>
     <script src="/assets/js/common/theme.js"></script>
-    <link rel="stylesheet" href="/assets/css/public/global.css?v=2">
-    <link rel="stylesheet" href="/assets/css/public/home.css?v=4">
-    <link rel="stylesheet" href="/assets/css/public/qr-order.css?v=2">
+    <link rel="stylesheet" href="/assets/css/public/global.css?v=3">
+    <link rel="stylesheet" href="/assets/css/public/home.css?v=6">
+    <link rel="stylesheet" href="/assets/css/public/qr-order.css?v=3">
 </head>
 <body th:data-initial-table="${initialTableCode != null ? initialTableCode : 'T1-B01'}">
     <main class="qr-page">
@@ -129,19 +129,8 @@
 
                         <!-- TAB 2: Live Kitchen Tracker & Running Bill -->
                         <div class="qr-panel-body" id="tab-content-kitchen" style="display: none;">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                            <div style="margin-bottom: 12px;">
                                 <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted);" id="qr-active-order-code">No active order yet</span>
-                                <button type="button" class="btn btn-outline" id="btn-refresh-kitchen" style="padding: 5px 10px; font-size: 0.75rem;">
-                                    🔄 Refresh Status
-                                </button>
-                            </div>
-
-                            <!-- Status Flow Legend -->
-                            <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; font-size: 0.7rem;">
-                                <span class="kitchen-badge k-status-PENDING">1. PENDING (Sent)</span>
-                                <span class="kitchen-badge k-status-COOKING">2. COOKING (Chef)</span>
-                                <span class="kitchen-badge k-status-READY">3. READY (Waiter)</span>
-                                <span class="kitchen-badge k-status-SERVED">4. SERVED</span>
                             </div>
 
                             <div id="qr-kitchen-items-list"></div>
@@ -175,7 +164,7 @@
     <!-- Shared Footer -->
     <div th:replace="~{fragments/footer :: siteFooter}"></div>
 
-    <script src="/assets/js/common/api.js"></script>
-    <script src="/assets/js/public/qr-order.js?v=3"></script>
+    <script src="/assets/js/common/api.js?v=2"></script>
+    <script src="/assets/js/public/qr-order.js?v=4"></script>
 </body>
 </html>

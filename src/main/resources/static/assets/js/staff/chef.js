@@ -197,5 +197,8 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btnRefreshKitchen')?.addEventListener('click', loadKitchenQueue);
 
   loadKitchenQueue();
-  setInterval(loadKitchenQueue, 6000);
+  if (window.SavoraApp && SavoraApp.onRealtimeSync) {
+    SavoraApp.onRealtimeSync(loadKitchenQueue);
+  }
+  setInterval(loadKitchenQueue, 2500);
 });

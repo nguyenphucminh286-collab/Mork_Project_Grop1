@@ -33,11 +33,13 @@
 }
 
 .waiter-kpi__val {
-    font-family: var(--font-heading);
-    font-size: 1.65rem;
-    font-weight: 700;
-    line-height: 1.1;
-    margin-top: 2px;
+    font-family: var(--font-main);
+    font-variant-numeric: tabular-nums lining-nums;
+    font-feature-settings: "tnum" 1, "lnum" 1;
+    font-size: 1.55rem;
+    font-weight: 800;
+    line-height: 1.15;
+    margin-top: 4px;
 }
 
 /* ===== 2. Two-Column Layout (Floor Grid Left + Selected Table Manager Right) ===== */
@@ -550,7 +552,7 @@
         height: auto !important;
         overflow: visible !important;
     }
-    .header, .topbar, .waiter-page, .footer, .toast-notification, .no-print {
+    main, .admin-main, .waiter-page, .header, .topbar, .footer, .toast-notification, .no-print {
         display: none !important;
     }
     .bill-modal-backdrop {

@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: savora-fine-dining
+    runtime: docker
+    branch: main
+    plan: free
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: render
+      - key: PORT
+        value: 8080

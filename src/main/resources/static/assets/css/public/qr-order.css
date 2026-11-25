@@ -2,6 +2,9 @@
 
 .qr-page {
     padding: 22px 0 64px;
+    font-family: var(--font-main);
+    font-variant-numeric: tabular-nums lining-nums;
+    font-feature-settings: "tnum" 1, "lnum" 1;
 }
 
 /* ===== 1. Table QR Session Banner ===== */
@@ -52,8 +55,12 @@
 }
 
 .qr-table-title {
-    font-family: var(--font-heading);
-    font-size: 1.55rem;
+    font-family: var(--font-main);
+    font-variant-numeric: tabular-nums lining-nums;
+    font-feature-settings: "tnum" 1, "lnum" 1;
+    font-size: 1.42rem;
+    font-weight: 800;
+    letter-spacing: -0.01em;
     color: var(--text-main);
     display: flex;
     align-items: center;
@@ -143,10 +150,47 @@
 }
 
 .qr-dish-card__body {
-    padding: 14px;
+    padding: 15px 16px;
     display: flex;
     flex-direction: column;
     flex: 1;
+}
+
+.qr-menu-card .pasgo-card__title {
+    font-family: var(--font-main);
+    font-weight: 800;
+    font-size: 1.35rem;
+    letter-spacing: -0.01em;
+}
+
+.qr-dish-card .menu-card__title {
+    font-family: var(--font-main);
+    font-variant-numeric: tabular-nums lining-nums;
+    font-feature-settings: "tnum" 1, "lnum" 1;
+    font-size: 1.02rem;
+    font-weight: 800;
+    line-height: 1.35;
+    min-height: 2.7em;
+    margin-bottom: 6px;
+    color: var(--text-main);
+}
+
+.qr-dish-card .menu-card__desc {
+    font-family: var(--font-main);
+    font-size: 0.82rem;
+    line-height: 1.5;
+    color: var(--text-muted);
+    flex: 1;
+    margin-bottom: 12px;
+}
+
+.qr-dish-card .menu-card__price,
+.qr-dish-card .menu-card__old-price,
+.qr-bill-summary,
+.qr-panel-tab {
+    font-family: var(--font-main);
+    font-variant-numeric: tabular-nums lining-nums;
+    font-feature-settings: "tnum" 1, "lnum" 1;
 }
 
 .qr-dish-note-input {

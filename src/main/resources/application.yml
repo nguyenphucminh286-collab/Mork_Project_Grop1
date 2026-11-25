@@ -24,4 +24,4 @@ cloudinary:
   api-key: ${CLOUDINARY_API_KEY:499611776514839}
   api-secret: ${CLOUDINARY_API_SECRET:s00278LAWCsjJt2cNJfpUCBI2Kg}
 server:
-  port: ${SERVER_PORT:8080}
+  port: ${PORT:${SERVER_PORT:8080}}

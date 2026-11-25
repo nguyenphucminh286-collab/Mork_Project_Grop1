@@ -40,14 +40,32 @@ document.addEventListener('DOMContentLoaded', () => {
         renderCart();
     };
 
-    const loadTableSession = async () => {
+    let prevItemStatuses = new Map();
+
+    const loadTableSession = async (silent = true) => {
         try {
             const res = await SavoraApp.fetchApi(`/api/public/qr/session?table=${encodeURIComponent(currentTableCode)}`);
-            currentSession = res.data;
+            const nextSession = res.data;
+
+            // Detect real-time dish status transitions (PENDING -> COOKING -> READY -> SERVED)
+            if (nextSession && Array.isArray(nextSession.placedItems) && prevItemStatuses.size > 0) {
+                nextSession.placedItems.forEach((item) => {
+                    const oldStatus = prevItemStatuses.get(item.orderItemId);
+                    if (oldStatus && oldStatus !== item.itemStatus) {
+                        showToast(`🔔 Kitchen Update: "${item.dishName}" is now ${item.itemStatus}!`);
+                    }
+                });
+            }
+
+            prevItemStatuses = new Map(
+                (nextSession?.placedItems || []).map((i) => [i.orderItemId, i.itemStatus])
+            );
+
+            currentSession = nextSession;
             renderSessionBanner();
             renderKitchenTracker();
         } catch (err) {
-            showToast(err.message);
+            if (!silent) showToast(err.message);
         }
     };
 
@@ -345,7 +363,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     renderCart();
     loadVouchers();
-    loadTableSession();
+    loadTableSession(false);
     loadMenu();
-    setInterval(loadTableSession, 15000);
+    SavoraApp.onRealtimeSync(() => loadTableSession(true));
+    setInterval(() => loadTableSession(true), 2500);
 });

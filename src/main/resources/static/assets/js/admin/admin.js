@@ -38,6 +38,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const res = await SavoraApp.fetchApi('/api/admin/overview');
             overviewData = res.data || overviewData;
             renderKpis();
+            renderRevenueCharts();
+            renderOrderTableFilterOptions();
             renderOrdersTable();
             renderCategoryOptions();
             renderDishesTable();
@@ -63,21 +65,201 @@ document.addEventListener('DOMContentLoaded', () => {
         if ($('adm-kpi-users')) $('adm-kpi-users').textContent = String(k.totalUsersCount || 0);
     };
 
-    // 1. Orders & Revenue Invoices
+    // 0. Interactive Daily Revenue & Payment Channel Charts
+    const renderRevenueCharts = () => {
+        const dailyBox = $('adm-daily-revenue-chart');
+        const breakdownBox = $('adm-payment-breakdown-chart');
+        const chartKpis = $('adm-chart-kpis');
+        if (!dailyBox || !breakdownBox) return;
+
+        const paidOrders = (overviewData.orders || []).filter(
+            (o) => o.status === 'PAID' || o.status === 'CLOSED'
+        );
+
+        // Build last 7 days array ending today
+        const days = [];
+        const now = new Date();
+        for (let i = 6; i >= 0; i--) {
+            const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+            const yyyy = d.getFullYear();
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const dd = String(d.getDate()).padStart(2, '0');
+            const key = `${yyyy}-${mm}-${dd}`;
+            const label = d.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit' });
+            const weekday = d.toLocaleDateString('en-US', { weekday: 'short' });
+            days.push({ key, label: `${weekday} ${label}`, revenue: 0, bills: 0, isToday: i === 0 });
+        }
+
+        let bankRevenue = 0;
+        let cashRevenue = 0;
+        const dishRevMap = {};
+
+        paidOrders.forEach((o) => {
+            const amt = Number(o.totalAmount || 0);
+            const rawDate = (o.closedAt || o.createdAt || '').slice(0, 10);
+            const daySlot = days.find((d) => d.key === rawDate);
+            if (daySlot) {
+                daySlot.revenue += amt;
+                daySlot.bills += 1;
+            } else if (days.length) {
+                // Group older orders into earliest visible bucket if needed
+                days[0].revenue += amt;
+                days[0].bills += 1;
+            }
+
+            if (o.paymentMethod === 'BANK_TRANSFER' || o.paymentMethod === 'VN_PAY') {
+                bankRevenue += amt;
+            } else {
+                cashRevenue += amt;
+            }
+
+            (o.items || []).forEach((it) => {
+                const name = it.dishName || 'Dish';
+                if (!dishRevMap[name]) dishRevMap[name] = { qty: 0, rev: 0 };
+                dishRevMap[name].qty += Number(it.quantity || 1);
+                dishRevMap[name].rev += Number(it.lineTotal || 0);
+            });
+        });
+
+        const totalRev = Math.max(1, bankRevenue + cashRevenue);
+        const maxDayRev = Math.max(1, ...days.map((d) => d.revenue));
+        const avgBill = paidOrders.length ? Math.round((bankRevenue + cashRevenue) / paidOrders.length) : 0;
+
+        if (chartKpis) {
+            chartKpis.innerHTML = `
+                <span class="adm-chart-pill">🧾 Avg Bill: <strong>${SavoraApp.formatCurrency(avgBill)}</strong></span>
+                <span class="adm-chart-pill" style="color:#2e7d32;">📈 Peak Day: <strong>${SavoraApp.formatCurrency(Math.max(...days.map(d => d.revenue)))}</strong></span>
+            `;
+        }
+
+        dailyBox.innerHTML = `
+            <div class="adm-bars-grid">
+                ${days.map((d) => {
+                    const heightPct = d.revenue > 0 ? Math.max(10, Math.round((d.revenue / maxDayRev) * 100)) : 4;
+                    const shortAmt = d.revenue >= 1000000
+                        ? `${(d.revenue / 1000000).toFixed(2)}M`
+                        : (d.revenue > 0 ? `${Math.round(d.revenue / 1000)}k` : '0');
+                    return `
+                        <div class="adm-bar-col" title="${d.label}: ${SavoraApp.formatCurrency(d.revenue)} (${d.bills} paid bill(s))">
+                            <span class="adm-bar-amount">${shortAmt}</span>
+                            <div class="adm-bar-track">
+                                <div class="adm-bar-fill ${d.isToday ? 'is-today' : ''}" style="height: ${heightPct}%;"></div>
+                            </div>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+            <div class="adm-bar-labels">
+                ${days.map((d) => `
+                    <div>
+                        <div class="adm-bar-day">${d.isToday ? 'Today' : d.label}</div>
+                        <div class="adm-bar-bills">${d.bills} bill${d.bills === 1 ? '' : 's'}</div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+
+        const bankPct = paidOrders.length ? Math.round((bankRevenue / totalRev) * 100) : 0;
+        const cashPct = paidOrders.length ? (100 - bankPct) : 0;
+
+        const topDishes = Object.entries(dishRevMap)
+            .sort((a, b) => b[1].rev - a[1].rev)
+            .slice(0, 3);
+
+        breakdownBox.innerHTML = `
+            <div class="adm-breakdown-section">
+                <div class="adm-breakdown-item">
+                    <div class="adm-breakdown-head">
+                        <span>🏦 VietQR Bank Transfer</span>
+                        <span style="color:#1565c0;">${SavoraApp.formatCurrency(bankRevenue)} (${bankPct}%)</span>
+                    </div>
+                    <div class="adm-progress-track">
+                        <div class="adm-progress-fill" style="width:${bankPct}%;background:linear-gradient(90deg,#1976d2,#42a5f5);"></div>
+                    </div>
+                </div>
+
+                <div class="adm-breakdown-item">
+                    <div class="adm-breakdown-head">
+                        <span>💵 Cash Payment</span>
+                        <span style="color:#2e7d32;">${SavoraApp.formatCurrency(cashRevenue)} (${cashPct}%)</span>
+                    </div>
+                    <div class="adm-progress-track">
+                        <div class="adm-progress-fill" style="width:${cashPct}%;background:linear-gradient(90deg,#2e7d32,#66bb6a);"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="adm-top-dishes-box">
+                <div style="font-size:0.74rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-bottom:6px;">
+                    🏆 Top Revenue Dishes
+                </div>
+                ${topDishes.length ? topDishes.map(([name, info], idx) => `
+                    <div class="adm-top-dish-row">
+                        <span style="font-weight:700;">${idx + 1}. ${name} <small style="color:var(--text-muted);">(${info.qty}x)</small></span>
+                        <strong style="color:var(--primary-color);">${SavoraApp.formatCurrency(info.rev)}</strong>
+                    </div>
+                `).join('') : `<div style="font-size:0.78rem;color:var(--text-muted);">No paid dishes recorded yet.</div>`}
+            </div>
+        `;
+    };
+
+    // 1. Orders & Revenue Invoices (with Filter by Table, Status, and Search)
+    const renderOrderTableFilterOptions = () => {
+        const sel = $('adm-order-table-filter');
+        if (!sel) return;
+        const currentVal = sel.value || 'ALL';
+
+        const tableMap = new Map();
+        (overviewData.tables || []).forEach((t) => {
+            if (t.tableCode) {
+                tableMap.set(t.tableCode, `${t.tableCode} — ${t.tableName || ''} (${t.area || ''})`);
+            }
+        });
+        (overviewData.orders || []).forEach((o) => {
+            if (o.tableCode && !tableMap.has(o.tableCode)) {
+                tableMap.set(o.tableCode, o.tableCode);
+            }
+        });
+
+        const countByTable = {};
+        (overviewData.orders || []).forEach((o) => {
+            const c = o.tableCode || 'TAKEAWAY';
+            countByTable[c] = (countByTable[c] || 0) + 1;
+        });
+
+        const options = [`<option value="ALL">🪑 All Tables (${(overviewData.orders || []).length} bills)</option>`];
+        Array.from(tableMap.entries()).forEach(([code, label]) => {
+            const cnt = countByTable[code] || 0;
+            options.push(`<option value="${code}">🍽️ ${label} (${cnt} bill${cnt === 1 ? '' : 's'})</option>`);
+        });
+
+        sel.innerHTML = options.join('');
+        if ([...tableMap.keys(), 'ALL'].includes(currentVal)) {
+            sel.value = currentVal;
+        }
+    };
+
     const renderOrdersTable = () => {
         const tbody = $('adm-orders-tbody');
         if (!tbody) return;
         const q = ($('adm-order-search')?.value || '').trim().toLowerCase();
         const st = $('adm-order-status-filter')?.value || 'ALL';
+        const tb = $('adm-order-table-filter')?.value || 'ALL';
 
         const filtered = (overviewData.orders || []).filter((o) => {
             const matchSt = st === 'ALL' || o.status === st;
+            const matchTb = tb === 'ALL' || o.tableCode === tb;
             const matchQ = !q || [o.orderCode, o.tableCode, o.guestName, o.reservationCode].filter(Boolean).join(' ').toLowerCase().includes(q);
-            return matchSt && matchQ;
+            return matchSt && matchTb && matchQ;
         });
 
+        const sumFiltered = filtered.reduce((acc, o) => acc + Number(o.totalAmount || 0), 0);
+        if ($('adm-order-filter-summary')) {
+            $('adm-order-filter-summary').innerHTML = `${tb === 'ALL' ? 'All Tables' : `Table <strong>${tb}</strong>`}: <strong>${filtered.length}</strong> bill(s) • Total: <strong>${SavoraApp.formatCurrency(sumFiltered)}</strong>`;
+        }
+
         if (!filtered.length) {
-            tbody.innerHTML = `<tr><td colspan="11" style="text-align:center;padding:24px;color:var(--text-muted);">No orders matching filter.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="11" style="text-align:center;padding:24px;color:var(--text-muted);">No invoices found for ${tb === 'ALL' ? 'the current filter' : `Table ${tb}`}.</td></tr>`;
             return;
         }
 
@@ -164,6 +346,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     $('btn-adm-bill-print')?.addEventListener('click', () => window.print());
     $('adm-order-search')?.addEventListener('input', renderOrdersTable);
+    $('adm-order-table-filter')?.addEventListener('change', renderOrdersTable);
     $('adm-order-status-filter')?.addEventListener('change', renderOrdersTable);
 
     // 2. Menu & Dishes

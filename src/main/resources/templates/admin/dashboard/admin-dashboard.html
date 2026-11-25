@@ -7,8 +7,8 @@
     <script src="/assets/js/common/theme.js"></script>
     <link rel="stylesheet" href="/assets/css/public/global.css?v=2">
     <link rel="stylesheet" href="/assets/css/public/home.css?v=4">
-    <link rel="stylesheet" href="/assets/css/staff/waiter.css?v=4">
-    <link rel="stylesheet" href="/assets/css/admin/admin.css?v=1">
+    <link rel="stylesheet" href="/assets/css/staff/waiter.css?v=5">
+    <link rel="stylesheet" href="/assets/css/admin/admin.css?v=4">
 </head>
 <body>
 <div th:replace="~{fragments/header :: siteHeader}"></div>
@@ -22,13 +22,7 @@
             <p>Monitor live revenue &amp; tax invoices, manage menu dishes, dining tables, promotional vouchers, and staff accounts.</p>
         </div>
         <div class="admin-banner-actions">
-            <a href="/staff/tables" class="btn btn-outline" style="background:rgba(255,255,255,0.1);color:#fff;border-color:rgba(255,255,255,0.25);padding:8px 14px;font-size:0.82rem;">
-                🪑 Open Waiter Floor
-            </a>
-            <a href="/staff/kitchen" class="btn btn-outline" style="background:rgba(255,255,255,0.1);color:#fff;border-color:rgba(255,255,255,0.25);padding:8px 14px;font-size:0.82rem;">
-                👨‍🍳 Open Chef Kitchen
-            </a>
-            <button type="button" class="btn btn-primary" id="btn-admin-refresh" style="padding:8px 16px;font-size:0.82rem;">
+            <button type="button" class="btn btn-primary" id="btn-admin-refresh" style="padding:9px 18px;font-size:0.84rem;">
                 🔄 Refresh Data
             </button>
         </div>
@@ -38,7 +32,7 @@
     <section class="admin-kpi-grid">
         <div class="admin-kpi-card" style="border-left: 4px solid #2e7d32;">
             <div class="admin-kpi-label">💰 Total Paid Revenue</div>
-            <div class="admin-kpi-value" id="adm-kpi-revenue" style="color:#2e7d32;">0 VND</div>
+            <div class="admin-kpi-value" id="adm-kpi-revenue">0 VND</div>
             <div class="admin-kpi-sub" id="adm-kpi-today-revenue">Today: 0 VND</div>
         </div>
         <div class="admin-kpi-card" style="border-left: 4px solid #1565c0;">
@@ -54,7 +48,7 @@
         <div class="admin-kpi-card" style="border-left: 4px solid #8e24aa;">
             <div class="admin-kpi-label">🍽️ Menu Dishes</div>
             <div class="admin-kpi-value" id="adm-kpi-dishes">0</div>
-            <div class="admin-kpi-sub" id="adm-kpi-dishes-sub">0 available</div>
+            <div class="admin-kpi-sub" id="adm-kpi-dishes-sub">0 available on menu</div>
         </div>
         <div class="admin-kpi-card" style="border-left: 4px solid #00838f;">
             <div class="admin-kpi-label">🪑 Dining Tables</div>
@@ -64,7 +58,7 @@
         <div class="admin-kpi-card" style="border-left: 4px solid #b05628;">
             <div class="admin-kpi-label">👥 System Accounts</div>
             <div class="admin-kpi-value" id="adm-kpi-users">0</div>
-            <div class="admin-kpi-sub">Admins, Staff, Chefs &amp; Guests</div>
+            <div class="admin-kpi-sub">Admins, Staff &amp; Guests</div>
         </div>
     </section>
 
@@ -77,13 +71,49 @@
         <button type="button" class="admin-tab-btn" data-tab="tab-users">👥 5. Staff &amp; User Accounts</button>
     </nav>
 
-    <!-- TAB 1: Revenue & Invoices -->
+    <!-- TAB 1: Revenue Charts & Invoices -->
     <section class="admin-tab-pane active" id="tab-orders">
+        <!-- Revenue Analytics Charts Grid -->
+        <div class="admin-charts-grid">
+            <!-- Left Chart: 7-Day Daily Revenue Bar & Trend Chart -->
+            <div class="admin-panel" style="margin-bottom:0;">
+                <div class="admin-panel-title">
+                    <div>
+                        <span>📈 Daily Revenue Analytics (Last 7 Days)</span>
+                        <div style="font-size:0.75rem;color:var(--text-muted);font-weight:600;margin-top:2px;">
+                            Real-time paid bill revenue aggregated by day
+                        </div>
+                    </div>
+                    <div class="adm-chart-summary-pills" id="adm-chart-kpis"></div>
+                </div>
+                <div class="adm-bar-chart-wrap" id="adm-daily-revenue-chart"></div>
+            </div>
+
+            <!-- Right Chart: Revenue by Payment Method & Zone Breakdown -->
+            <div class="admin-panel" style="margin-bottom:0;">
+                <div class="admin-panel-title">
+                    <div>
+                        <span>💳 Income Breakdown</span>
+                        <div style="font-size:0.75rem;color:var(--text-muted);font-weight:600;margin-top:2px;">
+                            By payment channel &amp; top dishes
+                        </div>
+                    </div>
+                </div>
+                <div id="adm-payment-breakdown-chart"></div>
+            </div>
+        </div>
+
         <div class="admin-panel">
             <div class="admin-panel-title">
-                <span>🧾 Restaurant Orders &amp; Billing Invoices</span>
-                <div style="display:flex;gap:10px;flex-wrap:wrap;">
-                    <input type="text" id="adm-order-search" class="pasgo-control" placeholder="Search order code, table, guest..." style="width:230px;padding:7px 12px;font-size:0.82rem;">
+                <div>
+                    <span>🧾 Restaurant Orders &amp; Billing Invoices</span>
+                    <span id="adm-order-filter-summary" class="adm-chart-pill" style="margin-left:10px;font-size:0.73rem;"></span>
+                </div>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+                    <input type="text" id="adm-order-search" class="pasgo-control" placeholder="Search order code, guest..." style="width:210px;padding:7px 12px;font-size:0.82rem;">
+                    <select id="adm-order-table-filter" class="pasgo-control" style="width:auto;padding:7px 12px;font-size:0.82rem;">
+                        <option value="ALL">🪑 All Tables</option>
+                    </select>
                     <select id="adm-order-status-filter" class="pasgo-control" style="width:auto;padding:7px 12px;font-size:0.82rem;">
                         <option value="ALL">All Statuses</option>
                         <option value="PAID">✅ PAID</option>
@@ -456,6 +486,6 @@
 <div th:replace="~{fragments/footer :: siteFooter}"></div>
 
 <script src="/assets/js/common/api.js"></script>
-<script src="/assets/js/admin/admin.js?v=2"></script>
+<script src="/assets/js/admin/admin.js?v=4"></script>
 </body>
 </html>

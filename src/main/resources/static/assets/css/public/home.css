@@ -699,10 +699,14 @@
 }
 
 .menu-card__title {
-    font-family: var(--font-heading);
-    font-size: 1.05rem;
+    font-family: var(--font-main);
+    font-variant-numeric: tabular-nums lining-nums;
+    font-feature-settings: "tnum" 1, "lnum" 1;
+    font-size: 1.02rem;
+    font-weight: 800;
     color: var(--text-main);
     margin: 4px 0 6px;
+    line-height: 1.35;
 }
 
 .menu-card__desc {
