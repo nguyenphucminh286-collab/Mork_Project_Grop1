@@ -7,17 +7,21 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.SecurityFilterChain;
 import vn.edu.fpt.savora.dto.response.AuthUserResponse;
+import vn.edu.fpt.savora.exception.AppException;
 import vn.edu.fpt.savora.service.AuthService;
+import vn.edu.fpt.savora.service.UserActivityTrackingService;
 
 @Configuration
 @RequiredArgsConstructor
 public class SecurityConfig {
 
     private final AuthService authService;
+    private final UserActivityTrackingService userActivityTrackingService;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http,
@@ -31,15 +35,25 @@ public class SecurityConfig {
         if (registrationRepository.getIfAvailable() != null) {
             http.oauth2Login(oauth -> oauth.loginPage("/login")
                 .successHandler((request, response, authentication) -> {
-                    OAuth2User principal = (OAuth2User) authentication.getPrincipal();
-                    AuthUserResponse user = authService.loginWithOAuth2(principal);
-                    HttpSession session = request.getSession();
-                    session.setAttribute("userId", user.getUserId());
-                    session.setAttribute("roleId", user.getRoleId());
-                    session.setAttribute("roleName", user.getRoleName());
-                    session.setAttribute("fullName", user.getFullName());
-                    session.setAttribute("authUser", user);
-                    response.sendRedirect("/home");
+                    try {
+                        OAuth2User principal = (OAuth2User) authentication.getPrincipal();
+                        AuthUserResponse user = authService.loginWithOAuth2(principal);
+                        HttpSession session = request.getSession();
+                        session.setAttribute("userId", user.getUserId());
+                        session.setAttribute("roleId", user.getRoleId());
+                        session.setAttribute("roleName", user.getRoleName());
+                        session.setAttribute("fullName", user.getFullName());
+                        session.setAttribute("authUser", user);
+                        userActivityTrackingService.recordUserLogin(user, request);
+                        response.sendRedirect(user.getRedirectUrl() != null ? user.getRedirectUrl() : "/home");
+                    } catch (AppException | IllegalArgumentException ex) {
+                        SecurityContextHolder.clearContext();
+                        HttpSession session = request.getSession(false);
+                        if (session != null) {
+                            session.invalidate();
+                        }
+                        response.sendRedirect("/login?locked=true");
+                    }
                 }).failureUrl("/login?error=oauth2_failed"));
         }
 

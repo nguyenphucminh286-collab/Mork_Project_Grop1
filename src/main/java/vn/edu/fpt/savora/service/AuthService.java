@@ -148,9 +148,17 @@ public class AuthService {
                     .build();
 
             user = userRepository.save(user);
-        } else if (picture != null && !picture.isBlank()) {
-            user.setAvatarUrl(picture);
-            user = userRepository.save(user);
+        } else {
+            if (user.getStatus() == UserStatus.LOCKED) {
+                throw new AppException(ErrorCode.ACCOUNT_LOCKED);
+            }
+            if (user.getStatus() == UserStatus.PENDING) {
+                throw new AppException(ErrorCode.ACCOUNT_PENDING);
+            }
+            if (picture != null && !picture.isBlank()) {
+                user.setAvatarUrl(picture);
+                user = userRepository.save(user);
+            }
         }
 
         return buildAuthUserResponse(user);

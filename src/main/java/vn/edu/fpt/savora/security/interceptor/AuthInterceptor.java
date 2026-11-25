@@ -6,6 +6,9 @@ import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
+import vn.edu.fpt.savora.entity.User;
+import vn.edu.fpt.savora.enums.UserStatus;
+import vn.edu.fpt.savora.repository.UserRepository;
 import vn.edu.fpt.savora.service.UserActivityTrackingService;
 
 import java.io.IOException;
@@ -23,6 +26,7 @@ import java.io.IOException;
 public class AuthInterceptor implements HandlerInterceptor {
 
     private final UserActivityTrackingService userActivityTrackingService;
+    private final UserRepository userRepository;
 
     @Override
     public boolean preHandle(HttpServletRequest req, HttpServletResponse resp, Object handler) throws IOException {
@@ -46,6 +50,22 @@ public class AuthInterceptor implements HandlerInterceptor {
         HttpSession session = req.getSession(false);
         Integer userId = session != null ? (Integer) session.getAttribute("userId") : null;
         Integer roleId = session != null ? (Integer) session.getAttribute("roleId") : null;
+
+        // 0. Kiểm tra tài khoản bị khóa theo thời gian thực (Kể cả tài khoản đăng nhập bằng Gmail / Facebook OAuth2)
+        if (userId != null) {
+            User currentUser = userRepository.findById(userId).orElse(null);
+            if (currentUser == null || currentUser.getStatus() == UserStatus.LOCKED) {
+                session.invalidate();
+                if (path.startsWith("/api/")) {
+                    resp.setContentType("application/json;charset=UTF-8");
+                    resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                    resp.getWriter().write("{\"success\":false,\"message\":\"Your account has been locked by the Administrator.\",\"data\":null}");
+                } else {
+                    resp.sendRedirect("/login?locked=true");
+                }
+                return false;
+            }
+        }
 
         // 1. Phân quyền ADMIN (roleId = 1)
         if (path.startsWith("/admin/") || path.startsWith("/api/admin/")) {

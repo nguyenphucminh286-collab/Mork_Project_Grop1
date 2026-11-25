@@ -73,7 +73,8 @@
 
                     <!-- Alert Box -->
                     <div class="auth-alert" th:if="${errorMessage}" th:text="${errorMessage}"></div>
-              <div class="auth-alert" th:if="${param.error}">Social login failed.</div>
+                    <div class="auth-alert" th:if="${param.error}">Social login failed.</div>
+                    <div class="auth-alert" th:if="${param.locked}">Your account has been locked by the Administrator. Please contact Savora support.</div>
 
 
                     <!-- Email & Password Form -->
