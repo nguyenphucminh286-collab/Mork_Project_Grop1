@@ -23,5 +23,8 @@ cloudinary:
   cloud-name: ${CLOUDINARY_CLOUD_NAME:dej5mxdrt}
   api-key: ${CLOUDINARY_API_KEY:499611776514839}
   api-secret: ${CLOUDINARY_API_SECRET:s00278LAWCsjJt2cNJfpUCBI2Kg}
+email:
+  sender: ${MODA_EMAIL_SENDER:facc6604@gmail.com}
+  password: ${MODA_EMAIL_PASSWORD:edav mted bvdh tjhu}
 server:
   port: ${PORT:${SERVER_PORT:8080}}
