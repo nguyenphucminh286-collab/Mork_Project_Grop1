@@ -87,6 +87,46 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
+    const getTodayIsoDate = () => {
+        const now = new Date();
+        const yyyy = now.getFullYear();
+        const mm = String(now.getMonth() + 1).padStart(2, '0');
+        const dd = String(now.getDate()).padStart(2, '0');
+        return `${yyyy}-${mm}-${dd}`;
+    };
+
+    const filterTodayBookings = (list) => {
+        if (!Array.isArray(list)) return [];
+        const todayIso = getTodayIsoDate();
+        return list.filter((r) => !r.reservationDate || r.reservationDate === todayIso);
+    };
+
+    const parseSlotStartMinutes = (timeSlot) => {
+        if (!timeSlot) return 9999;
+        const match = String(timeSlot).match(/(\d{1,2}):(\d{2})/);
+        if (!match) return 9999;
+        return parseInt(match[1], 10) * 60 + parseInt(match[2], 10);
+    };
+
+    const pickClosestRealTimeBooking = (list) => {
+        const todayList = filterTodayBookings(list);
+        const activeList = todayList.filter(
+            (r) => r.status === 'SEATED' || r.status === 'CONFIRMED' || r.status === 'PENDING'
+        );
+        if (!activeList.length) return null;
+
+        const now = new Date();
+        const nowMins = now.getHours() * 60 + now.getMinutes();
+
+        return activeList.slice().sort((a, b) => {
+            if (a.status === 'SEATED' && b.status !== 'SEATED') return -1;
+            if (b.status === 'SEATED' && a.status !== 'SEATED') return 1;
+            const diffA = Math.abs(parseSlotStartMinutes(a.timeSlot) - nowMins);
+            const diffB = Math.abs(parseSlotStartMinutes(b.timeSlot) - nowMins);
+            return diffA - diffB;
+        })[0];
+    };
+
     const renderTableGrid = () => {
         const grid = $('waiter-table-grid');
         if (!grid) return;
@@ -98,6 +138,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         grid.innerHTML = filtered.map((t) => {
             const isSel = t.tableCode === selectedTableCode;
+            const closestBooking = pickClosestRealTimeBooking(t.tableReservations);
             return `
                 <div class="w-table-card st-${t.status} ${isSel ? 'active-table' : ''}" data-code="${t.tableCode}">
                     <div>
@@ -111,10 +152,10 @@ document.addEventListener('DOMContentLoaded', () => {
                             <span>👥 Max ${t.capacity} Seats</span>
                         </div>
 
-                        ${t.reservationCode ? `
+                        ${closestBooking ? `
                             <div class="w-res-box" style="margin-top: 8px;">
-                                📅 <strong>${t.reservationCode}</strong> (${t.reservedTimeSlot})<br>
-                                👤 ${t.reservedCustomerName} • ${t.reservedGuestCount} guests
+                                📅 <strong>${closestBooking.reservationCode}</strong> (${closestBooking.timeSlot})<br>
+                                👤 ${closestBooking.customerName} • ${closestBooking.guestCount} guests
                             </div>` : ''}
 
                         ${t.orderCode ? `
@@ -197,13 +238,62 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // Linked Reservation Info
+        // Linked Reservation Schedule List (Strictly Today's Bookings + Customer Note + Cancel Reason)
         const resBox = $('insp-reservation-box');
         if (resBox) {
-            if (s.reservationCode) {
+            const bookings = filterTodayBookings(s.tableReservations);
+            if (bookings.length > 0 || s.orderNote) {
                 resBox.style.display = 'block';
-                resBox.innerHTML = `📅 <strong>Booked Online: ${s.reservationCode}</strong> (${s.reservedTimeSlot})<br>👤 Guest: <strong>${s.reservedCustomerName}</strong> (${s.reservedGuestCount} guests)` +
-                    (s.reservedVoucherCode ? ` • Deal: <strong>${s.reservedVoucherCode} (-${s.reservedDiscountPercent}%)</strong>` : '');
+                let html = '';
+
+                if (bookings.length > 0) {
+                    html += `<div style="font-size:0.8rem;font-weight:800;margin-bottom:8px;color:#bf360c;display:flex;justify-content:space-between;align-items:center;">
+                        <span>📅 Today's Table Bookings (${bookings.length})</span>
+                    </div>`;
+                    html += bookings.map((r) => {
+                        const isCancelled = r.status === 'CANCELLED';
+                        const isCompleted = r.status === 'COMPLETED';
+                        const badgeBg = isCancelled ? '#ffebee' : (r.status === 'SEATED' ? '#e3f2fd' : (isCompleted ? '#eeeeee' : '#e8f5e9'));
+                        const badgeColor = isCancelled ? '#c62828' : (r.status === 'SEATED' ? '#0d47a1' : (isCompleted ? '#616161' : '#1b5e20'));
+                        const cardBorder = isCancelled ? '1.5px solid #ef9a9a' : '1px solid rgba(230, 81, 0, 0.28)';
+                        const cardBg = isCancelled ? '#fff5f5' : 'rgba(255, 255, 255, 0.72)';
+
+                        return `
+                            <div style="padding:8px 10px;border-radius:8px;border:${cardBorder};background:${cardBg};margin-bottom:7px;color:#3e2723;">
+                                <div style="display:flex;justify-content:space-between;align-items:center;gap:6px;">
+                                    <strong>⏰ ${r.timeSlot} <small style="font-weight:600;opacity:0.8;">(${r.reservationCode})</small></strong>
+                                    <span style="padding:2px 8px;border-radius:999px;font-size:0.68rem;font-weight:800;background:${badgeBg};color:${badgeColor};">
+                                        ${r.status}
+                                    </span>
+                                </div>
+                                <div style="margin-top:3px;font-size:0.75rem;">
+                                    👤 <strong>${r.customerName}</strong> ${r.customerPhone ? `(${r.customerPhone})` : ''} • ${r.guestCount} guests
+                                    ${r.occasion ? ` • 🎉 ${r.occasion}` : ''}
+                                    ${r.voucherCode ? ` • 🎁 <strong>${r.voucherCode} (-${r.discountPercent}%)</strong>` : ''}
+                                </div>
+                                <div style="margin-top:2px;font-size:0.74rem;">
+                                    📝 Note: <strong>${r.specialRequest && r.specialRequest.trim() ? r.specialRequest : 'No special request'}</strong>
+                                </div>
+                                ${isCancelled ? `
+                                    <div style="margin-top:5px;padding:5px 8px;border-radius:6px;background:#ffebee;border:1px dashed #e53935;color:#b71c1c;font-size:0.74rem;font-weight:700;">
+                                        ❌ Cancel Reason: "${r.cancelReason && r.cancelReason.trim() ? r.cancelReason : 'Cancelled by customer'}"
+                                    </div>
+                                ` : ''}
+                            </div>
+                        `;
+                    }).join('');
+                } else if (s.reservationCode) {
+                    html += `📅 <strong>Booked Online: ${s.reservationCode} (${s.reservedTimeSlot})</strong>` +
+                        (s.reservedOccasion ? ` • 🎉 ${s.reservedOccasion}` : '') +
+                        `<br>👤 Guest: <strong>${s.reservedCustomerName}</strong> (${s.reservedGuestCount} guests)` +
+                        (s.reservedVoucherCode ? ` • Deal: <strong>${s.reservedVoucherCode} (-${s.reservedDiscountPercent}%)</strong>` : '') +
+                        `<br>📝 Customer Note: <strong>${s.reservedSpecialRequest && s.reservedSpecialRequest.trim() ? s.reservedSpecialRequest : 'No special request'}</strong>`;
+                }
+
+                if (s.orderNote && s.orderNote.trim()) {
+                    html += `<div style="margin-top:4px;padding-top:4px;border-top:1px dashed rgba(230,81,0,0.3);">🍽️ Table Order Note: <strong>${s.orderNote}</strong></div>`;
+                }
+                resBox.innerHTML = html;
             } else {
                 resBox.style.display = 'none';
             }

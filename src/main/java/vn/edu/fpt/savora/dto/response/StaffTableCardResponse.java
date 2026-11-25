@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Data
 @Builder
@@ -28,6 +29,11 @@ public class StaffTableCardResponse {
     private String reservedTimeSlot;
     private Integer reservedGuestCount;
     private String reservationStatus;
+    private String reservedOccasion;
+    private String reservedSpecialRequest;
+    private String orderNote;
+    private int totalBookingsCount;
+    private List<QrTableSessionResponse.TableReservationItemDto> tableReservations;
 
     // Active order summary (if any)
     private Integer orderId;

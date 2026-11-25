@@ -27,10 +27,15 @@ public class QrTableSessionResponse {
     private Integer reservationId;
     private String reservationCode;
     private String reservedCustomerName;
+    private String reservedCustomerPhone;
     private String reservedTimeSlot;
     private Integer reservedGuestCount;
     private String reservedVoucherCode;
     private Integer reservedDiscountPercent;
+    private String reservedOccasion;
+    private String reservedSpecialRequest;
+    private String orderNote;
+    private List<TableReservationItemDto> tableReservations;
 
     // 3. Active Dine-In Order & Running Bill
     private Integer orderId;
@@ -59,5 +64,27 @@ public class QrTableSessionResponse {
         private String note;
         private String itemStatus;
         private String orderedAt;
+    }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class TableReservationItemDto {
+        private Integer reservationId;
+        private String reservationCode;
+        private String customerName;
+        private String customerPhone;
+        private String reservationDate;
+        private String timeSlot;
+        private Integer guestCount;
+        private Integer adultCount;
+        private Integer childCount;
+        private String occasion;
+        private String specialRequest;
+        private String voucherCode;
+        private Integer discountPercent;
+        private String status;
+        private String cancelReason;
     }
 }

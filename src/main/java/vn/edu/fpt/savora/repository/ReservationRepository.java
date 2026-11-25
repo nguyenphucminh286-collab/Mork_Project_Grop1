@@ -16,11 +16,17 @@ public interface ReservationRepository extends JpaRepository<Reservation, Intege
 
     List<Reservation> findByReservationDateAndStatusIn(LocalDate reservationDate, Collection<ReservationStatus> statuses);
 
-    @Query("SELECT r FROM Reservation r WHERE r.diningTable.tableId = :tableId AND r.reservationDate = :date AND r.status IN :statuses")
+    @Query("SELECT r FROM Reservation r WHERE r.diningTable.tableId = :tableId AND r.reservationDate = :date AND r.status IN :statuses ORDER BY r.reservationTime ASC")
     List<Reservation> findActiveByTableAndDate(
             @Param("tableId") Integer tableId,
             @Param("date") LocalDate date,
             @Param("statuses") Collection<ReservationStatus> statuses
+    );
+
+    @Query("SELECT r FROM Reservation r WHERE r.diningTable.tableId = :tableId AND r.reservationDate = :fromDate ORDER BY r.reservationTime ASC")
+    List<Reservation> findAllByTableFromDate(
+            @Param("tableId") Integer tableId,
+            @Param("fromDate") LocalDate fromDate
     );
 
     List<Reservation> findByCustomer_UserIdOrderByCreatedAtDesc(Integer userId);

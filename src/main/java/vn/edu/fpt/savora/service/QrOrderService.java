@@ -52,6 +52,7 @@ public class QrOrderService {
         List<DiningTable> tables = diningTableRepository.findAllByOrderByTableCodeAsc();
         return tables.stream().map(table -> {
             Reservation todayRes = findTodayActiveReservation(table.getTableId());
+            List<QrTableSessionResponse.TableReservationItemDto> allTableRes = findAllTableReservationDtos(table.getTableId());
             RestaurantOrder activeOrder = findActiveOrderSafely(table.getTableId());
 
             int totalItems = 0, pendingCount = 0, cookingCount = 0, readyCount = 0, servedCount = 0;
@@ -92,6 +93,11 @@ public class QrOrderService {
                     .reservedTimeSlot(timeSlot)
                     .reservedGuestCount(todayRes != null ? todayRes.getGuestCount() : null)
                     .reservationStatus(todayRes != null ? todayRes.getStatus().name() : null)
+                    .reservedOccasion(todayRes != null ? todayRes.getOccasion() : null)
+                    .reservedSpecialRequest(todayRes != null ? todayRes.getSpecialRequest() : null)
+                    .orderNote(activeOrder != null ? activeOrder.getNote() : null)
+                    .totalBookingsCount(allTableRes.size())
+                    .tableReservations(allTableRes)
                     .orderId(activeOrder != null ? activeOrder.getOrderId() : null)
                     .orderCode(activeOrder != null ? activeOrder.getOrderCode() : null)
                     .totalAmount(activeOrder != null ? activeOrder.getTotalAmount() : BigDecimal.ZERO)
@@ -498,11 +504,49 @@ public class QrOrderService {
         }
     }
 
+    private List<QrTableSessionResponse.TableReservationItemDto> findAllTableReservationDtos(Integer tableId) {
+        try {
+            List<Reservation> list = reservationRepository.findAllByTableFromDate(tableId, LocalDate.now());
+            return list.stream().map(r -> {
+                String slot = "";
+                if (r.getReservationTime() != null) {
+                    String s = r.getReservationTime().format(TIME_FMT);
+                    String e = r.getEndTime() != null
+                            ? r.getEndTime().format(TIME_FMT)
+                            : r.calculateEndTime().format(TIME_FMT);
+                    slot = s + " – " + e;
+                }
+                Voucher rv = r.getVoucher();
+                return QrTableSessionResponse.TableReservationItemDto.builder()
+                        .reservationId(r.getReservationId())
+                        .reservationCode(r.getReservationCode())
+                        .customerName(r.getCustomerName())
+                        .customerPhone(r.getCustomerPhone())
+                        .reservationDate(r.getReservationDate() != null ? r.getReservationDate().toString() : "")
+                        .timeSlot(slot)
+                        .guestCount(r.getGuestCount())
+                        .adultCount(r.getAdultCount())
+                        .childCount(r.getChildCount())
+                        .occasion(r.getOccasion())
+                        .specialRequest(r.getSpecialRequest())
+                        .voucherCode(rv != null ? rv.getVoucherCode() : null)
+                        .discountPercent(rv != null ? rv.getDiscountPercent() : null)
+                        .status(r.getStatus() != null ? r.getStatus().name() : "PENDING")
+                        .cancelReason(r.getCancelReason())
+                        .build();
+            }).collect(Collectors.toList());
+        } catch (Exception ex) {
+            return List.of();
+        }
+    }
+
     private QrTableSessionResponse buildSessionResponse(
             DiningTable table,
             Reservation todayRes,
             RestaurantOrder activeOrder
     ) {
+        List<QrTableSessionResponse.TableReservationItemDto> allTableRes =
+                table != null ? findAllTableReservationDtos(table.getTableId()) : List.of();
         List<QrTableSessionResponse.QrOrderedItemDto> placedItems = List.of();
         if (activeOrder != null) {
             placedItems = orderItemRepository.findByOrder_OrderIdOrderByCreatedAtDesc(activeOrder.getOrderId())
@@ -545,10 +589,15 @@ public class QrOrderService {
                 .reservationId(todayRes != null ? todayRes.getReservationId() : null)
                 .reservationCode(todayRes != null ? todayRes.getReservationCode() : null)
                 .reservedCustomerName(todayRes != null ? todayRes.getCustomerName() : null)
+                .reservedCustomerPhone(todayRes != null ? todayRes.getCustomerPhone() : null)
                 .reservedTimeSlot(timeSlot)
                 .reservedGuestCount(todayRes != null ? todayRes.getGuestCount() : null)
                 .reservedVoucherCode(resVoucher != null ? resVoucher.getVoucherCode() : null)
                 .reservedDiscountPercent(resVoucher != null ? resVoucher.getDiscountPercent() : null)
+                .reservedOccasion(todayRes != null ? todayRes.getOccasion() : null)
+                .reservedSpecialRequest(todayRes != null ? todayRes.getSpecialRequest() : null)
+                .orderNote(activeOrder != null ? activeOrder.getNote() : null)
+                .tableReservations(allTableRes)
                 .orderId(activeOrder != null ? activeOrder.getOrderId() : null)
                 .orderCode(activeOrder != null ? activeOrder.getOrderCode() : null)
                 .orderStatus(activeOrder != null ? activeOrder.getStatus().name() : null)
