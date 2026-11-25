@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Spring Boot Service upload ảnh lên Cloudinary (Nâng cấp từ UploadImage.java của SE2034-SWP391-G6)
+ * Spring Boot service for uploading dish images to Cloudinary.
  */
 @Service
 @RequiredArgsConstructor

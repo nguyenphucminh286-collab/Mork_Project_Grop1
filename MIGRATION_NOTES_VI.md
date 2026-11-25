@@ -1,27 +1,22 @@
-# Savora — Chuyển đổi sang Spring Boot 4.1.2, Java 21, Thymeleaf
+# Savora — Migration Notes (Spring Boot 4.1.2, Java 21, Thymeleaf)
 
-- Đã giữ lại Entity, Repository, AuthService, REST AuthController, CSS/JS/Images, SQL schema.
-- Đổi `model` -> `entity`, đưa `PasswordUtils` vào `security/util`, `AuthInterceptor` vào `security/interceptor`.
-- Thêm Thymeleaf templates và fragments; chuyển Login, Register, Home, Contact.
-- Thêm `AppException`, `ErrorCode`, `GlobalExceptionHandler` riêng cho REST API.
-- Thêm MapStruct (`AuthUserMapper`) trong AuthService.
-- Dùng `ApiResponse<T>` cho REST và `Model` cho MVC.
-- Cấu hình mặc định chạy **http://localhost:8080**.
-- Database password được đọc từ biến môi trường `DB_PASSWORD`.
-- Google/Facebook OAuth2 được tách vào profile `oauth2` và yêu cầu 4 biến môi trường Client ID/Secret.
+- Preserved core JPA entities, repositories, `AuthService`, REST `AuthController`, CSS/JS/images, and the MySQL schema.
+- Renamed `model` -> `entity`, moved `PasswordUtils` to `security/util`, and moved `AuthInterceptor` to `security/interceptor`.
+- Added Thymeleaf templates and fragments for Login, Register, Home, Contact, QR Ordering, Staff/Chef Portals, and Admin Dashboard.
+- Added `AppException`, `ErrorCode`, and `GlobalExceptionHandler` for REST API error handling.
+- Added `AuthUserMapper` for auth response mapping in `AuthService`.
+- Uses `ApiResponse<T>` for REST endpoints and `Model` for MVC pages.
+- Default local server runs at **http://localhost:8080**.
+- Database password is read from the `DB_PASSWORD` environment variable.
+- Google OAuth2 is configured in `application-oauth2.yml` and accepts `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`.
 
-## Khởi động
-1. Cài JDK 21, Maven và MySQL 8.
-2. Import `database/savora_mysql_schema.sql` (sao lưu trước: có lệnh DROP DATABASE).
-3. Đặt biến môi trường `DB_PASSWORD` theo mật khẩu MySQL.
-4. Chạy `mvn clean test`, sau đó `mvn spring-boot:run`.
-5. Mở http://localhost:8080.
+## Quick Start
+1. Install JDK 21, Maven, and MySQL 8.
+2. Import `database/savora_mysql_schema.sql` (back up existing data first as it runs `DROP DATABASE`).
+3. Set `DB_PASSWORD` to match your MySQL password.
+4. Run `mvn clean test`, then `mvn spring-boot:run`.
+5. Open http://localhost:8080.
 
-## Giới hạn đã biết
-- Chưa xác nhận build trên máy người dùng; cần Maven resolve dependency từ Maven Central.
-- `AuthInterceptor` vẫn quản lý role qua session để giữ khả năng tương thích; phải chuyển sang
-  `UserDetailsService` + Spring Security authorities trước khi production.
-- REST `POST /api/auth/**` cần CSRF token. MVC Form đã tự thêm CSRF token theo Thymeleaf.
-- Các phần Admin/Staff/Order chưa có code nghiệp vụ trong repository gốc, không được tự nhận là hoàn thiện.
-- Nếu cấu hình `oauth2` thì khai báo đủ `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`,
-  `FACEBOOK_CLIENT_ID`, `FACEBOOK_CLIENT_SECRET` và `SPRING_PROFILES_ACTIVE=oauth2`.
+## Known Notes
+- `AuthInterceptor` manages role authorization via `HttpSession`; consider migrating to `UserDetailsService` + Spring Security authorities before full production hardening.
+- If using custom Google OAuth2 credentials, configure `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` (with `SPRING_PROFILES_ACTIVE=oauth2` if needed).

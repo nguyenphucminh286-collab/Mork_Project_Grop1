@@ -3,87 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Executive Admin Portal — Savora Fine Dining</title>
+    <title>Admin dashboard — Savora</title>
     <script src="/assets/js/common/theme.js"></script>
     <link rel="stylesheet" href="/assets/css/public/global.css?v=2">
     <link rel="stylesheet" href="/assets/css/public/home.css?v=4">
     <link rel="stylesheet" href="/assets/css/staff/waiter.css?v=5">
-    <link rel="stylesheet" href="/assets/css/admin/admin.css?v=5">
+    <link rel="stylesheet" href="/assets/css/admin/admin.css?v=11">
 </head>
-<body>
+<body class="admin-workspace">
 <div th:replace="~{fragments/header :: siteHeader}"></div>
 
-<main class="container admin-main">
-    <!-- Top Executive Banner -->
-    <section class="admin-banner">
-        <div>
-            <span class="admin-banner-tag">👑 EXECUTIVE ADMIN &amp; RESTAURANT MANAGEMENT</span>
-            <h1>Savora Operations, Revenue &amp; Culinary Control Center</h1>
-            <p>Monitor live revenue &amp; tax invoices, manage menu dishes, dining tables, promotional vouchers, and staff accounts.</p>
-        </div>
-        <div class="admin-banner-actions">
-            <button type="button" class="btn btn-primary" id="btn-admin-refresh" style="padding:9px 18px;font-size:0.84rem;">
-                🔄 Refresh Data
-            </button>
-        </div>
-    </section>
+<div class="admin-layout">
+    <aside class="admin-sidebar">
+        <button id="admin-nav-toggle" class="admin-nav-toggle" type="button" aria-controls="admin-tabs-nav" aria-expanded="false">Sections <span aria-hidden="true">⌄</span></button>
+        <nav id="admin-tabs-nav" aria-label="Dashboard sections">
+            <div class="admin-nav-group">
+                <h2>Operations</h2>
+                <a href="#tab-overview" class="admin-tab-btn active" data-tab="tab-overview" aria-current="page"><span>Overview</span></a>
+                <a href="#tab-orders" class="admin-tab-btn" data-tab="tab-orders"><span>Invoices</span></a>
+                <a href="#tab-reservations" class="admin-tab-btn" data-tab="tab-reservations"><span>Reservations</span></a>
+                <a href="#tab-feedback" class="admin-tab-btn" data-tab="tab-feedback"><span>Guest feedback</span><span class="nav-count nav-count--badge" id="adm-kpi-feedback" hidden></span></a>
+            </div>
+            <div class="admin-nav-group">
+                <h2>Restaurant</h2>
+                <a href="#tab-dishes" class="admin-tab-btn" data-tab="tab-dishes"><span>Menu</span></a>
+                <a href="#tab-tables" class="admin-tab-btn" data-tab="tab-tables"><span>Tables &amp; QR</span></a>
+                <a href="#tab-vouchers" class="admin-tab-btn" data-tab="tab-vouchers"><span>Vouchers</span></a>
+            </div>
+            <div class="admin-nav-group">
+                <h2>Administration</h2>
+                <a href="#tab-users" class="admin-tab-btn" data-tab="tab-users"><span>Accounts</span></a>
+                <a href="#tab-tracking" class="admin-tab-btn" data-tab="tab-tracking"><span>Activity log</span></a>
+            </div>
+        </nav>
+    </aside>
+    <main class="admin-main" id="admin-content">
+        <header class="admin-page-heading">
+            <div>
+                <p id="admin-section-group">Operations</p>
+                <h1 id="admin-page-title" tabindex="-1">Overview</h1>
+            </div>
+            <button type="button" class="adm-refresh" id="btn-admin-refresh">Refresh</button>
+        </header>
 
-    <!-- 6 Executive KPI Cards -->
-    <section class="admin-kpi-grid">
-        <div class="admin-kpi-card" style="border-left: 4px solid #2e7d32;">
-            <div class="admin-kpi-label">💰 Total Paid Revenue</div>
-            <div class="admin-kpi-value" id="adm-kpi-revenue">0 VND</div>
-            <div class="admin-kpi-sub" id="adm-kpi-today-revenue">Today: 0 VND</div>
+    <section class="admin-tab-pane active" id="tab-overview" aria-label="Overview">
+        <div class="admin-kpi-grid overview-metrics">
+            <div class="admin-kpi-card revenue-metric">
+                <div class="admin-kpi-label">Paid revenue</div>
+                <div class="admin-kpi-value" id="adm-kpi-revenue">–</div>
+                <div class="admin-kpi-sub" id="adm-kpi-today-revenue">Today</div>
+            </div>
+            <div class="admin-kpi-card">
+                <div class="admin-kpi-label">Paid invoices</div>
+                <div class="admin-kpi-value" id="adm-kpi-orders">–</div>
+                <div class="admin-kpi-sub" id="adm-kpi-active-orders">Active orders</div>
+            </div>
+            <div class="admin-kpi-card">
+                <div class="admin-kpi-label">Reservations</div>
+                <div class="admin-kpi-value" id="adm-kpi-bookings">–</div>
+                <div class="admin-kpi-sub">All bookings</div>
+            </div>
         </div>
-        <div class="admin-kpi-card" style="border-left: 4px solid #1565c0;">
-            <div class="admin-kpi-label">🧾 Paid Bills / Orders</div>
-            <div class="admin-kpi-value" id="adm-kpi-orders">0 / 0</div>
-            <div class="admin-kpi-sub" id="adm-kpi-active-orders">0 active open tables</div>
-        </div>
-        <div class="admin-kpi-card" style="border-left: 4px solid #ef6c00;">
-            <div class="admin-kpi-label">📅 Online Bookings</div>
-            <div class="admin-kpi-value" id="adm-kpi-bookings">0</div>
-            <div class="admin-kpi-sub">Total reservations</div>
-        </div>
-        <div class="admin-kpi-card" style="border-left: 4px solid #8e24aa;">
-            <div class="admin-kpi-label">🍽️ Menu Dishes</div>
-            <div class="admin-kpi-value" id="adm-kpi-dishes">0</div>
-            <div class="admin-kpi-sub" id="adm-kpi-dishes-sub">0 available on menu</div>
-        </div>
-        <div class="admin-kpi-card" style="border-left: 4px solid #00838f;">
-            <div class="admin-kpi-label">🪑 Dining Tables</div>
-            <div class="admin-kpi-value" id="adm-kpi-tables">0</div>
-            <div class="admin-kpi-sub" id="adm-kpi-tables-sub">0 available • 0 occupied</div>
-        </div>
-        <div class="admin-kpi-card" style="border-left: 4px solid #b05628;">
-            <div class="admin-kpi-label">👥 System Accounts</div>
-            <div class="admin-kpi-value" id="adm-kpi-users">0</div>
-            <div class="admin-kpi-sub">Admins, Staff &amp; Guests</div>
-        </div>
-    </section>
-
-    <!-- 7 Management Tabs -->
-    <nav class="admin-tabs-bar" id="admin-tabs-nav">
-        <button type="button" class="admin-tab-btn active" data-tab="tab-orders">📊 1. Revenue &amp; Invoices (Bills)</button>
-        <button type="button" class="admin-tab-btn" data-tab="tab-reservations">📅 2. Table Bookings</button>
-        <button type="button" class="admin-tab-btn" data-tab="tab-dishes">🍽️ 3. Menu &amp; Dish Management</button>
-        <button type="button" class="admin-tab-btn" data-tab="tab-tables">🪑 4. Dining Tables &amp; QR</button>
-        <button type="button" class="admin-tab-btn" data-tab="tab-vouchers">🎁 5. Promotional Vouchers</button>
-        <button type="button" class="admin-tab-btn" data-tab="tab-users">👥 6. Staff &amp; User Accounts</button>
-        <button type="button" class="admin-tab-btn" data-tab="tab-tracking">🛰️ 7. User Login &amp; Page Tracking</button>
-    </nav>
-
-    <!-- TAB 1: Revenue Charts & Invoices -->
-    <section class="admin-tab-pane active" id="tab-orders">
-        <!-- Revenue Analytics Charts Grid -->
         <div class="admin-charts-grid">
             <!-- Left Chart: 7-Day Daily Revenue Bar & Trend Chart -->
             <div class="admin-panel" style="margin-bottom:0;">
                 <div class="admin-panel-title">
                     <div>
-                        <span>📈 Daily Revenue Analytics (Last 7 Days)</span>
+                        <span>Revenue trend</span>
                         <div style="font-size:0.75rem;color:var(--text-muted);font-weight:600;margin-top:2px;">
-                            Real-time paid bill revenue aggregated by day
+                            Last 7 days
                         </div>
                     </div>
                     <div class="adm-chart-summary-pills" id="adm-chart-kpis"></div>
@@ -95,9 +83,9 @@
             <div class="admin-panel" style="margin-bottom:0;">
                 <div class="admin-panel-title">
                     <div>
-                        <span>💳 Income Breakdown</span>
+                        <span>Payment breakdown</span>
                         <div style="font-size:0.75rem;color:var(--text-muted);font-weight:600;margin-top:2px;">
-                            By payment channel &amp; top dishes
+                            Payment channels and top dishes
                         </div>
                     </div>
                 </div>
@@ -105,10 +93,13 @@
             </div>
         </div>
 
+    </section>
+
+    <section class="admin-tab-pane" id="tab-orders">
         <div class="admin-panel">
             <div class="admin-panel-title">
                 <div>
-                    <span>🧾 Restaurant Orders &amp; Billing Invoices</span>
+                    <span>Billing history</span>
                     <span id="adm-order-filter-summary" class="adm-chart-pill" style="margin-left:10px;font-size:0.73rem;"></span>
                 </div>
                 <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
@@ -153,7 +144,7 @@
         <div class="admin-panel">
             <div class="admin-panel-title">
                 <div>
-                    <span>📅 Online Table Reservations (Filter by Dining Table)</span>
+                    <span>Booking history</span>
                     <span id="adm-res-filter-summary" class="adm-chart-pill" style="margin-left:10px;font-size:0.73rem;"></span>
                 </div>
                 <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
@@ -198,7 +189,7 @@
             <!-- Left Form: Add / Edit Dish -->
             <div class="admin-panel">
                 <div class="admin-panel-title">
-                    <span id="adm-dish-form-title">➕ Add / Edit Menu Dish</span>
+                    <span id="adm-dish-form-title">Dish details</span>
                     <button type="button" class="adm-btn-xs" id="btn-adm-dish-reset">Clear Form</button>
                 </div>
                 <form id="adm-dish-form">
@@ -267,7 +258,7 @@
             <!-- Right Table: All Dishes -->
             <div class="admin-panel">
                 <div class="admin-panel-title">
-                    <span>🍽️ All Restaurant Dishes</span>
+                    <span>Menu items <small class="adm-chart-pill" id="adm-kpi-dishes-sub"></small></span>
                 </div>
                 <div class="admin-table-wrap">
                     <table class="admin-table">
@@ -293,7 +284,7 @@
         <div class="admin-split-grid">
             <div class="admin-panel">
                 <div class="admin-panel-title">
-                    <span id="adm-table-form-title">➕ Add / Edit Dining Table</span>
+                    <span id="adm-table-form-title">Table details</span>
                     <button type="button" class="adm-btn-xs" id="btn-adm-table-reset">Clear Form</button>
                 </div>
                 <form id="adm-table-form">
@@ -342,7 +333,7 @@
 
             <div class="admin-panel">
                 <div class="admin-panel-title">
-                    <span>🪑 Restaurant Dining Tables &amp; Direct QR Links</span>
+                    <span>Dining tables <small class="adm-chart-pill" id="adm-kpi-tables-sub"></small></span>
                 </div>
                 <div class="admin-table-wrap">
                     <table class="admin-table">
@@ -368,7 +359,7 @@
         <div class="admin-split-grid">
             <div class="admin-panel">
                 <div class="admin-panel-title">
-                    <span>➕ Create / Edit Promotional Voucher</span>
+                    <span>Voucher details</span>
                     <button type="button" class="adm-btn-xs" id="btn-adm-voucher-reset">Clear</button>
                 </div>
                 <form id="adm-voucher-form">
@@ -403,7 +394,7 @@
 
             <div class="admin-panel">
                 <div class="admin-panel-title">
-                    <span>🎁 Active &amp; Historical Vouchers</span>
+                    <span>Voucher directory</span>
                 </div>
                 <div class="admin-table-wrap">
                     <table class="admin-table">
@@ -426,20 +417,48 @@
 
     <!-- TAB 5: Staff & User Accounts -->
     <section class="admin-tab-pane" id="tab-users">
+        <div class="admin-kpi-grid users-metrics" id="adm-user-role-cards">
+            <button type="button" class="admin-kpi-card user-role-kpi active" data-role="ALL">
+                <div class="admin-kpi-label">Total accounts</div>
+                <div class="admin-kpi-value" id="adm-usr-kpi-total">0</div>
+                <div class="admin-kpi-sub" id="adm-usr-kpi-total-sub">Across all roles</div>
+            </button>
+            <button type="button" class="admin-kpi-card user-role-kpi kpi-role-customer" data-role="CUSTOMER">
+                <div class="admin-kpi-label">Customers</div>
+                <div class="admin-kpi-value" id="adm-usr-kpi-customer">0</div>
+                <div class="admin-kpi-sub">Online &amp; dine-in guests</div>
+            </button>
+            <button type="button" class="admin-kpi-card user-role-kpi kpi-role-staff" data-role="STAFF">
+                <div class="admin-kpi-label">Staff / Waiters</div>
+                <div class="admin-kpi-value" id="adm-usr-kpi-staff">0</div>
+                <div class="admin-kpi-sub">Floor &amp; cashier portal</div>
+            </button>
+            <button type="button" class="admin-kpi-card user-role-kpi kpi-role-chef" data-role="CHEF">
+                <div class="admin-kpi-label">Chefs</div>
+                <div class="admin-kpi-value" id="adm-usr-kpi-chef">0</div>
+                <div class="admin-kpi-sub">Kitchen display (KDS)</div>
+            </button>
+            <button type="button" class="admin-kpi-card user-role-kpi kpi-role-admin" data-role="ADMIN">
+                <div class="admin-kpi-label">Admins</div>
+                <div class="admin-kpi-value" id="adm-usr-kpi-admin">0</div>
+                <div class="admin-kpi-sub">Restaurant managers</div>
+            </button>
+        </div>
+
         <div class="admin-split-grid">
             <div class="admin-panel">
                 <div class="admin-panel-title">
-                    <span>➕ Create Staff / Chef / Admin Account</span>
+                    <span>Create an account</span>
                 </div>
                 <form id="adm-user-form">
                     <div class="pasgo-row-2">
                         <div class="pasgo-field">
                             <label>First Name *</label>
-                            <input type="text" id="adm-user-fname" class="pasgo-control" required placeholder="e.g. Tuấn">
+                            <input type="text" id="adm-user-fname" class="pasgo-control" required placeholder="e.g. Alex">
                         </div>
                         <div class="pasgo-field">
                             <label>Last Name *</label>
-                            <input type="text" id="adm-user-lname" class="pasgo-control" required placeholder="e.g. Trần">
+                            <input type="text" id="adm-user-lname" class="pasgo-control" required placeholder="e.g. Nguyen">
                         </div>
                     </div>
                     <div class="pasgo-field">
@@ -471,8 +490,29 @@
 
             <div class="admin-panel">
                 <div class="admin-panel-title">
-                    <span>👥 All System Accounts</span>
+                    <div>
+                        <span>User directory</span>
+                        <span id="adm-user-filter-summary" class="adm-chart-pill" style="margin-left:10px;font-size:0.73rem;"></span>
+                    </div>
+                    <div class="users-filter-controls">
+                        <input type="search" id="adm-user-search" class="pasgo-control" placeholder="Search name, email, phone..." style="width:205px;padding:7px 12px;font-size:0.82rem;">
+                        <select id="adm-user-status-filter" class="pasgo-control" style="width:auto;padding:7px 12px;font-size:0.82rem;">
+                            <option value="ALL">All Statuses</option>
+                            <option value="ACTIVE">✅ ACTIVE</option>
+                            <option value="LOCKED">🔒 LOCKED</option>
+                            <option value="PENDING">⏳ PENDING</option>
+                        </select>
+                    </div>
                 </div>
+
+                <div class="users-role-tabs" id="adm-user-role-tabs" role="tablist" aria-label="Filter accounts by role">
+                    <button type="button" class="fb-filter-pill active" data-role="ALL">All <span class="role-tab-count" id="adm-tab-cnt-all">0</span></button>
+                    <button type="button" class="fb-filter-pill" data-role="CUSTOMER">Customer <span class="role-tab-count" id="adm-tab-cnt-customer">0</span></button>
+                    <button type="button" class="fb-filter-pill" data-role="STAFF">Staff <span class="role-tab-count" id="adm-tab-cnt-staff">0</span></button>
+                    <button type="button" class="fb-filter-pill" data-role="CHEF">Chef <span class="role-tab-count" id="adm-tab-cnt-chef">0</span></button>
+                    <button type="button" class="fb-filter-pill" data-role="ADMIN">Admin <span class="role-tab-count" id="adm-tab-cnt-admin">0</span></button>
+                </div>
+
                 <div class="admin-table-wrap">
                     <table class="admin-table">
                         <thead>
@@ -495,34 +535,47 @@
     <!-- TAB 6: User Login History, Locations & Page Navigation Tracking -->
     <section class="admin-tab-pane" id="tab-tracking">
         <!-- 4 Tracking Summary KPI Cards -->
-        <div class="admin-kpi-grid" style="grid-template-columns: repeat(4, minmax(0, 1fr)); margin-bottom: 18px;">
-            <div class="admin-kpi-card" style="border-left: 4px solid #1565c0;">
-                <div class="admin-kpi-label">🔐 Tracked User Logins</div>
+        <div class="admin-kpi-grid tracking-metrics">
+            <button type="button" class="admin-kpi-card tracking-kpi-btn active" data-trk-part="logins" style="border-left: 4px solid #1565c0;">
+                <div class="admin-kpi-label">Sign-ins</div>
                 <div class="admin-kpi-value" id="adm-trk-logins">0</div>
                 <div class="admin-kpi-sub" id="adm-trk-last-login">Latest sign-in session</div>
-            </div>
-            <div class="admin-kpi-card" style="border-left: 4px solid #2e7d32;">
-                <div class="admin-kpi-label">🧭 Total Page Visits</div>
+            </button>
+            <button type="button" class="admin-kpi-card tracking-kpi-btn" data-trk-part="visits" style="border-left: 4px solid #2e7d32;">
+                <div class="admin-kpi-label">Page visits</div>
                 <div class="admin-kpi-value" id="adm-trk-visits">0</div>
                 <div class="admin-kpi-sub">Tracked routes inside app</div>
-            </div>
+            </button>
             <div class="admin-kpi-card" style="border-left: 4px solid #ef6c00;">
-                <div class="admin-kpi-label">📍 Active Locations</div>
+                <div class="admin-kpi-label">Locations</div>
                 <div class="admin-kpi-value" id="adm-trk-locations">0</div>
                 <div class="admin-kpi-sub">Distinct user locations &amp; IPs</div>
             </div>
             <div class="admin-kpi-card" style="border-left: 4px solid #8e24aa;">
-                <div class="admin-kpi-label">🔥 Most Visited Page</div>
+                <div class="admin-kpi-label">Most visited page</div>
                 <div class="admin-kpi-value" id="adm-trk-top-page" style="font-size:1.05rem;">/home</div>
                 <div class="admin-kpi-sub" id="adm-trk-top-page-sub">Top destination in app</div>
             </div>
         </div>
 
-        <!-- Section A: Dedicated User Login Date, Time & Location History -->
-        <div class="admin-panel">
+        <!-- 2-Part Switcher: Sign-in history vs Page visits -->
+        <div class="tracking-part-bar">
+            <div class="users-role-tabs" id="adm-tracking-part-tabs" role="tablist" aria-label="Activity log sections" style="margin-bottom:0;">
+                <button type="button" class="fb-filter-pill active" data-trk-part="logins" role="tab" aria-selected="true">
+                    🔐 Sign-in history <span class="role-tab-count" id="adm-trk-tab-logins">0</span>
+                </button>
+                <button type="button" class="fb-filter-pill" data-trk-part="visits" role="tab" aria-selected="false">
+                    🧭 Page visits <span class="role-tab-count" id="adm-trk-tab-visits">0</span>
+                </button>
+            </div>
+            <span class="tracking-part-hint">Switch between the two audit logs without scrolling</span>
+        </div>
+
+        <!-- Part 1: Dedicated User Login Date, Time & Location History -->
+        <div class="admin-panel tracking-part-pane" id="adm-trk-pane-logins" style="margin-bottom:0;">
             <div class="admin-panel-title">
                 <div>
-                    <span>🔐 User Login History (Login Date &amp; Time, Locations &amp; Devices)</span>
+                    <span>Sign-in history</span>
                     <div style="font-size:0.75rem;color:var(--text-muted);font-weight:600;margin-top:2px;">
                         Real-time audit log of every user sign-in timestamp, geographic location, IP address, and target portal
                     </div>
@@ -554,11 +607,11 @@
             <div class="adm-pagination-bar" id="adm-login-pagination"></div>
         </div>
 
-        <!-- Section B: Detailed Page Navigation & Specific Sites Visited Log -->
-        <div class="admin-panel">
+        <!-- Part 2: Detailed Page Navigation & Specific Sites Visited Log -->
+        <div class="admin-panel tracking-part-pane" id="adm-trk-pane-visits" style="margin-bottom:0;" hidden>
             <div class="admin-panel-title">
                 <div>
-                    <span>🧭 Specific Pages &amp; Sites Visited Within the App</span>
+                    <span>Page visits</span>
                     <div style="font-size:0.75rem;color:var(--text-muted);font-weight:600;margin-top:2px;">
                         Chronological trail of every page/route visited by Customers, QR Guests, Waiters, Chefs, and Admins
                     </div>
@@ -579,8 +632,8 @@
                         <option value="ADMIN">ADMIN</option>
                     </select>
                     <select id="adm-visits-page-size" class="pasgo-control" style="width:auto;padding:7px 10px;font-size:0.8rem;">
-                        <option value="5">5 / page</option>
-                        <option value="8" selected>8 / page</option>
+                        <option value="5" selected>5 / page</option>
+                        <option value="8">8 / page</option>
                         <option value="15">15 / page</option>
                         <option value="30">30 / page</option>
                     </select>
@@ -605,7 +658,136 @@
             <div class="adm-pagination-bar" id="adm-visits-pagination"></div>
         </div>
     </section>
-</main>
+    <section class="admin-tab-pane" id="tab-feedback" aria-label="Guest feedback">
+        <div class="admin-kpi-grid feedback-metrics">
+            <div class="admin-kpi-card">
+                <div class="admin-kpi-label">Total feedback</div>
+                <div class="admin-kpi-value" id="fb-kpi-total">0</div>
+                <div class="admin-kpi-sub">All guest submissions</div>
+            </div>
+            <div class="admin-kpi-card feedback-kpi-pending">
+                <div class="admin-kpi-label">Awaiting reply</div>
+                <div class="admin-kpi-value" id="fb-kpi-pending">0</div>
+                <div class="admin-kpi-sub">Needs concierge response</div>
+            </div>
+            <div class="admin-kpi-card feedback-kpi-replied">
+                <div class="admin-kpi-label">Replied</div>
+                <div class="admin-kpi-value" id="fb-kpi-replied">0</div>
+                <div class="admin-kpi-sub">Responded &amp; sent to Gmail</div>
+            </div>
+        </div>
+
+        <div class="feedback-workspace">
+            <!-- Left Pane: Inbox List -->
+            <div class="admin-panel feedback-list-pane">
+                <div class="feedback-toolbar">
+                    <div>
+                        <h2>Inbox</h2>
+                        <p class="feedback-status" id="feedback-status" role="status" aria-live="polite"></p>
+                    </div>
+                    <div class="feedback-filter-pills" id="feedback-status-pills" role="tablist" aria-label="Filter feedback by reply status">
+                        <button type="button" class="fb-filter-pill active" data-status="ALL">All</button>
+                        <button type="button" class="fb-filter-pill" data-status="PENDING">Pending</button>
+                        <button type="button" class="fb-filter-pill" data-status="REPLIED">Replied</button>
+                    </div>
+                </div>
+
+                <div class="feedback-search-row">
+                    <label for="feedback-search" class="sr-only">Search feedback</label>
+                    <input type="search" id="feedback-search" class="pasgo-control" placeholder="Search name, Gmail, code or message..." maxlength="200">
+                </div>
+
+                <div id="feedback-messages" class="fb-thread-list"></div>
+
+                <nav class="feedback-pages" aria-label="Feedback pages" hidden>
+                    <button class="adm-page-btn" type="button" id="feedback-prev">Previous</button>
+                    <span id="feedback-page"></span>
+                    <button class="adm-page-btn" type="button" id="feedback-next">Next</button>
+                </nav>
+            </div>
+
+            <!-- Right Pane: Detail & Gmail Reply Thread -->
+            <div class="admin-panel feedback-detail-pane" id="feedback-detail-pane">
+                <div class="fb-detail-empty" id="fb-detail-empty">
+                    <div class="fb-detail-empty__icon">✉️</div>
+                    <h3>Select a guest feedback</h3>
+                    <p>Choose a message from the inbox on the left to read the full feedback, inspect any sent reply, or respond directly to the guest’s Gmail.</p>
+                </div>
+
+                <div id="fb-detail-content" hidden>
+                    <div class="fb-detail-header">
+                        <div class="fb-detail-sender">
+                            <div class="fb-avatar" id="fb-detail-avatar">G</div>
+                            <div>
+                                <div class="fb-detail-title-row">
+                                    <h3 id="fb-detail-name">Guest Name</h3>
+                                    <span class="adm-badge adm-badge-blue" id="fb-detail-code">FB-000000</span>
+                                    <span class="adm-badge" id="fb-detail-status-badge">PENDING</span>
+                                </div>
+                                <div class="fb-detail-meta">
+                                    <a id="fb-detail-email" href="#">guest@gmail.com</a>
+                                    <span>&bull;</span>
+                                    <time id="fb-detail-time"></time>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="adm-btn-xs fb-btn-delete" id="btn-fb-delete" title="Delete feedback">🗑 Delete</button>
+                    </div>
+
+                    <!-- Conversation Thread -->
+                    <div class="fb-conversation">
+                        <!-- Guest Original Message -->
+                        <div class="fb-bubble fb-bubble--guest">
+                            <div class="fb-bubble__head">
+                                <span>💬 Guest Message</span>
+                                <span id="fb-guest-subtime"></span>
+                            </div>
+                            <p class="fb-bubble__body" id="fb-detail-message"></p>
+                        </div>
+
+                        <!-- Saved Admin Reply Viewer -->
+                        <div class="fb-bubble fb-bubble--admin" id="fb-saved-reply-card" hidden>
+                            <div class="fb-bubble__head">
+                                <span>✦ Official Reply from Savora</span>
+                                <span class="adm-badge" id="fb-reply-email-badge">Sent to Gmail</span>
+                            </div>
+                            <p class="fb-bubble__body" id="fb-saved-reply-body"></p>
+                            <div class="fb-bubble__foot" id="fb-saved-reply-meta"></div>
+                        </div>
+                    </div>
+
+                    <!-- Reply Composer (Sends to Guest's Gmail) -->
+                    <form id="fb-reply-form" class="fb-reply-composer">
+                        <div class="fb-reply-composer__head">
+                            <label for="fb-reply-input" id="fb-reply-heading">Reply via Gmail</label>
+                            <span class="fb-recipient-pill" id="fb-recipient-pill">To: guest@gmail.com</span>
+                        </div>
+
+                        <div class="fb-quick-templates" aria-label="Quick reply templates">
+                            <button type="button" class="fb-template-chip" data-tpl="thank">🙏 Thank &amp; Acknowledge</button>
+                            <button type="button" class="fb-template-chip" data-tpl="apology">💐 Service Follow-up</button>
+                            <button type="button" class="fb-template-chip" data-tpl="invite">🍽️ Welcome Back</button>
+                        </div>
+
+                        <textarea id="fb-reply-input" class="pasgo-control fb-reply-textarea" rows="5"
+                                  placeholder="Write your official response here. Clicking Send will save the reply and email it directly to the guest's Gmail address..."
+                                  maxlength="10000" required></textarea>
+
+                        <div id="fb-reply-alert" class="fb-reply-alert" hidden></div>
+
+                        <div class="fb-reply-actions">
+                            <span class="fb-reply-hint">Delivered to the guest’s Gmail &amp; visible in Feedback Reply Lookup.</span>
+                            <button type="submit" class="btn btn-primary" id="btn-fb-send-reply">
+                                ✉️ Send Reply to Guest Gmail
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+    </main>
+</div>
 
 <!-- Admin Invoice Inspector Modal -->
 <div id="admin-bill-modal" class="bill-modal-backdrop" style="display: none;">
@@ -641,11 +823,11 @@
     </div>
 </div>
 
-<div id="home-toast" class="toast-notification"></div>
+<div id="home-toast" class="toast-notification" role="status"></div>
 
-<div th:replace="~{fragments/footer :: siteFooter}"></div>
 
-<script src="/assets/js/common/api.js"></script>
-<script src="/assets/js/admin/admin.js?v=8"></script>
+
+<script src="/assets/js/common/api.js?v=2"></script>
+<script src="/assets/js/admin/admin.js?v=13"></script>
 </body>
 </html>

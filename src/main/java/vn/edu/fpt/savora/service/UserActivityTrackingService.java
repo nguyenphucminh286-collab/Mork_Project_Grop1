@@ -130,17 +130,17 @@ public class UserActivityTrackingService {
         LocalDateTime now = LocalDateTime.now();
         List<UserActivityLog> seeds = List.of(
                 UserActivityLog.builder()
-                        .userId(2).userEmail("customer@savora.vn").userFullName("Customer Nguyễn Minh").userRole("CUSTOMER")
+                        .userId(2).userEmail("customer@savora.vn").userFullName("Minh Nguyen").userRole("CUSTOMER")
                         .actionType("LOGIN").pagePath("/login → /home").pageTitle("User Sign-In (Home & Online Table Booking)")
                         .ipAddress("14.162.145.28").location("Hoa Lac Hi-Tech Park, Hanoi, VN")
                         .deviceInfo("Chrome 131 • Windows 11").createdAt(now.minusMinutes(48)).build(),
                 UserActivityLog.builder()
-                        .userId(2).userEmail("customer@savora.vn").userFullName("Customer Nguyễn Minh").userRole("CUSTOMER")
+                        .userId(2).userEmail("customer@savora.vn").userFullName("Minh Nguyen").userRole("CUSTOMER")
                         .actionType("PAGE_VISIT").pagePath("/home").pageTitle("Home & Online Table Reservation")
                         .ipAddress("14.162.145.28").location("Hoa Lac Hi-Tech Park, Hanoi, VN")
                         .deviceInfo("Chrome 131 • Windows 11").createdAt(now.minusMinutes(46)).build(),
                 UserActivityLog.builder()
-                        .userId(2).userEmail("customer@savora.vn").userFullName("Customer Nguyễn Minh").userRole("CUSTOMER")
+                        .userId(2).userEmail("customer@savora.vn").userFullName("Minh Nguyen").userRole("CUSTOMER")
                         .actionType("PAGE_VISIT").pagePath("/customer/reservations").pageTitle("Customer Booking History")
                         .ipAddress("14.162.145.28").location("Hoa Lac Hi-Tech Park, Hanoi, VN")
                         .deviceInfo("Chrome 131 • Windows 11").createdAt(now.minusMinutes(42)).build(),

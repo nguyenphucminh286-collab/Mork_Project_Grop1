@@ -345,6 +345,23 @@ CREATE TABLE user_activity_logs (
 ) ENGINE=InnoDB;
 
 -- =====================================================================
+-- Guest messages submitted through the Contact form
+CREATE TABLE guest_feedback (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    feedback_code VARCHAR(32) UNIQUE,
+    name VARCHAR(150) NOT NULL,
+    email VARCHAR(254) NOT NULL,
+    message TEXT NOT NULL,
+    status ENUM('PENDING', 'REPLIED') NOT NULL DEFAULT 'PENDING',
+    admin_reply TEXT,
+    replied_by VARCHAR(150),
+    replied_at DATETIME(6),
+    email_sent BOOLEAN NOT NULL DEFAULT FALSE,
+    submitted_at DATETIME(6) NOT NULL,
+    INDEX idx_feedback_submitted (submitted_at, id),
+    INDEX idx_feedback_status (status, submitted_at)
+) ENGINE=InnoDB;
+
 -- SAMPLE SEED DATA (READY FOR IMMEDIATE TESTING BY ALL TEAM MEMBERS)
 -- =====================================================================
 

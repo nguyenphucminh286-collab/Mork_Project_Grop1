@@ -18,12 +18,11 @@ import vn.edu.fpt.savora.exception.AppException;
 import vn.edu.fpt.savora.exception.ErrorCode;
 import vn.edu.fpt.savora.repository.UserRepository;
 
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
 /**
- * Xử lý nghiệp vụ Đăng nhập bằng Email/Mật khẩu, Google OAuth2 và Facebook OAuth2
+ * Handles authentication business logic for Email/Password and Google OAuth2 sign-in.
  */
 @Service
 @RequiredArgsConstructor
@@ -99,29 +98,21 @@ public class AuthService {
     }
 
     /**
-     * Xử lý đăng nhập OAuth2 dùng chung cho cả Google và Facebook
+     * Handles Google OAuth2 sign-in and user provisioning.
      */
     @Transactional
     public AuthUserResponse loginWithOAuth2(OAuth2User oauth2User) {
         String email = oauth2User.getAttribute("email");
-        String socialId = oauth2User.getAttribute("id"); // Facebook trả về "id", Google trả về "sub"
-        if (socialId == null) {
-            socialId = oauth2User.getAttribute("sub");
-        }
-
-        // Nếu tài khoản Facebook đăng ký bằng SĐT (không có email) thì tạo email định danh nội bộ
         if (email == null || email.isBlank()) {
-            email = "fb_" + (socialId != null ? socialId : UUID.randomUUID().toString().substring(0, 8)) + "@facebook.savora.vn";
+            throw new IllegalArgumentException("Google account did not provide an email address.");
         }
         String normalizedEmail = email.trim().toLowerCase();
 
-        // Lấy họ tên (Google dùng given_name/family_name, Facebook dùng first_name/last_name/name)
-        String givenName = firstNonBlank(oauth2User.getAttribute("given_name"), oauth2User.getAttribute("first_name"));
-        String familyName = firstNonBlank(oauth2User.getAttribute("family_name"), oauth2User.getAttribute("last_name"));
+        String givenName = oauth2User.getAttribute("given_name");
+        String familyName = oauth2User.getAttribute("family_name");
         String fullNameAttr = oauth2User.getAttribute("name");
-
-        // Lấy ảnh đại diện (Google trả về String, Facebook trả về Map lồng nhau { data: { url: "..." } })
-        String picture = extractPictureUrl(oauth2User.getAttribute("picture"));
+        Object pictureAttr = oauth2User.getAttribute("picture");
+        String picture = (pictureAttr instanceof String str && !str.isBlank()) ? str : null;
 
         User user = userRepository.findByEmailIgnoreCase(normalizedEmail).orElse(null);
 
@@ -162,29 +153,6 @@ public class AuthService {
         }
 
         return buildAuthUserResponse(user);
-    }
-
-    @SuppressWarnings("unchecked")
-    private String extractPictureUrl(Object pictureAttr) {
-        if (pictureAttr instanceof String str && !str.isBlank()) {
-            return str;
-        }
-        if (pictureAttr instanceof Map<?, ?> map) {
-            Object dataObj = map.get("data");
-            if (dataObj instanceof Map<?, ?> dataMap) {
-                Object urlObj = dataMap.get("url");
-                if (urlObj instanceof String urlStr && !urlStr.isBlank()) {
-                    return urlStr;
-                }
-            }
-        }
-        return null;
-    }
-
-    private String firstNonBlank(String a, String b) {
-        if (a != null && !a.isBlank()) return a;
-        if (b != null && !b.isBlank()) return b;
-        return null;
     }
 
     private AuthUserResponse buildAuthUserResponse(User user) {

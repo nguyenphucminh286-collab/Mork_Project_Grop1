@@ -11,7 +11,7 @@ public class AuthUserMapper {
         if (user == null) {
             return null;
         }
-        String first = user.getFirstName() != null ? user.getFirstName().replace("Khách hàng", "").trim() : "";
+        String first = user.getFirstName() != null ? user.getFirstName().trim() : "";
         String last = user.getLastName() != null ? user.getLastName().trim() : "";
         String fullName = (first + " " + last).trim();
         if (fullName.isEmpty()) {

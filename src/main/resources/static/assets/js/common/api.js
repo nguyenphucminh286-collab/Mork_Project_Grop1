@@ -16,9 +16,15 @@ const SavoraApp = {
             ...options,
             headers: { 'Content-Type': 'application/json', ...(options.headers || {}) }
         });
-        const result = await res.json();
+        const rawText = await res.text();
+        let result = {};
+        try {
+            result = rawText ? JSON.parse(rawText) : {};
+        } catch {
+            result = {};
+        }
         if (!res.ok || result.success === false) {
-            throw new Error(result.message || 'Server error.');
+            throw new Error(result.message || result.error || `Server error (HTTP ${res.status}).`);
         }
         if (method !== 'GET') {
             this.notifyRealtimeSync(endpoint);

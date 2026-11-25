@@ -54,7 +54,7 @@ public class SavoraDatabaseSeeder implements CommandLineRunner {
         // 2. Default Accounts (password: 123456)
         String hash = PasswordUtils.hashPassword("123456");
         User admin = ensureUser("Admin", "Savora", "admin@savora.vn", "0901000001", hash, adminRole);
-        User customer = ensureUser("Customer", "Nguyễn Minh", "customer@savora.vn", "0901000002", hash, customerRole);
+        User customer = ensureUser("Minh", "Nguyen", "customer@savora.vn", "0901000002", hash, customerRole);
         User staff = ensureUser("Waiter", "Minh Anh", "staff@savora.vn", "0901000003", hash, staffRole);
         ensureUser("Chef", "Hoang Le", "chef@savora.vn", "0901000004", hash, chefRole);
 
@@ -214,7 +214,7 @@ public class SavoraDatabaseSeeder implements CommandLineRunner {
         reservationRepository.save(Reservation.builder()
                 .reservationCode("SAV-254251")
                 .customer(customer)
-                .customerName("Customer Nguyễn Minh")
+                .customerName("Minh Nguyen")
                 .customerPhone("0901000002")
                 .customerEmail("customer@savora.vn")
                 .diningTable(t2)
