@@ -322,6 +322,28 @@ CREATE TABLE reviews (
     CONSTRAINT fk_reviews_order FOREIGN KEY (order_id) REFERENCES restaurant_orders(order_id) ON DELETE SET NULL
 ) ENGINE=InnoDB;
 
+-- ---------------------------------------------------------------------
+-- 15. Table: USER_ACTIVITY_LOGS (Admin Tracking: Login History, Locations & Visited Pages)
+-- ---------------------------------------------------------------------
+CREATE TABLE user_activity_logs (
+    log_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NULL,
+    user_email VARCHAR(150),
+    user_full_name VARCHAR(150),
+    user_role VARCHAR(40),
+    action_type VARCHAR(30) NOT NULL,           -- 'LOGIN' or 'PAGE_VISIT'
+    page_path VARCHAR(255) NOT NULL,            -- e.g. '/home', '/qr/table/T1-B01', '/staff/tables'
+    page_title VARCHAR(200),
+    ip_address VARCHAR(64),
+    location VARCHAR(160),
+    device_info VARCHAR(160),
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_activity_user FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE SET NULL,
+    INDEX idx_activity_created (created_at),
+    INDEX idx_activity_action (action_type, created_at),
+    INDEX idx_activity_user (user_id, created_at)
+) ENGINE=InnoDB;
+
 -- =====================================================================
 -- SAMPLE SEED DATA (READY FOR IMMEDIATE TESTING BY ALL TEAM MEMBERS)
 -- =====================================================================
@@ -405,3 +427,16 @@ INSERT INTO reservations (
 INSERT INTO reviews (customer_id, dish_id, rating, comment) VALUES
 (2, 3, 5, 'The Australian Tenderloin was cooked to perfection and the online table booking with promotional voucher was super convenient!'),
 (2, 4, 5, 'Fresh lobster and wonderful service in the Garden Terrace area.');
+
+-- 9. Sample User Activity Logs (Login Date/Time, Locations & Visited Pages for Admin Tracking Dashboard)
+INSERT INTO user_activity_logs (user_id, user_email, user_full_name, user_role, action_type, page_path, page_title, ip_address, location, device_info, created_at) VALUES
+(2, 'customer@savora.vn', 'Minh Nguyen', 'CUSTOMER', 'LOGIN', '/login → /home', 'User Sign-In (Home & Online Table Booking)', '14.162.145.28', 'Hoa Lac Hi-Tech Park, Hanoi, VN', 'Google Chrome • Windows 10/11', DATE_SUB(NOW(), INTERVAL 45 MINUTE)),
+(2, 'customer@savora.vn', 'Minh Nguyen', 'CUSTOMER', 'PAGE_VISIT', '/home', 'Home & Online Table Reservation', '14.162.145.28', 'Hoa Lac Hi-Tech Park, Hanoi, VN', 'Google Chrome • Windows 10/11', DATE_SUB(NOW(), INTERVAL 44 MINUTE)),
+(2, 'customer@savora.vn', 'Minh Nguyen', 'CUSTOMER', 'PAGE_VISIT', '/customer/reservations', 'Customer Booking History', '14.162.145.28', 'Hoa Lac Hi-Tech Park, Hanoi, VN', 'Google Chrome • Windows 10/11', DATE_SUB(NOW(), INTERVAL 40 MINUTE)),
+(NULL, 'anonymous@guest.savora.vn', 'Dine-In QR Guest', 'GUEST', 'PAGE_VISIT', '/qr/table/T1-B01', 'Table QR Digital Menu (Table T1-B01)', '113.190.232.14', 'Savora Dining Hall (1st Floor), Hanoi, VN', 'Apple Safari • iOS Mobile', DATE_SUB(NOW(), INTERVAL 32 MINUTE)),
+(4, 'chef@savora.vn', 'Hoang Le', 'CHEF', 'LOGIN', '/login → /staff/kitchen', 'User Sign-In (Chef Kitchen Display KDS)', '192.168.1.40', 'Savora Executive Kitchen, Hoa Lac, Hanoi, VN', 'Microsoft Edge • Windows 10/11', DATE_SUB(NOW(), INTERVAL 25 MINUTE)),
+(4, 'chef@savora.vn', 'Hoang Le', 'CHEF', 'PAGE_VISIT', '/staff/kitchen', 'Chef Kitchen Display System (KDS)', '192.168.1.40', 'Savora Executive Kitchen, Hoa Lac, Hanoi, VN', 'Microsoft Edge • Windows 10/11', DATE_SUB(NOW(), INTERVAL 24 MINUTE)),
+(3, 'staff@savora.vn', 'Lan Tran', 'STAFF', 'LOGIN', '/login → /staff/tables', 'User Sign-In (Waiter Floor & Order Portal)', '192.168.1.25', 'Savora Service Counter, Hoa Lac, Hanoi, VN', 'Google Chrome • Windows 10/11', DATE_SUB(NOW(), INTERVAL 18 MINUTE)),
+(3, 'staff@savora.vn', 'Lan Tran', 'STAFF', 'PAGE_VISIT', '/staff/tables', 'Waiter Floor & Table Order Portal', '192.168.1.25', 'Savora Service Counter, Hoa Lac, Hanoi, VN', 'Google Chrome • Windows 10/11', DATE_SUB(NOW(), INTERVAL 17 MINUTE)),
+(1, 'admin@savora.vn', 'Admin Savora', 'ADMIN', 'LOGIN', '/login → /admin/dashboard', 'User Sign-In (Executive Admin Control Center)', '127.0.0.1', 'Hoa Lac Hi-Tech Park, Hanoi, VN (Local Network)', 'Google Chrome • Windows 10/11', DATE_SUB(NOW(), INTERVAL 8 MINUTE)),
+(1, 'admin@savora.vn', 'Admin Savora', 'ADMIN', 'PAGE_VISIT', '/admin/dashboard', 'Executive Admin Control Center', '127.0.0.1', 'Hoa Lac Hi-Tech Park, Hanoi, VN (Local Network)', 'Google Chrome • Windows 10/11', DATE_SUB(NOW(), INTERVAL 7 MINUTE));

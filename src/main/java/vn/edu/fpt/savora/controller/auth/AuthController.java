@@ -1,5 +1,6 @@
 package vn.edu.fpt.savora.controller.auth;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +12,7 @@ import vn.edu.fpt.savora.dto.request.LoginRequest;
 import vn.edu.fpt.savora.dto.request.RegisterRequest;
 import vn.edu.fpt.savora.dto.response.AuthUserResponse;
 import vn.edu.fpt.savora.service.AuthService;
+import vn.edu.fpt.savora.service.UserActivityTrackingService;
 
 /**
  * REST API xác thực người dùng (Đăng nhập Email/Mật khẩu + Đăng ký + Google/Facebook OAuth2 + Đăng xuất)
@@ -21,15 +23,17 @@ import vn.edu.fpt.savora.service.AuthService;
 public class AuthController {
 
     private final AuthService authService;
+    private final UserActivityTrackingService userActivityTrackingService;
 
     @PostMapping("/login")
-    public ApiResponse<AuthUserResponse> login(@Valid @RequestBody LoginRequest request, HttpSession session) {
+    public ApiResponse<AuthUserResponse> login(@Valid @RequestBody LoginRequest request, HttpSession session, HttpServletRequest req) {
         AuthUserResponse authUser = authService.login(request);
         session.setAttribute("userId", authUser.getUserId());
         session.setAttribute("roleId", authUser.getRoleId());
         session.setAttribute("roleName", authUser.getRoleName());
         session.setAttribute("fullName", authUser.getFullName());
         session.setAttribute("authUser", authUser);
+        userActivityTrackingService.recordUserLogin(authUser, req);
         return ApiResponse.ok("Signed in successfully!", authUser);
     }
 

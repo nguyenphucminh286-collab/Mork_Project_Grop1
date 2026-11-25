@@ -1,4 +1,5 @@
 package vn.edu.fpt.savora.controller.auth;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -12,12 +13,15 @@ import vn.edu.fpt.savora.dto.request.LoginRequest;
 import vn.edu.fpt.savora.dto.request.RegisterRequest;
 import vn.edu.fpt.savora.dto.response.AuthUserResponse;
 import vn.edu.fpt.savora.service.AuthService;
+import vn.edu.fpt.savora.service.UserActivityTrackingService;
 import vn.edu.fpt.savora.exception.AppException;
 
 @Controller
 @RequiredArgsConstructor
 public class AuthPageController {
     private final AuthService authService;
+    private final UserActivityTrackingService userActivityTrackingService;
+
     @GetMapping("/login")
     public String loginPage(Model model) {
         if (!model.containsAttribute("loginForm")) model.addAttribute("loginForm", new LoginRequest());
@@ -25,11 +29,12 @@ public class AuthPageController {
     }
     @PostMapping("/login")
     public String login(@Valid @ModelAttribute("loginForm") LoginRequest form,
-                        BindingResult errors, Model model, HttpSession session) {
+                        BindingResult errors, Model model, HttpSession session, HttpServletRequest req) {
         if (errors.hasErrors()) return "public/auth/login";
         try {
             AuthUserResponse authUser = authService.login(form);
             storeUser(session, authUser);
+            userActivityTrackingService.recordUserLogin(authUser, req);
             return "redirect:" + (authUser.getRedirectUrl() != null ? authUser.getRedirectUrl() : "/home");
         } catch (AppException | IllegalArgumentException e) {
             model.addAttribute("errorMessage", e.getMessage());

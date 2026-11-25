@@ -62,13 +62,14 @@
         </div>
     </section>
 
-    <!-- 5 Management Tabs -->
+    <!-- 6 Management Tabs -->
     <nav class="admin-tabs-bar" id="admin-tabs-nav">
         <button type="button" class="admin-tab-btn active" data-tab="tab-orders">📊 1. Revenue &amp; Invoices (Bills)</button>
         <button type="button" class="admin-tab-btn" data-tab="tab-dishes">🍽️ 2. Menu &amp; Dish Management</button>
         <button type="button" class="admin-tab-btn" data-tab="tab-tables">🪑 3. Dining Tables &amp; QR</button>
         <button type="button" class="admin-tab-btn" data-tab="tab-vouchers">🎁 4. Promotional Vouchers</button>
         <button type="button" class="admin-tab-btn" data-tab="tab-users">👥 5. Staff &amp; User Accounts</button>
+        <button type="button" class="admin-tab-btn" data-tab="tab-tracking">🛰️ 6. User Login &amp; Page Tracking</button>
     </nav>
 
     <!-- TAB 1: Revenue Charts & Invoices -->
@@ -445,6 +446,104 @@
             </div>
         </div>
     </section>
+
+    <!-- TAB 6: User Login History, Locations & Page Navigation Tracking -->
+    <section class="admin-tab-pane" id="tab-tracking">
+        <!-- 4 Tracking Summary KPI Cards -->
+        <div class="admin-kpi-grid" style="grid-template-columns: repeat(4, minmax(0, 1fr)); margin-bottom: 18px;">
+            <div class="admin-kpi-card" style="border-left: 4px solid #1565c0;">
+                <div class="admin-kpi-label">🔐 Tracked User Logins</div>
+                <div class="admin-kpi-value" id="adm-trk-logins">0</div>
+                <div class="admin-kpi-sub" id="adm-trk-last-login">Latest sign-in session</div>
+            </div>
+            <div class="admin-kpi-card" style="border-left: 4px solid #2e7d32;">
+                <div class="admin-kpi-label">🧭 Total Page Visits</div>
+                <div class="admin-kpi-value" id="adm-trk-visits">0</div>
+                <div class="admin-kpi-sub">Tracked routes inside app</div>
+            </div>
+            <div class="admin-kpi-card" style="border-left: 4px solid #ef6c00;">
+                <div class="admin-kpi-label">📍 Active Locations</div>
+                <div class="admin-kpi-value" id="adm-trk-locations">0</div>
+                <div class="admin-kpi-sub">Distinct user locations &amp; IPs</div>
+            </div>
+            <div class="admin-kpi-card" style="border-left: 4px solid #8e24aa;">
+                <div class="admin-kpi-label">🔥 Most Visited Page</div>
+                <div class="admin-kpi-value" id="adm-trk-top-page" style="font-size:1.05rem;">/home</div>
+                <div class="admin-kpi-sub" id="adm-trk-top-page-sub">Top destination in app</div>
+            </div>
+        </div>
+
+        <!-- Section A: Dedicated User Login Date, Time & Location History -->
+        <div class="admin-panel">
+            <div class="admin-panel-title">
+                <div>
+                    <span>🔐 User Login History (Login Date &amp; Time, Locations &amp; Devices)</span>
+                    <div style="font-size:0.75rem;color:var(--text-muted);font-weight:600;margin-top:2px;">
+                        Real-time audit log of every user sign-in timestamp, geographic location, IP address, and target portal
+                    </div>
+                </div>
+            </div>
+            <div class="admin-table-wrap">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Login Date &amp; Time</th>
+                            <th>User &amp; Email</th>
+                            <th>Role</th>
+                            <th>Location &amp; IP Address</th>
+                            <th>Device &amp; Browser</th>
+                            <th>Portal Entry Route</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adm-login-history-tbody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Section B: Detailed Page Navigation & Specific Sites Visited Log -->
+        <div class="admin-panel">
+            <div class="admin-panel-title">
+                <div>
+                    <span>🧭 Specific Pages &amp; Sites Visited Within the App</span>
+                    <div style="font-size:0.75rem;color:var(--text-muted);font-weight:600;margin-top:2px;">
+                        Chronological trail of every page/route visited by Customers, QR Guests, Waiters, Chefs, and Admins
+                    </div>
+                </div>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+                    <input type="text" id="adm-track-search" class="pasgo-control" placeholder="Search user, location, or page URL..." style="width:230px;padding:7px 12px;font-size:0.82rem;">
+                    <select id="adm-track-type-filter" class="pasgo-control" style="width:auto;padding:7px 12px;font-size:0.82rem;">
+                        <option value="ALL">All Events (Logins + Visits)</option>
+                        <option value="PAGE_VISIT">🧭 Page Visits Only</option>
+                        <option value="LOGIN">🔐 User Logins Only</option>
+                    </select>
+                    <select id="adm-track-role-filter" class="pasgo-control" style="width:auto;padding:7px 12px;font-size:0.82rem;">
+                        <option value="ALL">All Roles</option>
+                        <option value="CUSTOMER">CUSTOMER</option>
+                        <option value="GUEST">GUEST (QR Table)</option>
+                        <option value="STAFF">STAFF (Waiter)</option>
+                        <option value="CHEF">CHEF</option>
+                        <option value="ADMIN">ADMIN</option>
+                    </select>
+                </div>
+            </div>
+            <div class="admin-table-wrap">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Date &amp; Time</th>
+                            <th>Event</th>
+                            <th>User / Visitor</th>
+                            <th>Role</th>
+                            <th>Location &amp; IP</th>
+                            <th>Specific Page / Site Visited</th>
+                            <th>Device &amp; Browser</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adm-page-visits-tbody"></tbody>
+                </table>
+            </div>
+        </div>
+    </section>
 </main>
 
 <!-- Admin Invoice Inspector Modal -->
@@ -486,6 +585,6 @@
 <div th:replace="~{fragments/footer :: siteFooter}"></div>
 
 <script src="/assets/js/common/api.js"></script>
-<script src="/assets/js/admin/admin.js?v=4"></script>
+<script src="/assets/js/admin/admin.js?v=5"></script>
 </body>
 </html>

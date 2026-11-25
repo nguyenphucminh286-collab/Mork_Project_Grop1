@@ -10,7 +10,8 @@ document.addEventListener('DOMContentLoaded', () => {
         categories: [],
         tables: [],
         vouchers: [],
-        users: []
+        users: [],
+        activityLogs: []
     };
 
     const showToast = (msg) => {
@@ -46,6 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
             renderTablesTable();
             renderVouchersTable();
             renderUsersTable();
+            renderTrackingTables();
         } catch (err) {
             showToast(err.message || 'Unable to load admin overview.');
         }
@@ -746,6 +748,115 @@ document.addEventListener('DOMContentLoaded', () => {
         loadAdminOverview();
         showToast('Refreshed Admin Dashboard data!');
     });
+
+    // 6. User Login Date/Time, Locations & Page Navigation Tracking Dashboard
+    const roleBadgeClass = (role) => {
+        if (role === 'ADMIN') return 'adm-badge-red';
+        if (role === 'STAFF') return 'adm-badge-blue';
+        if (role === 'CHEF') return 'adm-badge-amber';
+        if (role === 'CUSTOMER') return 'adm-badge-green';
+        return 'adm-badge-purple';
+    };
+
+    const renderTrackingTables = () => {
+        const logs = overviewData.activityLogs || [];
+        const loginLogs = logs.filter((l) => l.actionType === 'LOGIN');
+        const visitLogs = logs.filter((l) => l.actionType === 'PAGE_VISIT');
+
+        if ($('adm-trk-logins')) $('adm-trk-logins').textContent = String(loginLogs.length);
+        if ($('adm-trk-last-login')) {
+            $('adm-trk-last-login').textContent = loginLogs.length
+                ? `Latest: ${loginLogs[0].userFullName} (${loginLogs[0].createdAt.slice(11, 16)})`
+                : 'No logins recorded';
+        }
+        if ($('adm-trk-visits')) $('adm-trk-visits').textContent = String(visitLogs.length);
+
+        const uniqueLocations = new Set(logs.map((l) => l.location).filter(Boolean));
+        if ($('adm-trk-locations')) $('adm-trk-locations').textContent = String(uniqueLocations.size);
+
+        const pageCounts = {};
+        visitLogs.forEach((l) => {
+            const p = l.pagePath || '/home';
+            pageCounts[p] = (pageCounts[p] || 0) + 1;
+        });
+        const topPageEntry = Object.entries(pageCounts).sort((a, b) => b[1] - a[1])[0];
+        if ($('adm-trk-top-page')) $('adm-trk-top-page').textContent = topPageEntry ? topPageEntry[0] : '/home';
+        if ($('adm-trk-top-page-sub')) {
+            $('adm-trk-top-page-sub').textContent = topPageEntry ? `${topPageEntry[1]} recorded visit(s)` : 'Top route';
+        }
+
+        // Section A: User Login History Table
+        const loginTbody = $('adm-login-history-tbody');
+        if (loginTbody) {
+            loginTbody.innerHTML = loginLogs.length ? loginLogs.slice(0, 25).map((l) => `
+                <tr>
+                    <td><strong>🕒 ${l.createdAt}</strong></td>
+                    <td>
+                        <strong>${l.userFullName}</strong>
+                        <div style="font-size:0.73rem;color:var(--text-muted);">${l.userEmail}</div>
+                    </td>
+                    <td><span class="adm-badge ${roleBadgeClass(l.userRole)}">${l.userRole}</span></td>
+                    <td>
+                        <div style="font-weight:700;">📍 ${l.location}</div>
+                        <div style="font-size:0.72rem;color:var(--text-muted);">IP: ${l.ipAddress}</div>
+                    </td>
+                    <td>💻 ${l.deviceInfo}</td>
+                    <td>
+                        <span class="adm-badge adm-badge-blue">${l.pagePath}</span>
+                        <div style="font-size:0.72rem;color:var(--text-muted);margin-top:2px;">${l.pageTitle || ''}</div>
+                    </td>
+                </tr>
+            `).join('') : `<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-muted);">No login sessions recorded yet.</td></tr>`;
+        }
+
+        // Section B: Filtered Specific Pages & Sites Visited Log
+        const visitsTbody = $('adm-page-visits-tbody');
+        if (!visitsTbody) return;
+
+        const q = ($('adm-track-search')?.value || '').trim().toLowerCase();
+        const typeFilter = $('adm-track-type-filter')?.value || 'ALL';
+        const roleFilter = $('adm-track-role-filter')?.value || 'ALL';
+
+        const filtered = logs.filter((l) => {
+            const matchType = typeFilter === 'ALL' || l.actionType === typeFilter;
+            const matchRole = roleFilter === 'ALL' || l.userRole === roleFilter;
+            const matchQ = !q || [l.userFullName, l.userEmail, l.location, l.ipAddress, l.pagePath, l.pageTitle, l.deviceInfo]
+                .filter(Boolean).join(' ').toLowerCase().includes(q);
+            return matchType && matchRole && matchQ;
+        });
+
+        visitsTbody.innerHTML = filtered.length ? filtered.map((l) => {
+            const isLogin = l.actionType === 'LOGIN';
+            return `
+                <tr>
+                    <td style="white-space:nowrap;"><strong>${l.createdAt}</strong></td>
+                    <td>
+                        <span class="adm-badge ${isLogin ? 'adm-badge-amber' : 'adm-badge-green'}">
+                            ${isLogin ? '🔐 LOGIN' : '🧭 PAGE VISIT'}
+                        </span>
+                    </td>
+                    <td>
+                        <strong>${l.userFullName}</strong>
+                        <div style="font-size:0.72rem;color:var(--text-muted);">${l.userEmail}</div>
+                    </td>
+                    <td><span class="adm-badge ${roleBadgeClass(l.userRole)}">${l.userRole}</span></td>
+                    <td>
+                        <div style="font-weight:600;">📍 ${l.location}</div>
+                        <div style="font-size:0.71rem;color:var(--text-muted);">IP: ${l.ipAddress}</div>
+                    </td>
+                    <td>
+                        <span class="adm-badge adm-badge-blue" style="font-family:monospace;font-size:0.75rem;">${l.pagePath}</span>
+                        <div style="font-size:0.74rem;font-weight:700;color:var(--text-main);margin-top:3px;">${l.pageTitle || ''}</div>
+                    </td>
+                    <td style="font-size:0.76rem;color:var(--text-muted);">${l.deviceInfo}</td>
+                </tr>
+            `;
+        }).join('') : `<tr><td colspan="7" style="text-align:center;padding:22px;color:var(--text-muted);">No activity logs match your filter.</td></tr>`;
+    };
+
+    $('adm-track-search')?.addEventListener('input', renderTrackingTables);
+    $('adm-track-type-filter')?.addEventListener('change', renderTrackingTables);
+    $('adm-track-role-filter')?.addEventListener('change', renderTrackingTables);
 
     loadAdminOverview();
 });

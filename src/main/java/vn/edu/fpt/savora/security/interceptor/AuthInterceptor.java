@@ -3,8 +3,10 @@ package vn.edu.fpt.savora.security.interceptor;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
+import vn.edu.fpt.savora.service.UserActivityTrackingService;
 
 import java.io.IOException;
 
@@ -17,7 +19,10 @@ import java.io.IOException;
  * - roleId = 4: CHEF (Nhân viên bếp)
  */
 @Component
+@RequiredArgsConstructor
 public class AuthInterceptor implements HandlerInterceptor {
+
+    private final UserActivityTrackingService userActivityTrackingService;
 
     @Override
     public boolean preHandle(HttpServletRequest req, HttpServletResponse resp, Object handler) throws IOException {
@@ -68,6 +73,9 @@ public class AuthInterceptor implements HandlerInterceptor {
                 return handleUnauthorized(req, resp);
             }
         }
+
+        // 4. Tự động ghi nhận lịch sử truy cập trang (Page Navigation Tracking cho Admin Dashboard)
+        userActivityTrackingService.recordPageNavigation(req);
 
         return true;
     }

@@ -33,8 +33,9 @@ public class AdminPortalService {
     private final VoucherRepository voucherRepository;
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final UserActivityTrackingService userActivityTrackingService;
 
-    @Transactional(readOnly = true)
+    @Transactional
     public Map<String, Object> getAdminDashboardOverview() {
         List<RestaurantOrder> allOrders = restaurantOrderRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
         List<Payment> allPayments = paymentRepository.findAll();
@@ -204,6 +205,7 @@ public class AdminPortalService {
         result.put("tables", tableList);
         result.put("vouchers", voucherList);
         result.put("users", userList);
+        result.put("activityLogs", userActivityTrackingService.getRecentActivityLogs());
         return result;
     }
 
