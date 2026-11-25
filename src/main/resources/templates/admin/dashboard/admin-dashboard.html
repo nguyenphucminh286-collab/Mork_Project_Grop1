@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Executive Admin Portal — Savora Fine Dining</title>
+    <script src="/assets/js/common/theme.js"></script>
+    <link rel="stylesheet" href="/assets/css/public/global.css?v=2">
+    <link rel="stylesheet" href="/assets/css/public/home.css?v=4">
+    <link rel="stylesheet" href="/assets/css/staff/waiter.css?v=4">
+    <link rel="stylesheet" href="/assets/css/admin/admin.css?v=1">
+</head>
+<body>
+<div th:replace="~{fragments/header :: siteHeader}"></div>
+
+<main class="container admin-main">
+    <!-- Top Executive Banner -->
+    <section class="admin-banner">
+        <div>
+            <span class="admin-banner-tag">👑 EXECUTIVE ADMIN &amp; RESTAURANT MANAGEMENT</span>
+            <h1>Savora Operations, Revenue &amp; Culinary Control Center</h1>
+            <p>Monitor live revenue &amp; tax invoices, manage menu dishes, dining tables, promotional vouchers, and staff accounts.</p>
+        </div>
+        <div class="admin-banner-actions">
+            <a href="/staff/tables" class="btn btn-outline" style="background:rgba(255,255,255,0.1);color:#fff;border-color:rgba(255,255,255,0.25);padding:8px 14px;font-size:0.82rem;">
+                🪑 Open Waiter Floor
+            </a>
+            <a href="/staff/kitchen" class="btn btn-outline" style="background:rgba(255,255,255,0.1);color:#fff;border-color:rgba(255,255,255,0.25);padding:8px 14px;font-size:0.82rem;">
+                👨‍🍳 Open Chef Kitchen
+            </a>
+            <button type="button" class="btn btn-primary" id="btn-admin-refresh" style="padding:8px 16px;font-size:0.82rem;">
+                🔄 Refresh Data
+            </button>
+        </div>
+    </section>
+
+    <!-- 6 Executive KPI Cards -->
+    <section class="admin-kpi-grid">
+        <div class="admin-kpi-card" style="border-left: 4px solid #2e7d32;">
+            <div class="admin-kpi-label">💰 Total Paid Revenue</div>
+            <div class="admin-kpi-value" id="adm-kpi-revenue" style="color:#2e7d32;">0 VND</div>
+            <div class="admin-kpi-sub" id="adm-kpi-today-revenue">Today: 0 VND</div>
+        </div>
+        <div class="admin-kpi-card" style="border-left: 4px solid #1565c0;">
+            <div class="admin-kpi-label">🧾 Paid Bills / Orders</div>
+            <div class="admin-kpi-value" id="adm-kpi-orders">0 / 0</div>
+            <div class="admin-kpi-sub" id="adm-kpi-active-orders">0 active open tables</div>
+        </div>
+        <div class="admin-kpi-card" style="border-left: 4px solid #ef6c00;">
+            <div class="admin-kpi-label">📅 Online Bookings</div>
+            <div class="admin-kpi-value" id="adm-kpi-bookings">0</div>
+            <div class="admin-kpi-sub">Total reservations</div>
+        </div>
+        <div class="admin-kpi-card" style="border-left: 4px solid #8e24aa;">
+            <div class="admin-kpi-label">🍽️ Menu Dishes</div>
+            <div class="admin-kpi-value" id="adm-kpi-dishes">0</div>
+            <div class="admin-kpi-sub" id="adm-kpi-dishes-sub">0 available</div>
+        </div>
+        <div class="admin-kpi-card" style="border-left: 4px solid #00838f;">
+            <div class="admin-kpi-label">🪑 Dining Tables</div>
+            <div class="admin-kpi-value" id="adm-kpi-tables">0</div>
+            <div class="admin-kpi-sub" id="adm-kpi-tables-sub">0 available • 0 occupied</div>
+        </div>
+        <div class="admin-kpi-card" style="border-left: 4px solid #b05628;">
+            <div class="admin-kpi-label">👥 System Accounts</div>
+            <div class="admin-kpi-value" id="adm-kpi-users">0</div>
+            <div class="admin-kpi-sub">Admins, Staff, Chefs &amp; Guests</div>
+        </div>
+    </section>
+
+    <!-- 5 Management Tabs -->
+    <nav class="admin-tabs-bar" id="admin-tabs-nav">
+        <button type="button" class="admin-tab-btn active" data-tab="tab-orders">📊 1. Revenue &amp; Invoices (Bills)</button>
+        <button type="button" class="admin-tab-btn" data-tab="tab-dishes">🍽️ 2. Menu &amp; Dish Management</button>
+        <button type="button" class="admin-tab-btn" data-tab="tab-tables">🪑 3. Dining Tables &amp; QR</button>
+        <button type="button" class="admin-tab-btn" data-tab="tab-vouchers">🎁 4. Promotional Vouchers</button>
+        <button type="button" class="admin-tab-btn" data-tab="tab-users">👥 5. Staff &amp; User Accounts</button>
+    </nav>
+
+    <!-- TAB 1: Revenue & Invoices -->
+    <section class="admin-tab-pane active" id="tab-orders">
+        <div class="admin-panel">
+            <div class="admin-panel-title">
+                <span>🧾 Restaurant Orders &amp; Billing Invoices</span>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                    <input type="text" id="adm-order-search" class="pasgo-control" placeholder="Search order code, table, guest..." style="width:230px;padding:7px 12px;font-size:0.82rem;">
+                    <select id="adm-order-status-filter" class="pasgo-control" style="width:auto;padding:7px 12px;font-size:0.82rem;">
+                        <option value="ALL">All Statuses</option>
+                        <option value="PAID">✅ PAID</option>
+                        <option value="OPEN">🟢 OPEN</option>
+                        <option value="PREPARING">🔥 PREPARING</option>
+                        <option value="CLOSED">⚪ CLOSED</option>
+                    </select>
+                </div>
+            </div>
+            <div class="admin-table-wrap">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Order / Bill Code</th>
+                            <th>Table</th>
+                            <th>Guest / Customer</th>
+                            <th>Ordered Dishes</th>
+                            <th>Subtotal</th>
+                            <th>Discount</th>
+                            <th>Total Bill</th>
+                            <th>Payment</th>
+                            <th>Status</th>
+                            <th>Time</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adm-orders-tbody"></tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- TAB 2: Menu & Dish Management -->
+    <section class="admin-tab-pane" id="tab-dishes">
+        <div class="admin-split-grid">
+            <!-- Left Form: Add / Edit Dish -->
+            <div class="admin-panel">
+                <div class="admin-panel-title">
+                    <span id="adm-dish-form-title">➕ Add / Edit Menu Dish</span>
+                    <button type="button" class="adm-btn-xs" id="btn-adm-dish-reset">Clear Form</button>
+                </div>
+                <form id="adm-dish-form">
+                    <input type="hidden" id="adm-dish-id">
+                    <div class="pasgo-field">
+                        <label>Dish Name *</label>
+                        <input type="text" id="adm-dish-name" class="pasgo-control" required placeholder="e.g. Wagyu Ribeye Steak">
+                    </div>
+                    <div class="pasgo-row-2">
+                        <div class="pasgo-field">
+                            <label>Category *</label>
+                            <select id="adm-dish-category" class="pasgo-control"></select>
+                        </div>
+                        <div class="pasgo-field">
+                            <label>Prep Time (Mins)</label>
+                            <input type="number" id="adm-dish-prep" class="pasgo-control" value="15" min="1">
+                        </div>
+                    </div>
+                    <div class="pasgo-row-2">
+                        <div class="pasgo-field">
+                            <label>Original Price (VND) *</label>
+                            <input type="number" id="adm-dish-price" class="pasgo-control" required placeholder="350000" min="1000">
+                        </div>
+                        <div class="pasgo-field">
+                            <label>Sale Price (VND)</label>
+                            <input type="number" id="adm-dish-discount" class="pasgo-control" placeholder="Optional">
+                        </div>
+                    </div>
+                    <div class="pasgo-row-2">
+                        <div class="pasgo-field">
+                            <label>Status</label>
+                            <select id="adm-dish-status" class="pasgo-control">
+                                <option value="AVAILABLE">AVAILABLE</option>
+                                <option value="OUT_OF_STOCK">OUT_OF_STOCK</option>
+                                <option value="HIDDEN">HIDDEN</option>
+                            </select>
+                        </div>
+                        <div class="pasgo-field">
+                            <label>Signature Dish?</label>
+                            <select id="adm-dish-signature" class="pasgo-control">
+                                <option value="true">★ Yes (Signature)</option>
+                                <option value="false">Standard Dish</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="pasgo-field">
+                        <label>📷 Upload Dish Photo (Cloudinary — Max 5MB)</label>
+                        <input type="file" id="adm-dish-file" accept="image/*" class="pasgo-control" style="padding:7px;">
+                        <div id="adm-upload-status" style="font-size:0.74rem;color:var(--primary-color);font-weight:700;margin-top:4px;display:none;"></div>
+                    </div>
+                    <div class="pasgo-field">
+                        <label>Or Image URL (Auto-filled after Cloudinary Upload)</label>
+                        <div style="display:flex;gap:10px;align-items:center;">
+                            <input type="text" id="adm-dish-thumb" class="pasgo-control" placeholder="https://res.cloudinary.com/dej5mxdrt/...">
+                            <img id="adm-dish-preview" src="https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=300&q=80" alt="Preview" class="admin-dish-thumb" style="width:42px;height:42px;flex-shrink:0;">
+                        </div>
+                    </div>
+                    <div class="pasgo-field">
+                        <label>Culinary Description</label>
+                        <input type="text" id="adm-dish-desc" class="pasgo-control" placeholder="Short description of ingredients...">
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="btn-adm-dish-save" style="width:100%;margin-top:8px;">💾 Save Menu Dish</button>
+                </form>
+            </div>
+
+            <!-- Right Table: All Dishes -->
+            <div class="admin-panel">
+                <div class="admin-panel-title">
+                    <span>🍽️ All Restaurant Dishes</span>
+                </div>
+                <div class="admin-table-wrap">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Dish</th>
+                                <th>Category</th>
+                                <th>Price</th>
+                                <th>Prep</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adm-dishes-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- TAB 3: Dining Tables & QR -->
+    <section class="admin-tab-pane" id="tab-tables">
+        <div class="admin-split-grid">
+            <div class="admin-panel">
+                <div class="admin-panel-title">
+                    <span id="adm-table-form-title">➕ Add / Edit Dining Table</span>
+                    <button type="button" class="adm-btn-xs" id="btn-adm-table-reset">Clear Form</button>
+                </div>
+                <form id="adm-table-form">
+                    <input type="hidden" id="adm-table-id">
+                    <div class="pasgo-row-2">
+                        <div class="pasgo-field">
+                            <label>Table Code *</label>
+                            <input type="text" id="adm-table-code" class="pasgo-control" required placeholder="e.g. T1-B05">
+                        </div>
+                        <div class="pasgo-field">
+                            <label>Max Seats *</label>
+                            <input type="number" id="adm-table-capacity" class="pasgo-control" value="4" min="1" max="30" required>
+                        </div>
+                    </div>
+                    <div class="pasgo-field">
+                        <label>Table Name *</label>
+                        <input type="text" id="adm-table-name" class="pasgo-control" required placeholder="e.g. Table 05 — Window Side">
+                    </div>
+                    <div class="pasgo-row-2">
+                        <div class="pasgo-field">
+                            <label>Floor / Zone *</label>
+                            <select id="adm-table-area" class="pasgo-control">
+                                <option value="1st Floor">1st Floor</option>
+                                <option value="2nd Floor">2nd Floor</option>
+                                <option value="VIP Zone">VIP Zone</option>
+                            </select>
+                        </div>
+                        <div class="pasgo-field">
+                            <label>Operational Status</label>
+                            <select id="adm-table-status" class="pasgo-control">
+                                <option value="AVAILABLE">AVAILABLE</option>
+                                <option value="RESERVED">RESERVED</option>
+                                <option value="OCCUPIED">OCCUPIED</option>
+                                <option value="CLEANING">CLEANING</option>
+                                <option value="MAINTENANCE">MAINTENANCE</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="pasgo-field">
+                        <label>Table Note / Description</label>
+                        <input type="text" id="adm-table-note" class="pasgo-control" placeholder="e.g. Romantic window view for couples">
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width:100%;margin-top:8px;">💾 Save Dining Table</button>
+                </form>
+            </div>
+
+            <div class="admin-panel">
+                <div class="admin-panel-title">
+                    <span>🪑 Restaurant Dining Tables &amp; Direct QR Links</span>
+                </div>
+                <div class="admin-table-wrap">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Table Code</th>
+                                <th>Table Name</th>
+                                <th>Zone</th>
+                                <th>Seats</th>
+                                <th>Status</th>
+                                <th>Actions &amp; QR</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adm-tables-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- TAB 4: Promotional Vouchers -->
+    <section class="admin-tab-pane" id="tab-vouchers">
+        <div class="admin-split-grid">
+            <div class="admin-panel">
+                <div class="admin-panel-title">
+                    <span>➕ Create / Edit Promotional Voucher</span>
+                    <button type="button" class="adm-btn-xs" id="btn-adm-voucher-reset">Clear</button>
+                </div>
+                <form id="adm-voucher-form">
+                    <input type="hidden" id="adm-voucher-id">
+                    <div class="pasgo-row-2">
+                        <div class="pasgo-field">
+                            <label>Voucher Code *</label>
+                            <input type="text" id="adm-voucher-code" class="pasgo-control" required placeholder="e.g. SUMMER25">
+                        </div>
+                        <div class="pasgo-field">
+                            <label>Discount (%) *</label>
+                            <input type="number" id="adm-voucher-pct" class="pasgo-control" value="15" min="1" max="100" required>
+                        </div>
+                    </div>
+                    <div class="pasgo-row-2">
+                        <div class="pasgo-field">
+                            <label>Max Discount (VND)</label>
+                            <input type="number" id="adm-voucher-max" class="pasgo-control" value="300000">
+                        </div>
+                        <div class="pasgo-field">
+                            <label>Min Order (VND)</label>
+                            <input type="number" id="adm-voucher-min" class="pasgo-control" value="0">
+                        </div>
+                    </div>
+                    <div class="pasgo-field">
+                        <label>Offer Description *</label>
+                        <input type="text" id="adm-voucher-desc" class="pasgo-control" required placeholder="e.g. 25% OFF Summer Fine Dining Feast">
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width:100%;margin-top:8px;">💾 Save Voucher</button>
+                </form>
+            </div>
+
+            <div class="admin-panel">
+                <div class="admin-panel-title">
+                    <span>🎁 Active &amp; Historical Vouchers</span>
+                </div>
+                <div class="admin-table-wrap">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Code</th>
+                                <th>Discount</th>
+                                <th>Description</th>
+                                <th>Validity</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adm-vouchers-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- TAB 5: Staff & User Accounts -->
+    <section class="admin-tab-pane" id="tab-users">
+        <div class="admin-split-grid">
+            <div class="admin-panel">
+                <div class="admin-panel-title">
+                    <span>➕ Create Staff / Chef / Admin Account</span>
+                </div>
+                <form id="adm-user-form">
+                    <div class="pasgo-row-2">
+                        <div class="pasgo-field">
+                            <label>First Name *</label>
+                            <input type="text" id="adm-user-fname" class="pasgo-control" required placeholder="e.g. Tuấn">
+                        </div>
+                        <div class="pasgo-field">
+                            <label>Last Name *</label>
+                            <input type="text" id="adm-user-lname" class="pasgo-control" required placeholder="e.g. Trần">
+                        </div>
+                    </div>
+                    <div class="pasgo-field">
+                        <label>Email Address *</label>
+                        <input type="email" id="adm-user-email" class="pasgo-control" required placeholder="e.g. waiter2@savora.vn">
+                    </div>
+                    <div class="pasgo-row-2">
+                        <div class="pasgo-field">
+                            <label>Phone Number</label>
+                            <input type="text" id="adm-user-phone" class="pasgo-control" placeholder="0901234567">
+                        </div>
+                        <div class="pasgo-field">
+                            <label>Password *</label>
+                            <input type="text" id="adm-user-pass" class="pasgo-control" value="123456" required>
+                        </div>
+                    </div>
+                    <div class="pasgo-field">
+                        <label>Assign Portal Role *</label>
+                        <select id="adm-user-role" class="pasgo-control">
+                            <option value="STAFF">🪑 STAFF (Waiter / Cashier)</option>
+                            <option value="CHEF">👨‍🍳 CHEF (Kitchen Display)</option>
+                            <option value="ADMIN">👑 ADMIN (Restaurant Manager)</option>
+                            <option value="CUSTOMER">👤 CUSTOMER (Online Guest)</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width:100%;margin-top:8px;">➕ Create Account</button>
+                </form>
+            </div>
+
+            <div class="admin-panel">
+                <div class="admin-panel-title">
+                    <span>👥 All System Accounts</span>
+                </div>
+                <div class="admin-table-wrap">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Full Name</th>
+                                <th>Email &amp; Phone</th>
+                                <th>Role</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adm-users-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<!-- Admin Invoice Inspector Modal -->
+<div id="admin-bill-modal" class="bill-modal-backdrop" style="display: none;">
+    <div class="bill-modal-card" id="printable-receipt-area">
+        <div class="bill-receipt-header">
+            <div class="bill-logo-row">
+                <img src="/assets/images/savora-logo.png" width="46" height="46" alt="Savora" class="bill-logo-img">
+                <div class="bill-logo-text-wrap">
+                    <div class="bill-brand-title">SAVORA FINE DINING &amp; LOUNGE</div>
+                    <div class="bill-brand-sub">Hoa Lac Hi-Tech Park, Hanoi • Hotline: 1900 6868</div>
+                </div>
+            </div>
+            <div class="bill-title-tag">OFFICIAL DINING BILL / INVOICE RECORD</div>
+            <div class="bill-table-highlight" id="adm-bill-table-badge">🍽️ TABLE: T1-B01</div>
+        </div>
+        <div class="bill-meta-grid" id="adm-bill-meta"></div>
+        <table class="bill-items-table">
+            <thead>
+                <tr>
+                    <th>Dish</th>
+                    <th style="text-align:center;">Qty</th>
+                    <th style="text-align:right;">Unit Price</th>
+                    <th style="text-align:right;">Amount</th>
+                </tr>
+            </thead>
+            <tbody id="adm-bill-items"></tbody>
+        </table>
+        <div class="bill-totals-box" id="adm-bill-totals"></div>
+        <div class="bill-modal-actions no-print">
+            <button type="button" class="btn btn-outline" id="btn-adm-bill-close">Close</button>
+            <button type="button" class="btn btn-primary" id="btn-adm-bill-print">🖨️ Print Invoice</button>
+        </div>
+    </div>
+</div>
+
+<div id="home-toast" class="toast-notification"></div>
+
+<div th:replace="~{fragments/footer :: siteFooter}"></div>
+
+<script src="/assets/js/common/api.js"></script>
+<script src="/assets/js/admin/admin.js?v=2"></script>
+</body>
+</html>
