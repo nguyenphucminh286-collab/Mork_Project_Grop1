@@ -10,11 +10,11 @@
 <header class="header">
     <div class="container header__inner">
         <!-- Logo -->
-        <a th:href="${session.roleId == 3 ? '/staff/tables' : (session.roleId == 4 ? '/staff/kitchen' : '/home')}" class="header__logo">
+        <a th:href="${session.roleId == 1 ? '/admin/dashboard' : (session.roleId == 3 ? '/staff/tables' : (session.roleId == 4 ? '/staff/kitchen' : '/home'))}" class="header__logo">
             <img class="header__logo-mark" src="/assets/images/savora-logo.png" width="42" height="42" alt="Savora">
             <span class="header__logo-text">
                 SAVORA
-                <small th:text="${session.roleId == 3 ? 'WAITER PORTAL' : (session.roleId == 4 ? 'CHEF KITCHEN' : 'FINE DINING')}">FINE DINING</small>
+                <small th:text="${session.roleId == 1 ? 'ADMIN PORTAL' : (session.roleId == 3 ? 'WAITER PORTAL' : (session.roleId == 4 ? 'CHEF KITCHEN' : 'FINE DINING'))}">FINE DINING</small>
             </span>
         </a>
 
@@ -41,14 +41,17 @@
                 <a th:if="${session.userId == null}" href="/login" class="btn btn-outline" style="padding: 9px 18px; white-space: nowrap;">Sign In</a>
                 <a th:if="${session.userId == null}" href="/register" class="btn btn-primary" style="padding: 9px 18px; white-space: nowrap;">Sign Up</a>
 
-                <!-- Waiter (roleId == 3) or Chef (roleId == 4): Only Profile button & Sign Out -->
-                <a th:if="${session.userId != null and (session.roleId == 3 or session.roleId == 4)}" href="/staff/profile" class="btn btn-primary" style="padding: 8px 14px; font-size: 0.84rem; white-space: nowrap;">
+                <!-- Admin (roleId == 1), Waiter (roleId == 3) or Chef (roleId == 4): Profile button -->
+                <a th:if="${session.userId != null and (session.roleId == 1 or session.roleId == 3 or session.roleId == 4)}" href="/staff/profile" class="btn btn-primary" style="padding: 8px 14px; font-size: 0.84rem; white-space: nowrap;">
                     👤 Profile
                 </a>
 
-                <!-- Customer (roleId == 2): My Bookings -->
+                <!-- Customer (roleId == 2): My Bookings & Profile -->
                 <a th:if="${session.userId != null and session.roleId == 2}" href="/customer/reservations" class="btn btn-primary" style="padding: 8px 14px; font-size: 0.84rem; white-space: nowrap;">
                     📅 My Bookings
+                </a>
+                <a th:if="${session.userId != null and session.roleId == 2}" href="/customer/profile" class="btn btn-outline" style="padding: 8px 14px; font-size: 0.84rem; white-space: nowrap;">
+                    👤 Profile
                 </a>
 
                 <span th:if="${session.userId != null}" style="font-size: 0.88rem; font-weight: 600; white-space: nowrap;" th:text="${session.fullName}">User</span>

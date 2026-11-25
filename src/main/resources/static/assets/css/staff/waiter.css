@@ -223,6 +223,414 @@
     border: 1.5px dashed var(--border-color);
 }
 
+.btn-generate-bill {
+    width: 100%;
+    margin-top: 12px;
+    padding: 11px 16px;
+    border-radius: 10px;
+    border: none;
+    background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%);
+    color: #ffffff !important;
+    font-size: 0.9rem;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 6px 16px rgba(46, 125, 50, 0.25);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.btn-generate-bill:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 20px rgba(46, 125, 50, 0.34);
+}
+
+/* ===== 4. Savora Dining Bill & Checkout Receipt Modal ===== */
+.bill-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 12, 10, 0.68);
+    backdrop-filter: blur(4px);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+}
+
+.bill-modal-card {
+    background: var(--bg-white);
+    color: var(--text-main);
+    width: 100%;
+    max-width: 540px;
+    border-radius: 18px;
+    border: 1.5px solid var(--border-color);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+    padding: 24px 26px;
+    max-height: 92vh;
+    overflow-y: auto;
+}
+
+.bill-receipt-header {
+    text-align: center;
+    border-bottom: 2px dashed var(--border-color);
+    padding-bottom: 14px;
+    margin-bottom: 12px;
+}
+
+.bill-logo-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 6px;
+}
+
+.bill-logo-img {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1.5px solid var(--primary-color);
+    flex-shrink: 0;
+}
+
+.bill-logo-text-wrap {
+    text-align: left;
+}
+
+.bill-brand-title {
+    font-family: var(--font-heading);
+    font-size: 1.25rem;
+    font-weight: 800;
+    letter-spacing: 0.8px;
+    color: var(--primary-color);
+    line-height: 1.15;
+}
+
+.bill-brand-sub {
+    font-size: 0.74rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+.bill-title-tag {
+    display: inline-block;
+    margin-top: 6px;
+    padding: 3px 12px;
+    border-radius: 999px;
+    background: var(--subtle-surface);
+    border: 1px solid var(--border-color);
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+}
+
+.bill-table-highlight {
+    margin-top: 8px;
+    padding: 7px 14px;
+    border-radius: 10px;
+    background: #2b1d16;
+    color: #fff8f0 !important;
+    font-size: 0.88rem;
+    font-weight: 800;
+    letter-spacing: 0.03em;
+    display: inline-block;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
+.bill-meta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px 14px;
+    font-size: 0.8rem;
+    padding-bottom: 12px;
+    margin-bottom: 12px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.bill-warning-box {
+    background: #fff3e0;
+    border: 1px solid #ffb74d;
+    color: #e65100;
+    padding: 9px 12px;
+    border-radius: 8px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+
+.bill-items-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+    margin-bottom: 14px;
+}
+
+.bill-items-table th {
+    text-align: left;
+    padding: 7px 6px;
+    border-bottom: 1.5px solid var(--border-color);
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+}
+
+.bill-items-table td {
+    padding: 8px 6px;
+    border-bottom: 1px dashed var(--border-color);
+}
+
+.bill-totals-box {
+    background: var(--subtle-surface);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 14px;
+}
+
+.bill-payment-box {
+    margin-bottom: 16px;
+}
+
+.bill-payment-label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 800;
+    margin-bottom: 8px;
+}
+
+.bill-method-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+}
+
+.bill-method-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 12px;
+    border-radius: 10px;
+    border: 1.5px solid var(--border-color);
+    background: var(--input-surface);
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.bill-method-option.active {
+    border-color: #2e7d32;
+    background: rgba(46, 125, 50, 0.1);
+}
+
+/* VietQR Dynamic Card inside Bill Modal */
+.bill-vietqr-card {
+    background: #ffffff;
+    color: #1c1917;
+    border: 2px solid #e5e0d8;
+    border-radius: 16px;
+    padding: 16px;
+    text-align: center;
+    margin-bottom: 16px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+}
+
+.bill-vietqr-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: #eff6ff;
+    color: #1d4ed8;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    margin-bottom: 10px;
+}
+
+.bill-vietqr-img-wrap {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.bill-vietqr-img {
+    width: 210px;
+    height: 210px;
+    object-fit: contain;
+    border-radius: 10px;
+    border: 1px solid #f0ece1;
+    padding: 6px;
+    background: #ffffff;
+}
+
+.bill-vietqr-amount-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #78716c;
+    letter-spacing: 0.05em;
+}
+
+.bill-vietqr-amount-val {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #1c1917;
+    margin: 2px 0 4px;
+}
+
+.bill-vietqr-content {
+    font-size: 0.84rem;
+    color: #44403c;
+    margin-bottom: 10px;
+}
+
+.bill-vietqr-bank-meta {
+    border-top: 1px dashed #e5e0d8;
+    padding-top: 10px;
+    font-size: 0.8rem;
+    line-height: 1.45;
+    color: #292524;
+}
+
+.bill-vietqr-logos {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+}
+
+.vietqr-pill {
+    font-size: 0.76rem;
+    font-weight: 800;
+    color: #dc2626;
+    background: #fef2f2;
+    padding: 2px 8px;
+    border-radius: 6px;
+    border: 1px solid #fecaca;
+}
+
+.mbbank-pill {
+    font-size: 0.76rem;
+    font-weight: 800;
+    color: #1d4ed8;
+    background: #eff6ff;
+    padding: 2px 8px;
+    border-radius: 6px;
+    border: 1px solid #bfdbfe;
+}
+
+.bill-cash-card {
+    background: var(--subtle-surface);
+    border: 1.5px dashed #2e7d32;
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+    font-size: 0.85rem;
+}
+
+.bill-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+@page {
+    size: auto;
+    margin: 0mm;
+}
+
+@media print {
+    html, body {
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #ffffff !important;
+        color: #1c1917 !important;
+        height: auto !important;
+        overflow: visible !important;
+    }
+    .header, .topbar, .waiter-page, .footer, .toast-notification, .no-print {
+        display: none !important;
+    }
+    .bill-modal-backdrop {
+        position: static !important;
+        display: block !important;
+        background: transparent !important;
+        backdrop-filter: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    #printable-receipt-area {
+        position: static !important;
+        width: 100% !important;
+        max-width: 480px !important;
+        max-height: none !important;
+        overflow: visible !important;
+        margin: 0 auto !important;
+        padding: 5mm 10mm !important;
+        box-shadow: none !important;
+        border: none !important;
+        background: #ffffff !important;
+        color: #1c1917 !important;
+    }
+    .bill-receipt-header {
+        padding-bottom: 8px !important;
+        margin-bottom: 8px !important;
+    }
+    .bill-table-highlight {
+        margin-top: 5px !important;
+        padding: 5px 12px !important;
+        font-size: 0.82rem !important;
+    }
+    .bill-meta-grid {
+        padding-bottom: 8px !important;
+        margin-bottom: 8px !important;
+        gap: 3px 12px !important;
+        font-size: 0.76rem !important;
+    }
+    .bill-items-table {
+        margin-bottom: 8px !important;
+        font-size: 0.78rem !important;
+    }
+    .bill-items-table th, .bill-items-table td {
+        padding: 4px 5px !important;
+    }
+    .bill-totals-box {
+        padding: 8px 12px !important;
+        margin-bottom: 8px !important;
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+    .bill-vietqr-card {
+        padding: 10px 12px !important;
+        margin-bottom: 0 !important;
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+    .bill-vietqr-img {
+        width: 138px !important;
+        height: 138px !important;
+        padding: 3px !important;
+    }
+    .bill-vietqr-img-wrap {
+        margin-bottom: 4px !important;
+    }
+    .bill-vietqr-amount-val {
+        font-size: 1.05rem !important;
+        margin: 1px 0 2px !important;
+    }
+    .bill-vietqr-content {
+        margin-bottom: 6px !important;
+        font-size: 0.78rem !important;
+    }
+    .bill-vietqr-bank-meta {
+        padding-top: 6px !important;
+        font-size: 0.74rem !important;
+        line-height: 1.3 !important;
+    }
+}
+
 @media (max-width: 980px) {
     .waiter-kpis {
         grid-template-columns: repeat(2, 1fr);

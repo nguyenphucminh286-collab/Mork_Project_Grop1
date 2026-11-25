@@ -275,19 +275,173 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // Running Bill Summary
+        // Running Bill Summary + Generate Bill & Checkout Button
         const billBox = $('insp-bill-summary');
         if (billBox) {
-            if (s.orderId) {
+            if (s.orderId && items.length > 0) {
                 billBox.innerHTML = `
                     <div class="qr-bill-row"><span>Subtotal:</span><strong>${SavoraApp.formatCurrency(s.subtotalAmount)}</strong></div>
                     <div class="qr-bill-row"><span>Voucher Discount ${s.appliedVoucherCode ? `(${s.appliedVoucherCode} -${s.appliedDiscountPercent}%)` : ''}:</span><strong style="color:#2e7d32;">-${SavoraApp.formatCurrency(s.discountAmount)}</strong></div>
-                    <div class="qr-bill-row qr-bill-row--total"><span>Total Table Bill:</span><span>${SavoraApp.formatCurrency(s.totalAmount)}</span></div>`;
+                    <div class="qr-bill-row qr-bill-row--total"><span>Total Table Bill:</span><span>${SavoraApp.formatCurrency(s.totalAmount)}</span></div>
+                    <button type="button" class="btn-generate-bill" id="btn-open-bill-modal">
+                        🧾 Generate Bill &amp; Checkout
+                    </button>`;
+                $('btn-open-bill-modal')?.addEventListener('click', () => openBillModal(s));
             } else {
                 billBox.innerHTML = '';
             }
         }
     };
+
+    // Open Official Bill & Checkout Modal
+    const openBillModal = (s) => {
+        const modal = $('waiter-bill-modal');
+        if (!modal || !s) return;
+
+        const nowStr = new Date().toLocaleString('en-GB', {
+            year: 'numeric', month: '2-digit', day: '2-digit',
+            hour: '2-digit', minute: '2-digit'
+        });
+
+        if ($('bill-header-table-badge')) {
+            $('bill-header-table-badge').textContent = `🍽️ TABLE: ${s.tableCode} — ${s.tableName || 'Dining Table'} (${s.area || 'Main Hall'})`;
+        }
+
+        if ($('bill-modal-meta')) {
+            $('bill-modal-meta').innerHTML = `
+                <div><strong>Bill / Order No:</strong> ${s.orderCode}</div>
+                <div><strong>Date &amp; Time:</strong> ${nowStr}</div>
+                <div><strong>Table Number:</strong> ${s.tableCode} (${s.area})</div>
+                <div><strong>Guest:</strong> ${s.reservedCustomerName || 'Walk-in Guest'}</div>
+                ${s.reservationCode ? `<div style="grid-column:1 / -1;"><strong>Linked Booking:</strong> ${s.reservationCode} (${s.reservedTimeSlot})</div>` : ''}
+            `;
+        }
+
+        const items = s.placedItems || [];
+        const unservedItems = items.filter((i) => i.itemStatus !== 'SERVED');
+        const warnBox = $('bill-modal-warning');
+        const confirmBtn = $('btn-bill-confirm-pay');
+
+        if (warnBox && confirmBtn) {
+            if (unservedItems.length > 0) {
+                warnBox.style.display = 'block';
+                warnBox.textContent = `⚠️ Warning: ${unservedItems.length} dish(es) are not marked as SERVED yet (${unservedItems.map(u => `${u.dishName} [${u.itemStatus}]`).join(', ')}). Please mark all dishes SERVED or remove PENDING items before completing payment.`;
+                confirmBtn.disabled = true;
+                confirmBtn.style.opacity = '0.55';
+            } else {
+                warnBox.style.display = 'none';
+                confirmBtn.disabled = false;
+                confirmBtn.style.opacity = '1';
+            }
+        }
+
+        if ($('bill-modal-items')) {
+            $('bill-modal-items').innerHTML = items.map((i) => `
+                <tr>
+                    <td>
+                        <strong>${i.dishName}</strong>
+                        <span style="font-size:0.7rem;color:var(--text-muted);display:block;">Status: ${i.itemStatus}</span>
+                    </td>
+                    <td style="text-align:center;font-weight:700;">${i.quantity}</td>
+                    <td style="text-align:right;">${SavoraApp.formatCurrency(i.unitPrice)}</td>
+                    <td style="text-align:right;font-weight:700;">${SavoraApp.formatCurrency(i.lineTotal)}</td>
+                </tr>
+            `).join('');
+        }
+
+        if ($('bill-modal-totals')) {
+            $('bill-modal-totals').innerHTML = `
+                <div class="qr-bill-row"><span>Subtotal:</span><strong>${SavoraApp.formatCurrency(s.subtotalAmount)}</strong></div>
+                <div class="qr-bill-row"><span>Voucher Discount ${s.appliedVoucherCode ? `(${s.appliedVoucherCode} -${s.appliedDiscountPercent}%)` : ''}:</span><strong style="color:#2e7d32;">-${SavoraApp.formatCurrency(s.discountAmount)}</strong></div>
+                <div class="qr-bill-row qr-bill-row--total" style="font-size:1.05rem;margin-top:6px;padding-top:8px;border-top:1.5px solid var(--border-color);">
+                    <span>TOTAL AMOUNT DUE:</span>
+                    <span style="color:#d32f2f;font-weight:800;">${SavoraApp.formatCurrency(s.totalAmount)}</span>
+                </div>
+            `;
+        }
+
+        // Populate Dynamic VietQR (MBBank - 0332280605 - NGUYENMINH) with amount & bill code
+        const rawAmount = Math.max(0, Math.round(Number(s.totalAmount || 0)));
+        const billCode = (s.orderCode || 'SAVORA').trim();
+        const vietQrUrl = `https://img.vietqr.io/image/MB-0332280605-qr_only.png?amount=${rawAmount}&addInfo=${encodeURIComponent(billCode)}&accountName=${encodeURIComponent('NGUYENMINH')}`;
+
+        if ($('bill-vietqr-img')) {
+            $('bill-vietqr-img').src = vietQrUrl;
+        }
+        if ($('bill-vietqr-amount')) {
+            $('bill-vietqr-amount').textContent = SavoraApp.formatCurrency(rawAmount);
+        }
+        if ($('bill-vietqr-addinfo')) {
+            $('bill-vietqr-addinfo').textContent = billCode;
+        }
+        if ($('bill-cash-amount')) {
+            $('bill-cash-amount').textContent = SavoraApp.formatCurrency(rawAmount);
+        }
+
+        syncPaymentMethodView();
+        modal.style.display = 'flex';
+    };
+
+    const syncPaymentMethodView = () => {
+        const selectedMethod = document.querySelector('input[name="waiterPaymentMethod"]:checked')?.value || 'BANK_TRANSFER';
+        const qrBox = $('bill-vietqr-box');
+        const cashBox = $('bill-cash-box');
+        if (selectedMethod === 'BANK_TRANSFER') {
+            if (qrBox) qrBox.style.display = 'block';
+            if (cashBox) cashBox.style.display = 'none';
+        } else {
+            if (qrBox) qrBox.style.display = 'none';
+            if (cashBox) cashBox.style.display = 'block';
+        }
+    };
+
+    // Payment method radio highlighting & toggling between VietQR and Cash
+    document.querySelectorAll('#bill-method-options input[name="waiterPaymentMethod"]').forEach((radio) => {
+        radio.addEventListener('change', () => {
+            document.querySelectorAll('#bill-method-options .bill-method-option').forEach((lbl) => lbl.classList.remove('active'));
+            radio.closest('.bill-method-option')?.classList.add('active');
+            syncPaymentMethodView();
+        });
+    });
+
+    $('btn-bill-close')?.addEventListener('click', () => {
+        if ($('waiter-bill-modal')) $('waiter-bill-modal').style.display = 'none';
+    });
+
+    $('btn-bill-print')?.addEventListener('click', () => {
+        const card = $('printable-receipt-area');
+        if (card) card.scrollTop = 0;
+        window.print();
+    });
+
+    $('btn-bill-confirm-pay')?.addEventListener('click', async () => {
+        if (!currentSession || !currentSession.tableCode) return;
+        const selectedMethod = document.querySelector('input[name="waiterPaymentMethod"]:checked')?.value || 'CASH';
+        const btn = $('btn-bill-confirm-pay');
+        btn.disabled = true;
+        const origText = btn.textContent;
+        btn.textContent = 'Processing Payment...';
+
+        try {
+            const res = await SavoraApp.fetchApi(`/api/staff/tables/${encodeURIComponent(currentSession.tableCode)}/checkout`, {
+                method: 'POST',
+                body: JSON.stringify({ paymentMethod: selectedMethod })
+            });
+            currentSession = res.data;
+            if ($('waiter-bill-modal')) $('waiter-bill-modal').style.display = 'none';
+            showToast(`✅ Bill paid (${selectedMethod})! Table ${currentSession.tableCode} is now set to CLEANING.`);
+            await loadFloorTables();
+        } catch (err) {
+            const warnBox = $('bill-modal-warning');
+            if (warnBox) {
+                warnBox.style.display = 'block';
+                warnBox.textContent = err.message;
+            }
+        } finally {
+            btn.disabled = false;
+            btn.textContent = origText;
+        }
+    });
 
     // Waiter Adds Dish to Selected Table
     $('btn-waiter-add-dish')?.addEventListener('click', async () => {

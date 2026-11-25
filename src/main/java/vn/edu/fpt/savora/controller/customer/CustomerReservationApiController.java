@@ -10,7 +10,10 @@ import vn.edu.fpt.savora.dto.request.PasGoReservationRequest;
 import vn.edu.fpt.savora.dto.response.DishResponse;
 import vn.edu.fpt.savora.dto.response.ReservationDetailResponse;
 import vn.edu.fpt.savora.dto.response.TableAvailabilityResponse;
+import vn.edu.fpt.savora.entity.User;
 import vn.edu.fpt.savora.entity.Voucher;
+import vn.edu.fpt.savora.enums.Gender;
+import vn.edu.fpt.savora.repository.UserRepository;
 import vn.edu.fpt.savora.service.ReservationService;
 
 import java.time.LocalDate;
@@ -23,6 +26,7 @@ import java.util.Map;
 public class CustomerReservationApiController {
 
     private final ReservationService reservationService;
+    private final UserRepository userRepository;
 
     @GetMapping("/api/public/pasgo/tables")
     public ApiResponse<List<TableAvailabilityResponse>> getAvailableTables(
@@ -74,5 +78,43 @@ public class CustomerReservationApiController {
         String reason = payload != null ? payload.get("cancelReason") : null;
         ReservationDetailResponse cancelled = reservationService.cancelCustomerReservation(reservationId, userId, reason);
         return ApiResponse.ok("Reservation cancelled successfully.", cancelled);
+    }
+
+    @PostMapping("/api/customer/profile")
+    public ApiResponse<Map<String, Object>> updateCustomerProfile(
+            @RequestBody Map<String, String> payload,
+            HttpSession session
+    ) {
+        Integer userId = session != null ? (Integer) session.getAttribute("userId") : null;
+        if (userId == null) {
+            throw new IllegalArgumentException("Please sign in to update your profile.");
+        }
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Customer account not found."));
+
+        if (payload.get("firstName") != null && !payload.get("firstName").isBlank()) {
+            user.setFirstName(payload.get("firstName").trim());
+        }
+        if (payload.get("lastName") != null && !payload.get("lastName").isBlank()) {
+            user.setLastName(payload.get("lastName").trim());
+        }
+        if (payload.get("phone") != null) {
+            user.setPhone(payload.get("phone").trim());
+        }
+        if (payload.get("address") != null) {
+            user.setAddress(payload.get("address").trim());
+        }
+        if (payload.get("gender") != null) {
+            try {
+                user.setGender(Gender.valueOf(payload.get("gender").trim().toUpperCase()));
+            } catch (Exception ignored) {
+            }
+        }
+
+        userRepository.save(user);
+        String fullName = (user.getFirstName() + " " + user.getLastName()).trim();
+        session.setAttribute("fullName", fullName);
+
+        return ApiResponse.ok("Profile updated successfully!", Map.of("fullName", fullName));
     }
 }

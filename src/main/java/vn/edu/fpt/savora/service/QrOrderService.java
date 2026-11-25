@@ -45,6 +45,7 @@ public class QrOrderService {
     private final DishRepository dishRepository;
     private final VoucherRepository voucherRepository;
     private final UserRepository userRepository;
+    private final PaymentRepository paymentRepository;
 
     @Transactional(readOnly = true)
     public List<StaffTableCardResponse> getAllTablesForStaffDashboard() {
@@ -293,6 +294,78 @@ public class QrOrderService {
         }
 
         return buildSessionResponse(table, todayRes, activeOrder);
+    }
+
+    /**
+     * Waiter (STAFF) generates final bill, records payment in payments table, marks order PAID, and sets table to CLEANING
+     */
+    @Transactional
+    public QrTableSessionResponse checkoutTableOrder(String tableCode, String paymentMethodStr, Integer cashierUserId) {
+        DiningTable table = diningTableRepository.findByTableCodeIgnoreCase(tableCode.trim())
+                .orElseThrow(() -> new IllegalArgumentException("Table " + tableCode + " not found."));
+
+        RestaurantOrder activeOrder = findActiveOrderSafely(table.getTableId());
+        if (activeOrder == null) {
+            throw new IllegalArgumentException("No active unpaid order found for Table " + tableCode + ".");
+        }
+
+        List<OrderItem> items = orderItemRepository.findByOrder_OrderIdOrderByCreatedAtDesc(activeOrder.getOrderId());
+        List<OrderItem> billableItems = items.stream()
+                .filter(i -> i.getItemStatus() != OrderItemStatus.CANCELLED)
+                .collect(Collectors.toList());
+
+        if (billableItems.isEmpty()) {
+            throw new IllegalArgumentException("Cannot checkout an empty order with no dishes.");
+        }
+
+        boolean hasUnserved = billableItems.stream()
+                .anyMatch(i -> i.getItemStatus() != OrderItemStatus.SERVED);
+        if (hasUnserved) {
+            throw new IllegalArgumentException("All dishes must be marked as SERVED (or removed if PENDING) before completing bill checkout.");
+        }
+
+        recalculateOrderTotals(activeOrder);
+
+        PaymentMethod method = PaymentMethod.CASH;
+        if (paymentMethodStr != null && !paymentMethodStr.isBlank()) {
+            try {
+                method = PaymentMethod.valueOf(paymentMethodStr.trim().toUpperCase());
+            } catch (Exception ignored) {
+                method = PaymentMethod.CASH;
+            }
+        }
+
+        User cashier = cashierUserId != null ? userRepository.findById(cashierUserId).orElse(null) : null;
+
+        Payment payment = paymentRepository.findByOrder_OrderId(activeOrder.getOrderId())
+                .orElseGet(Payment::new);
+        payment.setOrder(activeOrder);
+        payment.setPaymentMethod(method);
+        payment.setPaymentStatus(PaymentStatus.PAID);
+        payment.setPaidAmount(activeOrder.getTotalAmount());
+        payment.setTransactionRef("TXN-SAV-" + ThreadLocalRandom.current().nextInt(100000, 999999));
+        payment.setPaidAt(LocalDateTime.now());
+        payment.setCashier(cashier);
+        paymentRepository.saveAndFlush(payment);
+
+        activeOrder.setStatus(OrderStatus.PAID);
+        activeOrder.setClosedAt(LocalDateTime.now());
+        if (cashier != null) {
+            activeOrder.setStaff(cashier);
+        }
+        restaurantOrderRepository.saveAndFlush(activeOrder);
+
+        Reservation todayRes = findTodayActiveReservation(table.getTableId());
+        if (todayRes != null && todayRes.getStatus() == ReservationStatus.SEATED) {
+            todayRes.setStatus(ReservationStatus.COMPLETED);
+            reservationRepository.saveAndFlush(todayRes);
+            todayRes = null;
+        }
+
+        table.setStatus(TableStatus.CLEANING);
+        diningTableRepository.saveAndFlush(table);
+
+        return buildSessionResponse(table, todayRes, null);
     }
 
     /**

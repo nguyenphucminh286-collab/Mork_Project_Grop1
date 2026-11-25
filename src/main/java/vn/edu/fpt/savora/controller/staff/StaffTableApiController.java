@@ -67,6 +67,18 @@ public class StaffTableApiController {
         return ApiResponse.ok("Updated table " + tableCode + " status.", updated);
     }
 
+    @PostMapping("/tables/{tableCode}/checkout")
+    public ApiResponse<QrTableSessionResponse> checkoutTableBill(
+            @PathVariable String tableCode,
+            @RequestBody(required = false) Map<String, String> payload,
+            HttpSession session
+    ) {
+        String paymentMethod = payload != null ? payload.get("paymentMethod") : "CASH";
+        Integer cashierId = session != null ? (Integer) session.getAttribute("userId") : null;
+        QrTableSessionResponse updated = qrOrderService.checkoutTableOrder(tableCode, paymentMethod, cashierId);
+        return ApiResponse.ok("Bill paid & closed for Table " + tableCode + "!", updated);
+    }
+
     @GetMapping("/kitchen/items")
     public ApiResponse<List<ChefKitchenItemResponse>> getKitchenQueue() {
         return ApiResponse.ok(qrOrderService.getChefKitchenQueue());

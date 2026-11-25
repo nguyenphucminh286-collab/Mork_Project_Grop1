@@ -10,15 +10,19 @@ import vn.edu.fpt.savora.dto.response.TableAvailabilityResponse;
 import vn.edu.fpt.savora.entity.DiningTable;
 import vn.edu.fpt.savora.entity.Dish;
 import vn.edu.fpt.savora.entity.Reservation;
+import vn.edu.fpt.savora.entity.RestaurantOrder;
 import vn.edu.fpt.savora.entity.User;
 import vn.edu.fpt.savora.entity.Voucher;
 import vn.edu.fpt.savora.enums.DishStatus;
+import vn.edu.fpt.savora.enums.OrderStatus;
+import vn.edu.fpt.savora.enums.OrderType;
 import vn.edu.fpt.savora.enums.ReservationStatus;
 import vn.edu.fpt.savora.enums.TableStatus;
 import vn.edu.fpt.savora.enums.VoucherStatus;
 import vn.edu.fpt.savora.repository.DiningTableRepository;
 import vn.edu.fpt.savora.repository.DishRepository;
 import vn.edu.fpt.savora.repository.ReservationRepository;
+import vn.edu.fpt.savora.repository.RestaurantOrderRepository;
 import vn.edu.fpt.savora.repository.UserRepository;
 import vn.edu.fpt.savora.repository.VoucherRepository;
 
@@ -42,6 +46,19 @@ public class ReservationService {
             ReservationStatus.SEATED
     );
 
+    private static final List<OrderStatus> ACTIVE_DINE_IN_ORDER_STATUSES = List.of(
+            OrderStatus.OPEN,
+            OrderStatus.PREPARING,
+            OrderStatus.SERVED
+    );
+
+    /**
+     * Standard dining limit: 120 minutes (2 hours) + 10 minutes table cleaning turnaround = 130 minutes total
+     */
+    private static final int DINING_DURATION_MINUTES = 120;
+    private static final int CLEANING_BUFFER_MINUTES = 10;
+    private static final int TOTAL_TURNAROUND_MINUTES = DINING_DURATION_MINUTES + CLEANING_BUFFER_MINUTES;
+
     private static final LocalTime OPEN_BOOKING_TIME = LocalTime.of(10, 30);
     private static final LocalTime LAST_BOOKING_TIME = LocalTime.of(21, 0);
 
@@ -50,6 +67,7 @@ public class ReservationService {
 
     private final DiningTableRepository diningTableRepository;
     private final ReservationRepository reservationRepository;
+    private final RestaurantOrderRepository restaurantOrderRepository;
     private final VoucherRepository voucherRepository;
     private final UserRepository userRepository;
     private final DishRepository dishRepository;
@@ -135,20 +153,45 @@ public class ReservationService {
     ) {
         boolean bookable = true;
         String reason = null;
+        String slotStatus = TableStatus.AVAILABLE.name();
 
-        // 1. Exclude MAINTENANCE tables at all times, and OCCUPIED / CLEANING tables for current-day slots
+        LocalDate today = now.toLocalDate();
+        LocalTime nowTime = now.toLocalTime();
+        LocalTime requestedSlotEnd = targetTime.plusMinutes(TOTAL_TURNAROUND_MINUTES);
+
+        // 1. MAINTENANCE tables are never bookable on any date
         if (table.getStatus() == TableStatus.MAINTENANCE) {
             bookable = false;
+            slotStatus = TableStatus.MAINTENANCE.name();
             reason = "Table is under maintenance";
-        } else if (targetDate.equals(LocalDate.now())
-                && (table.getStatus() == TableStatus.OCCUPIED || table.getStatus() == TableStatus.CLEANING)) {
-            bookable = false;
-            reason = table.getStatus() == TableStatus.OCCUPIED
-                    ? "Currently occupied by dine-in guests"
-                    : "Currently being sanitized by staff";
         }
 
-        // 2. Check overlapping reservations (120-minute window)
+        // 2. For TODAY only: evaluate live OCCUPIED (2h dining + 10m cleaning) and CLEANING (10m sanitization) windows
+        if (bookable && targetDate.equals(today)) {
+            if (table.getStatus() == TableStatus.CLEANING) {
+                LocalTime cleaningDoneTime = nowTime.plusMinutes(CLEANING_BUFFER_MINUTES);
+                if (targetTime.isBefore(cleaningDoneTime)) {
+                    bookable = false;
+                    slotStatus = TableStatus.CLEANING.name();
+                    reason = "Sanitizing until " + cleaningDoneTime.format(TIME_FMT) + " (max 10m cleaning)";
+                }
+            } else if (table.getStatus() == TableStatus.OCCUPIED) {
+                LocalTime occupiedStart = resolveCurrentOccupiedStartTime(table.getTableId(), dayReservations, nowTime);
+                LocalTime occupiedFreeAt = occupiedStart.plusMinutes(TOTAL_TURNAROUND_MINUTES);
+                // If current guests are still at the table beyond 2h, ensure at least 10m cleaning buffer from now
+                if (occupiedFreeAt.isBefore(nowTime.plusMinutes(CLEANING_BUFFER_MINUTES))) {
+                    occupiedFreeAt = nowTime.plusMinutes(CLEANING_BUFFER_MINUTES);
+                }
+                // Check if requested slot [targetTime, targetTime + 130m] overlaps with [occupiedStart, occupiedFreeAt]
+                if (targetTime.isBefore(occupiedFreeAt) && occupiedStart.isBefore(requestedSlotEnd)) {
+                    bookable = false;
+                    slotStatus = TableStatus.OCCUPIED.name();
+                    reason = "Occupied until " + occupiedFreeAt.format(TIME_FMT) + " (2h dining + 10m cleaning)";
+                }
+            }
+        }
+
+        // 3. Check overlapping reservations on targetDate (120m dining + 10m cleaning = 130m window)
         if (bookable) {
             for (Reservation res : dayReservations) {
                 if (res.getDiningTable() == null || !res.getDiningTable().getTableId().equals(table.getTableId())) {
@@ -159,10 +202,21 @@ public class ReservationService {
                         && res.getPendingExpiresAt().isBefore(now)) {
                     continue;
                 }
-                if (res.overlapsWith(targetTime, Reservation.DEFAULT_DURATION_MINUTES)) {
+                LocalTime resStart = res.getReservationTime();
+                int resDiningMins = (res.getDurationMinutes() != null && res.getDurationMinutes() > 0)
+                        ? res.getDurationMinutes()
+                        : DINING_DURATION_MINUTES;
+                LocalTime resDiningEnd = resStart.plusMinutes(resDiningMins);
+                LocalTime resReadyForNextGuest = resDiningEnd.plusMinutes(CLEANING_BUFFER_MINUTES);
+
+                // Overlap between [targetTime, targetTime + 130m] and [resStart, resReadyForNextGuest]
+                if (targetTime.isBefore(resReadyForNextGuest) && resStart.isBefore(requestedSlotEnd)) {
                     bookable = false;
-                    LocalTime end = res.getEndTime() != null ? res.getEndTime() : res.calculateEndTime();
-                    reason = "Booked (" + res.getReservationTime().format(TIME_FMT) + " – " + end.format(TIME_FMT) + ")";
+                    slotStatus = (targetDate.equals(today) && res.getStatus() == ReservationStatus.SEATED)
+                            ? TableStatus.OCCUPIED.name()
+                            : TableStatus.RESERVED.name();
+                    reason = "Booked (" + resStart.format(TIME_FMT) + " – " + resDiningEnd.format(TIME_FMT)
+                            + " + 10m cleaning until " + resReadyForNextGuest.format(TIME_FMT) + ")";
                     break;
                 }
             }
@@ -174,11 +228,37 @@ public class ReservationService {
                 .tableName(table.getTableName())
                 .area(table.getArea())
                 .capacity(table.getCapacity())
-                .operationalStatus(table.getStatus().name())
+                .operationalStatus(slotStatus)
                 .bookableForSlot(bookable)
                 .unavailableReason(reason)
                 .note(table.getNote())
                 .build();
+    }
+
+    /**
+     * Determine when the current dine-in session started for an OCCUPIED table today
+     */
+    private LocalTime resolveCurrentOccupiedStartTime(Integer tableId, List<Reservation> todayReservations, LocalTime nowTime) {
+        try {
+            RestaurantOrder activeOrder = restaurantOrderRepository
+                    .findFirstByDiningTable_TableIdAndOrderTypeAndStatusInOrderByCreatedAtDesc(
+                            tableId, OrderType.DINE_IN, ACTIVE_DINE_IN_ORDER_STATUSES
+                    )
+                    .orElse(null);
+            if (activeOrder != null && activeOrder.getCreatedAt() != null
+                    && activeOrder.getCreatedAt().toLocalDate().equals(LocalDate.now())) {
+                return activeOrder.getCreatedAt().toLocalTime();
+            }
+        } catch (Exception ignored) {
+        }
+
+        for (Reservation r : todayReservations) {
+            if (r.getDiningTable() != null && tableId.equals(r.getDiningTable().getTableId())
+                    && r.getStatus() == ReservationStatus.SEATED && r.getReservationTime() != null) {
+                return r.getReservationTime();
+            }
+        }
+        return nowTime;
     }
 
     /**
@@ -214,31 +294,60 @@ public class ReservationService {
         if (table.getStatus() == TableStatus.MAINTENANCE) {
             throw new IllegalArgumentException("Table " + table.getTableCode() + " is currently under maintenance.");
         }
-        if (req.getReservationDate().equals(today)
-                && (table.getStatus() == TableStatus.OCCUPIED || table.getStatus() == TableStatus.CLEANING)) {
-            throw new IllegalArgumentException("Table " + table.getTableCode() + " is currently " + table.getStatus() + " and cannot be booked for this slot.");
-        }
         if (totalGuests > table.getCapacity()) {
             throw new IllegalArgumentException("Total party size (" + adults + " Adults + " + children + " Children = "
                     + totalGuests + " guests) exceeds the maximum capacity of " + table.getTableCode()
                     + " (" + table.getCapacity() + " seats).");
         }
 
-        // Re-validate overlapping reservations on the same table and date
+        // Re-validate overlapping reservations and live OCCUPIED/CLEANING window on the same table and date
         List<Reservation> existingOnTable = reservationRepository.findActiveByTableAndDate(
                 table.getTableId(), req.getReservationDate(), ACTIVE_CONFLICT_STATUSES
         );
         LocalDateTime now = LocalDateTime.now();
+        LocalTime requestedSlotEnd = requestedTime.plusMinutes(TOTAL_TURNAROUND_MINUTES);
+
+        if (req.getReservationDate().equals(today)) {
+            LocalTime nowTime = now.toLocalTime();
+            if (table.getStatus() == TableStatus.CLEANING) {
+                LocalTime cleaningDoneTime = nowTime.plusMinutes(CLEANING_BUFFER_MINUTES);
+                if (requestedTime.isBefore(cleaningDoneTime)) {
+                    throw new IllegalArgumentException("Table " + table.getTableCode()
+                            + " is currently being sanitized until " + cleaningDoneTime.format(TIME_FMT)
+                            + ". Please select a time slot after " + cleaningDoneTime.format(TIME_FMT) + ".");
+                }
+            } else if (table.getStatus() == TableStatus.OCCUPIED) {
+                LocalTime occupiedStart = resolveCurrentOccupiedStartTime(table.getTableId(), existingOnTable, nowTime);
+                LocalTime occupiedFreeAt = occupiedStart.plusMinutes(TOTAL_TURNAROUND_MINUTES);
+                if (occupiedFreeAt.isBefore(nowTime.plusMinutes(CLEANING_BUFFER_MINUTES))) {
+                    occupiedFreeAt = nowTime.plusMinutes(CLEANING_BUFFER_MINUTES);
+                }
+                if (requestedTime.isBefore(occupiedFreeAt) && occupiedStart.isBefore(requestedSlotEnd)) {
+                    throw new IllegalArgumentException("Table " + table.getTableCode()
+                            + " is currently occupied until " + occupiedFreeAt.format(TIME_FMT)
+                            + " (2h dining + 10m cleaning). Please choose a later time slot.");
+                }
+            }
+        }
+
         for (Reservation existing : existingOnTable) {
             if (existing.getStatus() == ReservationStatus.PENDING
                     && existing.getPendingExpiresAt() != null
                     && existing.getPendingExpiresAt().isBefore(now)) {
                 continue;
             }
-            if (existing.overlapsWith(requestedTime, Reservation.DEFAULT_DURATION_MINUTES)) {
-                LocalTime end = existing.getEndTime() != null ? existing.getEndTime() : existing.calculateEndTime();
+            LocalTime resStart = existing.getReservationTime();
+            int resDiningMins = (existing.getDurationMinutes() != null && existing.getDurationMinutes() > 0)
+                    ? existing.getDurationMinutes()
+                    : DINING_DURATION_MINUTES;
+            LocalTime resDiningEnd = resStart.plusMinutes(resDiningMins);
+            LocalTime resReadyForNextGuest = resDiningEnd.plusMinutes(CLEANING_BUFFER_MINUTES);
+
+            if (requestedTime.isBefore(resReadyForNextGuest) && resStart.isBefore(requestedSlotEnd)) {
                 throw new IllegalArgumentException("Table " + table.getTableCode() + " is already reserved between "
-                        + existing.getReservationTime().format(TIME_FMT) + " and " + end.format(TIME_FMT) + ". Please choose another table or time slot.");
+                        + resStart.format(TIME_FMT) + " and " + resDiningEnd.format(TIME_FMT)
+                        + " (+10m cleaning until " + resReadyForNextGuest.format(TIME_FMT)
+                        + "). Please choose another table or time slot.");
             }
         }
 

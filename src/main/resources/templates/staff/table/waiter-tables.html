@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="/assets/css/public/global.css?v=2">
     <link rel="stylesheet" href="/assets/css/public/home.css?v=4">
     <link rel="stylesheet" href="/assets/css/public/qr-order.css?v=2">
-    <link rel="stylesheet" href="/assets/css/staff/waiter.css?v=1">
+    <link rel="stylesheet" href="/assets/css/staff/waiter.css?v=4">
 </head>
 <body>
     <!-- Shared Header -->
@@ -153,6 +153,95 @@
         </div>
     </main>
 
+    <!-- Savora Dining Bill & Checkout Modal -->
+    <div id="waiter-bill-modal" class="bill-modal-backdrop" style="display: none;">
+        <div class="bill-modal-card" id="printable-receipt-area">
+            <div class="bill-receipt-header">
+                <div class="bill-logo-row">
+                    <img src="/assets/images/savora-logo.png" width="48" height="48" alt="Savora Logo" class="bill-logo-img">
+                    <div class="bill-logo-text-wrap">
+                        <div class="bill-brand-title">SAVORA FINE DINING &amp; LOUNGE</div>
+                        <div class="bill-brand-sub">Hoa Lac Hi-Tech Park, Hanoi • Hotline: 1900 6868</div>
+                    </div>
+                </div>
+                <div class="bill-title-tag">OFFICIAL DINING BILL / TAX INVOICE</div>
+                <div class="bill-table-highlight" id="bill-header-table-badge">
+                    🍽️ TABLE: T1-B01 — Table 01 — Window Side
+                </div>
+            </div>
+
+            <div class="bill-meta-grid" id="bill-modal-meta"></div>
+
+            <div id="bill-modal-warning" class="bill-warning-box" style="display: none;"></div>
+
+            <table class="bill-items-table">
+                <thead>
+                    <tr>
+                        <th>Dish</th>
+                        <th style="text-align:center;">Qty</th>
+                        <th style="text-align:right;">Unit Price</th>
+                        <th style="text-align:right;">Amount</th>
+                    </tr>
+                </thead>
+                <tbody id="bill-modal-items"></tbody>
+            </table>
+
+            <div class="bill-totals-box" id="bill-modal-totals"></div>
+
+            <div class="bill-payment-box no-print">
+                <label class="bill-payment-label">Select Payment Method:</label>
+                <div class="bill-method-grid" id="bill-method-options">
+                    <label class="bill-method-option active">
+                        <input type="radio" name="waiterPaymentMethod" value="BANK_TRANSFER" checked>
+                        <span>🏦 VietQR Bank Transfer (MBBank)</span>
+                    </label>
+                    <label class="bill-method-option">
+                        <input type="radio" name="waiterPaymentMethod" value="CASH">
+                        <span>💵 Cash Payment</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Dynamic VietQR Payment Card (Shown when BANK_TRANSFER is selected) -->
+            <div id="bill-vietqr-box" class="bill-vietqr-card">
+                <div class="bill-vietqr-badge">📱 SCAN VIETQR TO PAY</div>
+                <div class="bill-vietqr-img-wrap">
+                    <img id="bill-vietqr-img" src="" alt="VietQR MBBank 0332280605" class="bill-vietqr-img">
+                </div>
+                <div class="bill-vietqr-amount-label">AMOUNT (VND)</div>
+                <div class="bill-vietqr-amount-val" id="bill-vietqr-amount">0 VND</div>
+                <div class="bill-vietqr-content">
+                    Transfer Note: <strong id="bill-vietqr-addinfo">ORD-SAV-000000</strong>
+                </div>
+                <div class="bill-vietqr-bank-meta">
+                    <div class="bill-vietqr-logos">
+                        <span class="vietqr-pill">VIET<strong>QR</strong></span>
+                        <span class="mbbank-pill">★ MB Bank</span>
+                    </div>
+                    <div>Account Holder: <strong>NGUYENMINH</strong></div>
+                    <div>Account No: <strong>0332280605</strong></div>
+                    <div style="font-size:0.73rem;color:var(--text-muted);">MBBank — Military Commercial Joint Stock Bank</div>
+                </div>
+            </div>
+
+            <!-- Cash Payment Box (Shown when CASH is selected) -->
+            <div id="bill-cash-box" class="bill-cash-card" style="display: none;">
+                💵 <strong>Cash Payment Selected</strong>
+                <p style="margin:4px 0 0;font-size:0.78rem;color:var(--text-muted);">
+                    Please collect <strong id="bill-cash-amount" style="color:var(--text-main);">0 VND</strong> in cash from the guest, then click <strong>Confirm Payment &amp; Complete Bill</strong> below.
+                </p>
+            </div>
+
+            <div class="bill-modal-actions no-print">
+                <button type="button" class="btn btn-outline" id="btn-bill-close">Close</button>
+                <button type="button" class="btn btn-outline" id="btn-bill-print">🖨️ Print Bill &amp; QR</button>
+                <button type="button" class="btn btn-primary" id="btn-bill-confirm-pay" style="background: #2e7d32; border-color: #2e7d32;">
+                    ✅ Confirm Payment &amp; Complete Bill
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Toast Notification -->
     <div id="home-toast" class="toast-notification"></div>
 
@@ -160,6 +249,6 @@
     <div th:replace="~{fragments/footer :: siteFooter}"></div>
 
     <script src="/assets/js/common/api.js"></script>
-    <script src="/assets/js/staff/waiter.js?v=2"></script>
+    <script src="/assets/js/staff/waiter.js?v=5"></script>
 </body>
 </html>

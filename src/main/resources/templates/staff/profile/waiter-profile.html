@@ -17,12 +17,12 @@
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
                 <div>
                     <span style="font-size: 0.75rem; font-weight: 800; letter-spacing: 1.5px; color: var(--primary-color);"
-                          th:text="${session.roleId == 4 ? 'CHEF ACCOUNT' : 'WAITER ACCOUNT'}">STAFF ACCOUNT</span>
-                    <h1 style="font-family: var(--font-heading); font-size: 1.85rem; color: var(--text-main);">My Staff Profile</h1>
+                          th:text="${session.roleId == 1 ? 'ADMIN ACCOUNT' : (session.roleId == 2 ? 'CUSTOMER ACCOUNT' : (session.roleId == 4 ? 'CHEF ACCOUNT' : 'WAITER ACCOUNT'))}">ACCOUNT</span>
+                    <h1 style="font-family: var(--font-heading); font-size: 1.85rem; color: var(--text-main);">My Account Profile</h1>
                 </div>
-                <a th:href="${session.roleId == 4 ? '/staff/kitchen' : '/staff/tables'}" class="btn btn-outline" style="padding: 8px 16px;"
-                   th:text="${session.roleId == 4 ? '← Back to Kitchen Display' : '← Back to Floor Dashboard'}">
-                    ← Back to Dashboard
+                <a th:href="${session.roleId == 1 ? '/admin/dashboard' : (session.roleId == 2 ? '/home' : (session.roleId == 4 ? '/staff/kitchen' : '/staff/tables'))}" class="btn btn-outline" style="padding: 8px 16px;"
+                   th:text="${session.roleId == 1 ? '← Back to Admin Dashboard' : (session.roleId == 2 ? '← Back to Home' : (session.roleId == 4 ? '← Back to Kitchen Display' : '← Back to Floor Dashboard'))}">
+                    ← Back
                 </a>
             </div>
 
@@ -98,8 +98,9 @@
             const alertBox = document.getElementById('profile-alert');
             const btn = document.getElementById('btn-save-profile');
             btn.disabled = true;
+            const apiUrl = window.location.pathname.startsWith('/customer') ? '/api/customer/profile' : '/api/staff/profile';
             try {
-                const res = await SavoraApp.fetchApi('/api/staff/profile', {
+                const res = await SavoraApp.fetchApi(apiUrl, {
                     method: 'POST',
                     body: JSON.stringify({
                         firstName: document.getElementById('pf-firstName').value.trim(),
