@@ -187,7 +187,9 @@ public class AuthService {
         result.setRoleId(primaryRole.getRoleId());
         result.setRoleName(primaryRole.getRoleName());
         String redirect = "/home";
-        if ("STAFF".equalsIgnoreCase(primaryRole.getRoleName()) || Integer.valueOf(3).equals(primaryRole.getRoleId())) {
+        if ("ADMIN".equalsIgnoreCase(primaryRole.getRoleName()) || Integer.valueOf(1).equals(primaryRole.getRoleId())) {
+            redirect = "/admin/dashboard";
+        } else if ("STAFF".equalsIgnoreCase(primaryRole.getRoleName()) || Integer.valueOf(3).equals(primaryRole.getRoleId())) {
             redirect = "/staff/tables";
         } else if ("CHEF".equalsIgnoreCase(primaryRole.getRoleName()) || Integer.valueOf(4).equals(primaryRole.getRoleId())) {
             redirect = "/staff/kitchen";

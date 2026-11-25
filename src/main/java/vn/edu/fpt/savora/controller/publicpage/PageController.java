@@ -21,6 +21,9 @@ public class PageController {
         if (session != null) {
             Integer roleId = (Integer) session.getAttribute("roleId");
             String roleName = (String) session.getAttribute("roleName");
+            if (Integer.valueOf(1).equals(roleId) || "ADMIN".equalsIgnoreCase(roleName)) {
+                return "redirect:/admin/dashboard";
+            }
             if (Integer.valueOf(3).equals(roleId) || "STAFF".equalsIgnoreCase(roleName)) {
                 return "redirect:/staff/tables";
             }
