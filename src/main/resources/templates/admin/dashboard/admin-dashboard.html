@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="/assets/css/public/global.css?v=2">
     <link rel="stylesheet" href="/assets/css/public/home.css?v=4">
     <link rel="stylesheet" href="/assets/css/staff/waiter.css?v=5">
-    <link rel="stylesheet" href="/assets/css/admin/admin.css?v=4">
+    <link rel="stylesheet" href="/assets/css/admin/admin.css?v=5">
 </head>
 <body>
 <div th:replace="~{fragments/header :: siteHeader}"></div>
@@ -62,14 +62,15 @@
         </div>
     </section>
 
-    <!-- 6 Management Tabs -->
+    <!-- 7 Management Tabs -->
     <nav class="admin-tabs-bar" id="admin-tabs-nav">
         <button type="button" class="admin-tab-btn active" data-tab="tab-orders">📊 1. Revenue &amp; Invoices (Bills)</button>
-        <button type="button" class="admin-tab-btn" data-tab="tab-dishes">🍽️ 2. Menu &amp; Dish Management</button>
-        <button type="button" class="admin-tab-btn" data-tab="tab-tables">🪑 3. Dining Tables &amp; QR</button>
-        <button type="button" class="admin-tab-btn" data-tab="tab-vouchers">🎁 4. Promotional Vouchers</button>
-        <button type="button" class="admin-tab-btn" data-tab="tab-users">👥 5. Staff &amp; User Accounts</button>
-        <button type="button" class="admin-tab-btn" data-tab="tab-tracking">🛰️ 6. User Login &amp; Page Tracking</button>
+        <button type="button" class="admin-tab-btn" data-tab="tab-reservations">📅 2. Table Bookings</button>
+        <button type="button" class="admin-tab-btn" data-tab="tab-dishes">🍽️ 3. Menu &amp; Dish Management</button>
+        <button type="button" class="admin-tab-btn" data-tab="tab-tables">🪑 4. Dining Tables &amp; QR</button>
+        <button type="button" class="admin-tab-btn" data-tab="tab-vouchers">🎁 5. Promotional Vouchers</button>
+        <button type="button" class="admin-tab-btn" data-tab="tab-users">👥 6. Staff &amp; User Accounts</button>
+        <button type="button" class="admin-tab-btn" data-tab="tab-tracking">🛰️ 7. User Login &amp; Page Tracking</button>
     </nav>
 
     <!-- TAB 1: Revenue Charts & Invoices -->
@@ -147,7 +148,51 @@
         </div>
     </section>
 
-    <!-- TAB 2: Menu & Dish Management -->
+    <!-- TAB 2: Table Reservations & Bookings by Table -->
+    <section class="admin-tab-pane" id="tab-reservations">
+        <div class="admin-panel">
+            <div class="admin-panel-title">
+                <div>
+                    <span>📅 Online Table Reservations (Filter by Dining Table)</span>
+                    <span id="adm-res-filter-summary" class="adm-chart-pill" style="margin-left:10px;font-size:0.73rem;"></span>
+                </div>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+                    <input type="text" id="adm-res-search" class="pasgo-control" placeholder="Search booking code, guest, phone..." style="width:215px;padding:7px 12px;font-size:0.82rem;">
+                    <select id="adm-res-table-filter" class="pasgo-control" style="width:auto;padding:7px 12px;font-size:0.82rem;">
+                        <option value="ALL">🪑 All Dining Tables</option>
+                    </select>
+                    <select id="adm-res-status-filter" class="pasgo-control" style="width:auto;padding:7px 12px;font-size:0.82rem;">
+                        <option value="ALL">All Statuses</option>
+                        <option value="CONFIRMED">✅ CONFIRMED</option>
+                        <option value="SEATED">🪑 SEATED</option>
+                        <option value="PENDING">⏳ PENDING</option>
+                        <option value="COMPLETED">✓ COMPLETED</option>
+                        <option value="CANCELLED">❌ CANCELLED</option>
+                    </select>
+                </div>
+            </div>
+            <div class="admin-table-wrap">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Booking Code</th>
+                            <th>Table</th>
+                            <th>Date &amp; Time Slot</th>
+                            <th>Guest &amp; Phone</th>
+                            <th>Party Size &amp; Occasion</th>
+                            <th>Voucher Deal</th>
+                            <th>Customer Note &amp; Cancel Reason</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adm-reservations-tbody"></tbody>
+                </table>
+            </div>
+            <div class="adm-pagination-bar" id="adm-reservations-pagination"></div>
+        </div>
+    </section>
+
+    <!-- TAB 3: Menu & Dish Management -->
     <section class="admin-tab-pane" id="tab-dishes">
         <div class="admin-split-grid">
             <!-- Left Form: Add / Edit Dish -->
@@ -482,6 +527,14 @@
                         Real-time audit log of every user sign-in timestamp, geographic location, IP address, and target portal
                     </div>
                 </div>
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <label for="adm-login-page-size" style="font-size:0.76rem;color:var(--text-muted);font-weight:700;">Rows:</label>
+                    <select id="adm-login-page-size" class="pasgo-control" style="width:auto;padding:5px 10px;font-size:0.78rem;">
+                        <option value="5" selected>5 / page</option>
+                        <option value="10">10 / page</option>
+                        <option value="20">20 / page</option>
+                    </select>
+                </div>
             </div>
             <div class="admin-table-wrap">
                 <table class="admin-table">
@@ -498,6 +551,7 @@
                     <tbody id="adm-login-history-tbody"></tbody>
                 </table>
             </div>
+            <div class="adm-pagination-bar" id="adm-login-pagination"></div>
         </div>
 
         <!-- Section B: Detailed Page Navigation & Specific Sites Visited Log -->
@@ -510,7 +564,7 @@
                     </div>
                 </div>
                 <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
-                    <input type="text" id="adm-track-search" class="pasgo-control" placeholder="Search user, location, or page URL..." style="width:230px;padding:7px 12px;font-size:0.82rem;">
+                    <input type="text" id="adm-track-search" class="pasgo-control" placeholder="Search user, location, or page URL..." style="width:210px;padding:7px 12px;font-size:0.82rem;">
                     <select id="adm-track-type-filter" class="pasgo-control" style="width:auto;padding:7px 12px;font-size:0.82rem;">
                         <option value="ALL">All Events (Logins + Visits)</option>
                         <option value="PAGE_VISIT">🧭 Page Visits Only</option>
@@ -523,6 +577,12 @@
                         <option value="STAFF">STAFF (Waiter)</option>
                         <option value="CHEF">CHEF</option>
                         <option value="ADMIN">ADMIN</option>
+                    </select>
+                    <select id="adm-visits-page-size" class="pasgo-control" style="width:auto;padding:7px 10px;font-size:0.8rem;">
+                        <option value="5">5 / page</option>
+                        <option value="8" selected>8 / page</option>
+                        <option value="15">15 / page</option>
+                        <option value="30">30 / page</option>
                     </select>
                 </div>
             </div>
@@ -542,6 +602,7 @@
                     <tbody id="adm-page-visits-tbody"></tbody>
                 </table>
             </div>
+            <div class="adm-pagination-bar" id="adm-visits-pagination"></div>
         </div>
     </section>
 </main>
@@ -585,6 +646,6 @@
 <div th:replace="~{fragments/footer :: siteFooter}"></div>
 
 <script src="/assets/js/common/api.js"></script>
-<script src="/assets/js/admin/admin.js?v=5"></script>
+<script src="/assets/js/admin/admin.js?v=8"></script>
 </body>
 </html>

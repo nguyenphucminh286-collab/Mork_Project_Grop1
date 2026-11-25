@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let overviewData = {
         kpis: {},
         orders: [],
+        reservations: [],
         dishes: [],
         categories: [],
         tables: [],
@@ -42,6 +43,8 @@ document.addEventListener('DOMContentLoaded', () => {
             renderRevenueCharts();
             renderOrderTableFilterOptions();
             renderOrdersTable();
+            renderReservationTableFilterOptions();
+            renderReservationsTable();
             renderCategoryOptions();
             renderDishesTable();
             renderTablesTable();
@@ -351,6 +354,133 @@ document.addEventListener('DOMContentLoaded', () => {
     $('adm-order-table-filter')?.addEventListener('change', renderOrdersTable);
     $('adm-order-status-filter')?.addEventListener('change', renderOrdersTable);
 
+    // 1B. Online Table Reservations Filtered by Dining Table (with Pagination)
+    let resCurrentPage = 1;
+    const RES_PAGE_SIZE = 8;
+
+    const renderReservationTableFilterOptions = () => {
+        const sel = $('adm-res-table-filter');
+        if (!sel) return;
+        const currentVal = sel.value || 'ALL';
+
+        const tableMap = new Map();
+        (overviewData.tables || []).forEach((t) => {
+            if (t.tableCode) {
+                tableMap.set(t.tableCode, `${t.tableCode} — ${t.tableName || ''} (${t.area || ''})`);
+            }
+        });
+        (overviewData.reservations || []).forEach((r) => {
+            if (r.tableCode && !tableMap.has(r.tableCode)) {
+                tableMap.set(r.tableCode, r.tableCode);
+            }
+        });
+
+        const countByTable = {};
+        (overviewData.reservations || []).forEach((r) => {
+            const c = r.tableCode || 'TBD';
+            countByTable[c] = (countByTable[c] || 0) + 1;
+        });
+
+        const options = [`<option value="ALL">🪑 All Dining Tables (${(overviewData.reservations || []).length} bookings)</option>`];
+        Array.from(tableMap.entries()).forEach(([code, label]) => {
+            const cnt = countByTable[code] || 0;
+            options.push(`<option value="${code}">🍽️ ${label} (${cnt} booking${cnt === 1 ? '' : 's'})</option>`);
+        });
+
+        sel.innerHTML = options.join('');
+        if ([...tableMap.keys(), 'ALL'].includes(currentVal)) {
+            sel.value = currentVal;
+        }
+    };
+
+    const renderReservationsTable = () => {
+        const tbody = $('adm-reservations-tbody');
+        if (!tbody) return;
+
+        const q = ($('adm-res-search')?.value || '').trim().toLowerCase();
+        const tb = $('adm-res-table-filter')?.value || 'ALL';
+        const st = $('adm-res-status-filter')?.value || 'ALL';
+
+        const filtered = (overviewData.reservations || []).filter((r) => {
+            const matchTb = tb === 'ALL' || r.tableCode === tb;
+            const matchSt = st === 'ALL' || r.status === st;
+            const matchQ = !q || [r.reservationCode, r.tableCode, r.customerName, r.customerPhone, r.specialRequest, r.cancelReason]
+                .filter(Boolean).join(' ').toLowerCase().includes(q);
+            return matchTb && matchSt && matchQ;
+        });
+
+        if ($('adm-res-filter-summary')) {
+            const activeCnt = filtered.filter((r) => r.status === 'CONFIRMED' || r.status === 'SEATED' || r.status === 'PENDING').length;
+            const cancelCnt = filtered.filter((r) => r.status === 'CANCELLED').length;
+            $('adm-res-filter-summary').innerHTML = `${tb === 'ALL' ? 'All Tables' : `Table <strong>${tb}</strong>`}: <strong>${filtered.length}</strong> booking(s) • <strong>${activeCnt}</strong> Active • <strong>${cancelCnt}</strong> Cancelled`;
+        }
+
+        const totalPages = Math.max(1, Math.ceil(filtered.length / RES_PAGE_SIZE));
+        if (resCurrentPage > totalPages) resCurrentPage = totalPages;
+        const slice = filtered.slice((resCurrentPage - 1) * RES_PAGE_SIZE, resCurrentPage * RES_PAGE_SIZE);
+
+        if (!slice.length) {
+            tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--text-muted);">No table reservations found for ${tb === 'ALL' ? 'the selected filter' : `Table ${tb}`}.</td></tr>`;
+            if ($('adm-reservations-pagination')) $('adm-reservations-pagination').innerHTML = '';
+            return;
+        }
+
+        tbody.innerHTML = slice.map((r) => {
+            const stBadge = r.status === 'CONFIRMED' ? 'adm-badge-green'
+                : (r.status === 'SEATED' ? 'adm-badge-blue'
+                : (r.status === 'CANCELLED' ? 'adm-badge-red'
+                : (r.status === 'PENDING' ? 'adm-badge-amber' : 'adm-badge-gray')));
+
+            return `
+                <tr>
+                    <td><strong>${r.reservationCode}</strong></td>
+                    <td>
+                        <span class="adm-badge adm-badge-blue">${r.tableCode}</span>
+                        <div style="font-size:0.71rem;color:var(--text-muted);margin-top:2px;">${r.area || ''}</div>
+                    </td>
+                    <td style="white-space:nowrap;">
+                        <strong>📅 ${r.reservationDate}</strong>
+                        <div style="font-size:0.75rem;color:var(--primary-color);font-weight:700;">⏰ ${r.timeSlot}</div>
+                    </td>
+                    <td>
+                        <strong>${r.customerName}</strong>
+                        <div style="font-size:0.73rem;color:var(--text-muted);">📞 ${r.customerPhone || '—'}</div>
+                    </td>
+                    <td>
+                        <strong>👥 ${r.guestCount} Guests</strong> <small style="color:var(--text-muted);">(${r.adultCount || r.guestCount}A, ${r.childCount || 0}C)</small>
+                        ${r.occasion ? `<div style="font-size:0.72rem;color:var(--text-muted);">🎉 ${r.occasion}</div>` : ''}
+                    </td>
+                    <td>
+                        ${r.voucherCode ? `<span class="adm-badge adm-badge-amber">🎁 ${r.voucherCode} (-${r.discountPercent}%)</span>` : `<span style="color:var(--text-muted);font-size:0.75rem;">None</span>`}
+                    </td>
+                    <td style="max-width:250px;">
+                        <div style="font-size:0.76rem;">📝 ${r.specialRequest && r.specialRequest.trim() ? r.specialRequest : '<span style="color:var(--text-muted);">No special note</span>'}</div>
+                        ${r.status === 'CANCELLED' ? `<div style="margin-top:4px;padding:3px 7px;border-radius:6px;background:#ffebee;color:#b71c1c;font-size:0.72rem;font-weight:700;">❌ Cancel Reason: "${r.cancelReason || 'Cancelled by customer'}"</div>` : ''}
+                    </td>
+                    <td><span class="adm-badge ${stBadge}">${r.status}</span></td>
+                </tr>
+            `;
+        }).join('');
+
+        buildPaginationHtml('adm-reservations-pagination', filtered.length, resCurrentPage, RES_PAGE_SIZE, 'bookings', (newPage) => {
+            resCurrentPage = newPage;
+            renderReservationsTable();
+        });
+    };
+
+    $('adm-res-search')?.addEventListener('input', () => {
+        resCurrentPage = 1;
+        renderReservationsTable();
+    });
+    $('adm-res-table-filter')?.addEventListener('change', () => {
+        resCurrentPage = 1;
+        renderReservationsTable();
+    });
+    $('adm-res-status-filter')?.addEventListener('change', () => {
+        resCurrentPage = 1;
+        renderReservationsTable();
+    });
+
     // 2. Menu & Dishes
     const renderCategoryOptions = () => {
         const sel = $('adm-dish-category');
@@ -540,6 +670,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td><span class="table-status-badge badge-status-${t.status}">${t.status}</span></td>
                 <td>
                     <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                        <button type="button" class="adm-btn-xs btn-view-table-bookings" data-code="${t.tableCode}" style="color:#1565c0;border-color:#bbdefb;">📅 Bookings</button>
                         <button type="button" class="adm-btn-xs btn-edit-table" data-id="${t.tableId}">✏️ Edit</button>
                         <button type="button" class="adm-btn-xs btn-delete-table" data-id="${t.tableId}" data-code="${t.tableCode}" style="color:#c62828;border-color:#ffcdd2;">🗑 Delete</button>
                         <a href="/qr/table/${encodeURIComponent(t.tableCode)}" target="_blank" class="adm-btn-xs" style="text-decoration:none;">📱 Table QR</a>
@@ -547,6 +678,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 </td>
             </tr>
         `).join('');
+
+        tbody.querySelectorAll('.btn-view-table-bookings').forEach((btn) => {
+            btn.onclick = () => {
+                const code = btn.dataset.code;
+                const tabBtn = document.querySelector('#admin-tabs-nav .admin-tab-btn[data-tab="tab-reservations"]');
+                if (tabBtn) tabBtn.click();
+                const sel = $('adm-res-table-filter');
+                if (sel && code) {
+                    sel.value = code;
+                    resCurrentPage = 1;
+                    renderReservationsTable();
+                }
+            };
+        });
 
         tbody.querySelectorAll('.btn-edit-table').forEach((btn) => {
             btn.onclick = () => {
@@ -682,14 +827,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // 5. Staff & User Accounts
+    // 5. Staff & User Accounts (Exclude ADMIN accounts so Admin cannot lock themselves)
     const renderUsersTable = () => {
         const tbody = $('adm-users-tbody');
         if (!tbody) return;
-        tbody.innerHTML = (overviewData.users || []).map((u) => {
-            const roleBadge = u.roleName === 'ADMIN' ? 'adm-badge-red'
-                : (u.roleName === 'STAFF' ? 'adm-badge-blue'
-                : (u.roleName === 'CHEF' ? 'adm-badge-amber' : 'adm-badge-green'));
+        const nonAdminUsers = (overviewData.users || []).filter(
+            (u) => u.roleName !== 'ADMIN' && Number(u.roleId) !== 1
+        );
+        tbody.innerHTML = nonAdminUsers.map((u) => {
+            const roleBadge = u.roleName === 'STAFF' ? 'adm-badge-blue'
+                : (u.roleName === 'CHEF' ? 'adm-badge-amber' : 'adm-badge-green');
             return `
                 <tr>
                     <td>#${u.userId}</td>
@@ -749,13 +896,64 @@ document.addEventListener('DOMContentLoaded', () => {
         showToast('Refreshed Admin Dashboard data!');
     });
 
-    // 6. User Login Date/Time, Locations & Page Navigation Tracking Dashboard
+    // 6. User Login Date/Time, Locations & Page Navigation Tracking Dashboard (with Pagination)
+    let loginCurrentPage = 1;
+    let visitsCurrentPage = 1;
+
     const roleBadgeClass = (role) => {
         if (role === 'ADMIN') return 'adm-badge-red';
         if (role === 'STAFF') return 'adm-badge-blue';
         if (role === 'CHEF') return 'adm-badge-amber';
         if (role === 'CUSTOMER') return 'adm-badge-green';
         return 'adm-badge-purple';
+    };
+
+    const buildPaginationHtml = (containerId, totalItems, currentPage, pageSize, labelNoun, onPageSelect) => {
+        const box = $(containerId);
+        if (!box) return;
+        if (totalItems === 0) {
+            box.innerHTML = '';
+            return;
+        }
+        const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+        const safePage = Math.min(totalPages, Math.max(1, currentPage));
+        const startIdx = (safePage - 1) * pageSize + 1;
+        const endIdx = Math.min(totalItems, safePage * pageSize);
+
+        const pageButtons = [];
+        pageButtons.push(`<button type="button" class="adm-page-btn" data-page="${safePage - 1}" ${safePage <= 1 ? 'disabled' : ''}>« Prev</button>`);
+
+        const maxVisible = 5;
+        let startPage = Math.max(1, safePage - 2);
+        let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+        if (endPage - startPage + 1 < maxVisible) {
+            startPage = Math.max(1, endPage - maxVisible + 1);
+        }
+
+        for (let p = startPage; p <= endPage; p++) {
+            pageButtons.push(`<button type="button" class="adm-page-btn ${p === safePage ? 'active' : ''}" data-page="${p}">${p}</button>`);
+        }
+
+        pageButtons.push(`<button type="button" class="adm-page-btn" data-page="${safePage + 1}" ${safePage >= totalPages ? 'disabled' : ''}>Next »</button>`);
+
+        box.innerHTML = `
+            <div class="adm-page-info">
+                Showing <strong>${startIdx}–${endIdx}</strong> of <strong>${totalItems}</strong> ${labelNoun} (Page ${safePage}/${totalPages})
+            </div>
+            <div class="adm-page-controls">
+                ${pageButtons.join('')}
+            </div>
+        `;
+
+        box.querySelectorAll('.adm-page-btn').forEach((btn) => {
+            btn.onclick = () => {
+                if (btn.disabled) return;
+                const targetPage = parseInt(btn.dataset.page, 10);
+                if (targetPage >= 1 && targetPage <= totalPages) {
+                    onPageSelect(targetPage);
+                }
+            };
+        });
     };
 
     const renderTrackingTables = () => {
@@ -785,10 +983,15 @@ document.addEventListener('DOMContentLoaded', () => {
             $('adm-trk-top-page-sub').textContent = topPageEntry ? `${topPageEntry[1]} recorded visit(s)` : 'Top route';
         }
 
-        // Section A: User Login History Table
+        // Section A: Paginated User Login History Table
         const loginTbody = $('adm-login-history-tbody');
+        const loginPageSize = Math.max(1, parseInt($('adm-login-page-size')?.value || '5', 10));
+        const loginTotalPages = Math.max(1, Math.ceil(loginLogs.length / loginPageSize));
+        if (loginCurrentPage > loginTotalPages) loginCurrentPage = loginTotalPages;
+        const loginSlice = loginLogs.slice((loginCurrentPage - 1) * loginPageSize, loginCurrentPage * loginPageSize);
+
         if (loginTbody) {
-            loginTbody.innerHTML = loginLogs.length ? loginLogs.slice(0, 25).map((l) => `
+            loginTbody.innerHTML = loginSlice.length ? loginSlice.map((l) => `
                 <tr>
                     <td><strong>🕒 ${l.createdAt}</strong></td>
                     <td>
@@ -807,9 +1010,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     </td>
                 </tr>
             `).join('') : `<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-muted);">No login sessions recorded yet.</td></tr>`;
+
+            buildPaginationHtml('adm-login-pagination', loginLogs.length, loginCurrentPage, loginPageSize, 'login records', (newPage) => {
+                loginCurrentPage = newPage;
+                renderTrackingTables();
+            });
         }
 
-        // Section B: Filtered Specific Pages & Sites Visited Log
+        // Section B: Paginated & Filtered Specific Pages & Sites Visited Log
         const visitsTbody = $('adm-page-visits-tbody');
         if (!visitsTbody) return;
 
@@ -825,7 +1033,12 @@ document.addEventListener('DOMContentLoaded', () => {
             return matchType && matchRole && matchQ;
         });
 
-        visitsTbody.innerHTML = filtered.length ? filtered.map((l) => {
+        const visitsPageSize = Math.max(1, parseInt($('adm-visits-page-size')?.value || '8', 10));
+        const visitsTotalPages = Math.max(1, Math.ceil(filtered.length / visitsPageSize));
+        if (visitsCurrentPage > visitsTotalPages) visitsCurrentPage = visitsTotalPages;
+        const visitsSlice = filtered.slice((visitsCurrentPage - 1) * visitsPageSize, visitsCurrentPage * visitsPageSize);
+
+        visitsTbody.innerHTML = visitsSlice.length ? visitsSlice.map((l) => {
             const isLogin = l.actionType === 'LOGIN';
             return `
                 <tr>
@@ -852,11 +1065,33 @@ document.addEventListener('DOMContentLoaded', () => {
                 </tr>
             `;
         }).join('') : `<tr><td colspan="7" style="text-align:center;padding:22px;color:var(--text-muted);">No activity logs match your filter.</td></tr>`;
+
+        buildPaginationHtml('adm-visits-pagination', filtered.length, visitsCurrentPage, visitsPageSize, 'activity logs', (newPage) => {
+            visitsCurrentPage = newPage;
+            renderTrackingTables();
+        });
     };
 
-    $('adm-track-search')?.addEventListener('input', renderTrackingTables);
-    $('adm-track-type-filter')?.addEventListener('change', renderTrackingTables);
-    $('adm-track-role-filter')?.addEventListener('change', renderTrackingTables);
+    $('adm-login-page-size')?.addEventListener('change', () => {
+        loginCurrentPage = 1;
+        renderTrackingTables();
+    });
+    $('adm-visits-page-size')?.addEventListener('change', () => {
+        visitsCurrentPage = 1;
+        renderTrackingTables();
+    });
+    $('adm-track-search')?.addEventListener('input', () => {
+        visitsCurrentPage = 1;
+        renderTrackingTables();
+    });
+    $('adm-track-type-filter')?.addEventListener('change', () => {
+        visitsCurrentPage = 1;
+        renderTrackingTables();
+    });
+    $('adm-track-role-filter')?.addEventListener('change', () => {
+        visitsCurrentPage = 1;
+        renderTrackingTables();
+    });
 
     loadAdminOverview();
 });

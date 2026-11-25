@@ -22,6 +22,7 @@ public class AdminPortalService {
 
     private static final DateTimeFormatter DT_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HH:mm");
 
     private final RestaurantOrderRepository restaurantOrderRepository;
     private final OrderItemRepository orderItemRepository;
@@ -182,6 +183,44 @@ public class AdminPortalService {
         }).collect(Collectors.toList());
 
         long totalReservations = reservationRepository.count();
+        List<Reservation> allReservations = reservationRepository.findAll(
+                Sort.by(Sort.Direction.DESC, "reservationDate", "reservationTime")
+        );
+        List<Map<String, Object>> reservationList = allReservations.stream().map(r -> {
+            DiningTable t = r.getDiningTable();
+            Voucher v = r.getVoucher();
+            String slot = "";
+            if (r.getReservationTime() != null) {
+                String s = r.getReservationTime().format(TIME_FMT);
+                String e = r.getEndTime() != null
+                        ? r.getEndTime().format(TIME_FMT)
+                        : r.calculateEndTime().format(TIME_FMT);
+                slot = s + " – " + e;
+            }
+            Map<String, Object> rm = new LinkedHashMap<>();
+            rm.put("reservationId", r.getReservationId());
+            rm.put("reservationCode", r.getReservationCode());
+            rm.put("tableId", t != null ? t.getTableId() : null);
+            rm.put("tableCode", t != null ? t.getTableCode() : "TBD");
+            rm.put("tableName", t != null ? t.getTableName() : "Unassigned");
+            rm.put("area", t != null ? t.getArea() : (r.getPreferredArea() != null ? r.getPreferredArea() : ""));
+            rm.put("customerName", r.getCustomerName());
+            rm.put("customerPhone", r.getCustomerPhone());
+            rm.put("customerEmail", r.getCustomerEmail());
+            rm.put("reservationDate", r.getReservationDate() != null ? r.getReservationDate().format(DATE_FMT) : "");
+            rm.put("timeSlot", slot);
+            rm.put("adultCount", r.getAdultCount());
+            rm.put("childCount", r.getChildCount());
+            rm.put("guestCount", r.getGuestCount());
+            rm.put("occasion", r.getOccasion());
+            rm.put("specialRequest", r.getSpecialRequest());
+            rm.put("voucherCode", v != null ? v.getVoucherCode() : null);
+            rm.put("discountPercent", v != null ? v.getDiscountPercent() : null);
+            rm.put("status", r.getStatus() != null ? r.getStatus().name() : "PENDING");
+            rm.put("cancelReason", r.getCancelReason());
+            rm.put("createdAt", r.getCreatedAt() != null ? r.getCreatedAt().format(DT_FMT) : "");
+            return rm;
+        }).collect(Collectors.toList());
 
         Map<String, Object> kpis = new LinkedHashMap<>();
         kpis.put("totalRevenue", totalRevenue);
@@ -200,6 +239,7 @@ public class AdminPortalService {
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("kpis", kpis);
         result.put("orders", orderList);
+        result.put("reservations", reservationList);
         result.put("dishes", dishList);
         result.put("categories", categoryList);
         result.put("tables", tableList);
@@ -420,6 +460,10 @@ public class AdminPortalService {
     public void toggleUserStatus(Integer userId) {
         User u = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User #" + userId + " not found."));
+        boolean isAdmin = u.getRoles().stream().anyMatch(r -> "ADMIN".equalsIgnoreCase(r.getRoleName()) || Integer.valueOf(1).equals(r.getRoleId()));
+        if (isAdmin) {
+            throw new IllegalArgumentException("Admin accounts cannot be locked.");
+        }
         if (u.getStatus() == UserStatus.LOCKED) {
             u.setStatus(UserStatus.ACTIVE);
         } else {
