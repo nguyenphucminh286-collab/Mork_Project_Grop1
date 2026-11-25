@@ -356,6 +356,79 @@ document.addEventListener('DOMContentLoaded', () => {
         if (promptModal) promptModal.style.display = 'none';
     });
 
+    // Floating Back-to-Top Arrow Button with 60fps Butter-Smooth Easing & Progress Ring
+    const backToTopBtn = $('btn-back-to-top');
+    const progressCircle = $('btt-progress-circle');
+    const CIRCUMFERENCE = 2 * Math.PI * 24; // r = 24 => ~150.8
+
+    if (backToTopBtn) {
+        const updateBackToTopState = () => {
+            const scrollTop = window.scrollY || document.documentElement.scrollTop;
+            const docHeight = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+            const progress = Math.min(1, Math.max(0, scrollTop / docHeight));
+
+            if (progressCircle) {
+                progressCircle.style.strokeDashoffset = String(CIRCUMFERENCE * (1 - progress));
+            }
+
+            if (scrollTop > 220) {
+                backToTopBtn.classList.add('visible');
+            } else {
+                backToTopBtn.classList.remove('visible');
+            }
+        };
+
+        window.addEventListener('scroll', updateBackToTopState, { passive: true });
+        updateBackToTopState();
+
+        // Custom requestAnimationFrame smooth glide (easeInOutCubic / easeOutQuart)
+        let scrollAnimId = null;
+        const smoothGlideToTop = () => {
+            if (scrollAnimId) cancelAnimationFrame(scrollAnimId);
+            const startY = window.scrollY || document.documentElement.scrollTop;
+            if (startY <= 0) return;
+
+            backToTopBtn.classList.remove('launching');
+            void backToTopBtn.offsetWidth; // trigger reflow for animation restart
+            backToTopBtn.classList.add('launching');
+
+            // Dynamic duration between 520ms and 780ms based on scroll distance
+            const duration = Math.min(780, Math.max(520, startY * 0.32));
+            const startTime = performance.now();
+
+            // Buttery easeOutQuart curve: fast initial lift, silky deceleration at the top
+            const easeOutQuart = (t) => 1 - Math.pow(1 - t, 4);
+
+            const step = (now) => {
+                const elapsed = now - startTime;
+                const t = Math.min(1, elapsed / duration);
+                const eased = easeOutQuart(t);
+                window.scrollTo(0, Math.round(startY * (1 - eased)));
+
+                if (t < 1) {
+                    scrollAnimId = requestAnimationFrame(step);
+                } else {
+                    scrollAnimId = null;
+                    setTimeout(() => backToTopBtn.classList.remove('launching'), 150);
+                }
+            };
+
+            scrollAnimId = requestAnimationFrame(step);
+        };
+
+        // Cancel auto-scroll if user manually scrolls with mouse wheel or touch during glide
+        const cancelGlideOnUserInput = () => {
+            if (scrollAnimId) {
+                cancelAnimationFrame(scrollAnimId);
+                scrollAnimId = null;
+            }
+        };
+        window.addEventListener('wheel', cancelGlideOnUserInput, { passive: true });
+        window.addEventListener('touchstart', cancelGlideOnUserInput, { passive: true });
+
+        backToTopBtn.addEventListener('click', smoothGlideToTop);
+    }
+
     syncTimeSlots();
     setInterval(syncTimeSlots, 30000);
     loadVouchers();

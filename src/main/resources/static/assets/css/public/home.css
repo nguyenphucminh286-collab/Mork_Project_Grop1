@@ -780,7 +780,7 @@
 
 .toast-notification {
     position: fixed;
-    bottom: 26px;
+    bottom: 84px;
     right: 26px;
     background: #1e1b18;
     color: #ffffff;
@@ -792,6 +792,130 @@
     font-weight: 500;
     z-index: 2500;
     display: none;
+}
+
+/* Floating Back-to-Top Arrow Button with Progress Ring & Luxury Effects */
+.btn-back-to-top {
+    position: fixed;
+    bottom: 26px;
+    right: 26px;
+    width: 54px;
+    height: 54px;
+    padding: 0;
+    border-radius: 50%;
+    border: none;
+    background: linear-gradient(135deg, #2b1d16 0%, #b05628 55%, #d32f2f 100%);
+    background-size: 200% 200%;
+    color: #fff8f0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 10px 26px rgba(176, 86, 40, 0.38), 0 0 0 0 rgba(211, 47, 47, 0.35);
+    z-index: 2600;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(22px) scale(0.82);
+    transition:
+        opacity 0.38s cubic-bezier(0.22, 1, 0.36, 1),
+        transform 0.38s cubic-bezier(0.34, 1.56, 0.64, 1),
+        visibility 0.38s ease,
+        box-shadow 0.28s ease,
+        background-position 0.45s ease;
+}
+
+.btn-back-to-top::before {
+    content: '';
+    position: absolute;
+    inset: -5px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(212, 163, 89, 0.45);
+    opacity: 0;
+    transform: scale(0.88);
+    transition: opacity 0.3s ease, transform 0.35s ease;
+    pointer-events: none;
+}
+
+.btn-back-to-top.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+    animation: bttPulseGlow 2.8s infinite ease-in-out;
+}
+
+.btn-back-to-top:hover {
+    transform: translateY(-5px) scale(1.07);
+    background-position: 100% 50%;
+    box-shadow: 0 16px 34px rgba(211, 47, 47, 0.52), 0 0 18px rgba(244, 201, 131, 0.45);
+}
+
+.btn-back-to-top:hover::before {
+    opacity: 1;
+    transform: scale(1.08);
+}
+
+.btn-back-to-top:active {
+    transform: translateY(-2px) scale(0.95);
+}
+
+.btt-progress-ring {
+    position: absolute;
+    inset: 0;
+    transform: rotate(-90deg);
+    pointer-events: none;
+}
+
+.btt-progress-ring__bg {
+    stroke: rgba(255, 255, 255, 0.16);
+}
+
+.btt-progress-ring__fill {
+    stroke: #f4c983;
+    stroke-dasharray: 150.8;
+    stroke-dashoffset: 150.8;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.12s linear;
+}
+
+.btt-arrow-wrap {
+    position: relative;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btt-arrow-icon {
+    transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.btn-back-to-top:hover .btt-arrow-icon {
+    animation: bttArrowBounce 0.75s infinite alternate ease-in-out;
+}
+
+.btn-back-to-top.launching .btt-arrow-icon {
+    animation: bttArrowLaunch 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes bttPulseGlow {
+    0%, 100% {
+        box-shadow: 0 10px 26px rgba(176, 86, 40, 0.38), 0 0 0 0 rgba(211, 47, 47, 0.32);
+    }
+    50% {
+        box-shadow: 0 12px 28px rgba(176, 86, 40, 0.45), 0 0 0 9px rgba(211, 47, 47, 0);
+    }
+}
+
+@keyframes bttArrowBounce {
+    0% { transform: translateY(1px); }
+    100% { transform: translateY(-4px); }
+}
+
+@keyframes bttArrowLaunch {
+    0% { transform: translateY(0) scale(1); opacity: 1; }
+    45% { transform: translateY(-16px) scale(0.9); opacity: 0; }
+    46% { transform: translateY(14px) scale(0.9); opacity: 0; }
+    100% { transform: translateY(0) scale(1); opacity: 1; }
 }
 
 @media (max-width: 980px) {
