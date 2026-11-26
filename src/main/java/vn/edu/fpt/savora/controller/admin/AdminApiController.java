@@ -1,11 +1,16 @@
 package vn.edu.fpt.savora.controller.admin;
 
+import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import vn.edu.fpt.savora.common.ApiResponse;
 import vn.edu.fpt.savora.service.AdminPortalService;
 import vn.edu.fpt.savora.service.CloudinaryUploadService;
+import vn.edu.fpt.savora.service.FeedbackService;
 
 import java.util.Map;
 
@@ -16,6 +21,48 @@ public class AdminApiController {
 
     private final AdminPortalService adminPortalService;
     private final CloudinaryUploadService cloudinaryUploadService;
+    private final FeedbackService feedbackService;
+
+    public record FeedbackReplyRequest(
+            @NotBlank(message = "Please enter a reply message.")
+            @Size(max = 10000, message = "Reply message is too long.")
+            String replyMessage
+    ) {
+        public FeedbackReplyRequest {
+            replyMessage = replyMessage == null ? null : replyMessage.strip();
+        }
+    }
+
+    @GetMapping("/feedback")
+    public ApiResponse<Map<String, Object>> feedback(
+            @RequestParam(defaultValue = "") String search,
+            @RequestParam(defaultValue = "ALL") String status,
+            @RequestParam(defaultValue = "0") int page
+    ) {
+        return ApiResponse.ok(feedbackService.getAdminFeedbackInbox(search, status, page));
+    }
+
+    @PostMapping("/feedback/{id}/reply")
+    public ApiResponse<Map<String, Object>> replyFeedback(
+            @PathVariable Long id,
+            @Valid @RequestBody FeedbackReplyRequest request,
+            HttpSession session
+    ) {
+        String responder = session != null && session.getAttribute("fullName") != null
+                ? String.valueOf(session.getAttribute("fullName"))
+                : "Savora Admin";
+        FeedbackService.ReplyResult result = feedbackService.replyToFeedback(id, request.replyMessage(), responder);
+        return ApiResponse.ok(result.notice(), Map.of(
+                "feedback", result.feedback(),
+                "emailSent", result.emailSent()
+        ));
+    }
+
+    @DeleteMapping("/feedback/{id}")
+    public ApiResponse<Void> deleteFeedback(@PathVariable Long id) {
+        feedbackService.deleteFeedback(id);
+        return ApiResponse.ok("Deleted guest feedback.", null);
+    }
 
     @GetMapping("/overview")
     public ApiResponse<Map<String, Object>> getOverview() {

@@ -8,9 +8,9 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import vn.edu.fpt.savora.security.interceptor.AuthInterceptor;
 
 /**
- * Cấu hình Web MVC cho Spring Boot:
- * 1. Hỗ trợ CORS khi chạy Frontend bằng Live Server (cổng 5500) trên VS Code hoặc chạy trực tiếp trên cổng 8080.
- * 2. Đăng ký AuthInterceptor kiểm tra phân quyền giống AuthFilter của SE2034-SWP391-G6.
+ * Spring Web MVC configuration:
+ * 1. Configures CORS for local frontend development (Live Server port 5500) and port 8080.
+ * 2. Registers AuthInterceptor for session-based authentication and role authorization.
  */
 @Configuration
 @RequiredArgsConstructor

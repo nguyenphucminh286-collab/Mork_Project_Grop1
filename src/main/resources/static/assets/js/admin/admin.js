@@ -24,16 +24,41 @@ document.addEventListener('DOMContentLoaded', () => {
         window.__admToastTimer = setTimeout(() => { toast.style.display = 'none'; }, 3400);
     };
 
-    // Tab Switching
-    document.querySelectorAll('#admin-tabs-nav .admin-tab-btn').forEach((btn) => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('#admin-tabs-nav .admin-tab-btn').forEach((b) => b.classList.remove('active'));
-            document.querySelectorAll('.admin-tab-pane').forEach((p) => p.classList.remove('active'));
-            btn.classList.add('active');
-            const target = $(btn.dataset.tab);
-            if (target) target.classList.add('active');
+    const sectionLinks = [...document.querySelectorAll('#admin-tabs-nav [data-tab]')];
+    const menuToggle = $('admin-nav-toggle');
+    let activeSection;
+    function openSection(id, focusHeading = false) {
+        const link = sectionLinks.find(item => item.dataset.tab === id) || sectionLinks[0];
+        activeSection = link.dataset.tab;
+        sectionLinks.forEach(item => {
+            item.classList.toggle('active', item === link);
+            if (item === link) item.setAttribute('aria-current', 'page');
+            else item.removeAttribute('aria-current');
         });
+        document.querySelectorAll('.admin-tab-pane').forEach(pane => {
+            pane.classList.toggle('active', pane.id === activeSection);
+        });
+        const title = link.firstElementChild.textContent;
+        $('admin-section-group').textContent = link.closest('.admin-nav-group').querySelector('h2').textContent;
+        $('admin-page-title').textContent = title;
+        document.title = title + ' — Savora Admin';
+        menuToggle.setAttribute('aria-expanded', 'false');
+        if (focusHeading) {
+            $('admin-page-title').focus({preventScroll: true});
+            window.scrollTo(0, 0);
+        }
+        if (activeSection === 'tab-feedback') loadFeedback();
+    }
+    sectionLinks.forEach(link => link.addEventListener('click', event => {
+        if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+        event.preventDefault();
+        if (location.hash !== link.hash) history.pushState(null, '', link.hash);
+        openSection(link.dataset.tab, true);
+    }));
+    menuToggle.addEventListener('click', () => {
+        menuToggle.setAttribute('aria-expanded', String(menuToggle.getAttribute('aria-expanded') !== 'true'));
     });
+    window.addEventListener('popstate', () => openSection(location.hash.slice(1), true));
 
     const loadAdminOverview = async () => {
         try {
@@ -60,14 +85,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const k = overviewData.kpis || {};
         if ($('adm-kpi-revenue')) $('adm-kpi-revenue').textContent = SavoraApp.formatCurrency(k.totalRevenue || 0);
         if ($('adm-kpi-today-revenue')) $('adm-kpi-today-revenue').textContent = `Today: ${SavoraApp.formatCurrency(k.todayRevenue || 0)}`;
-        if ($('adm-kpi-orders')) $('adm-kpi-orders').textContent = `${k.paidOrdersCount || 0} Paid / ${k.totalOrdersCount || 0} Total`;
-        if ($('adm-kpi-active-orders')) $('adm-kpi-active-orders').textContent = `${k.activeOrdersCount || 0} active open tables`;
+        if ($('adm-kpi-orders')) $('adm-kpi-orders').textContent = String(k.paidOrdersCount || 0);
+        if ($('adm-kpi-active-orders')) $('adm-kpi-active-orders').textContent = `${k.totalOrdersCount || 0} total · ${k.activeOrdersCount || 0} active`;
         if ($('adm-kpi-bookings')) $('adm-kpi-bookings').textContent = String(k.totalReservationsCount || 0);
-        if ($('adm-kpi-dishes')) $('adm-kpi-dishes').textContent = String(k.totalDishesCount || 0);
         if ($('adm-kpi-dishes-sub')) $('adm-kpi-dishes-sub').textContent = `${k.availableDishesCount || 0} available on menu`;
-        if ($('adm-kpi-tables')) $('adm-kpi-tables').textContent = String(k.totalTablesCount || 0);
         if ($('adm-kpi-tables-sub')) $('adm-kpi-tables-sub').textContent = `${k.availableTablesCount || 0} available • ${k.occupiedTablesCount || 0} occupied`;
-        if ($('adm-kpi-users')) $('adm-kpi-users').textContent = String(k.totalUsersCount || 0);
     };
 
     // 0. Interactive Daily Revenue & Payment Channel Charts
@@ -132,15 +154,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (chartKpis) {
             chartKpis.innerHTML = `
-                <span class="adm-chart-pill">🧾 Avg Bill: <strong>${SavoraApp.formatCurrency(avgBill)}</strong></span>
-                <span class="adm-chart-pill" style="color:#2e7d32;">📈 Peak Day: <strong>${SavoraApp.formatCurrency(Math.max(...days.map(d => d.revenue)))}</strong></span>
+                <span class="adm-chart-pill">Average invoice: <strong>${SavoraApp.formatCurrency(avgBill)}</strong></span>
+                <span class="adm-chart-pill">Peak day: <strong>${SavoraApp.formatCurrency(Math.max(...days.map(d => d.revenue)))}</strong></span>
             `;
         }
 
         dailyBox.innerHTML = `
             <div class="adm-bars-grid">
                 ${days.map((d) => {
-                    const heightPct = d.revenue > 0 ? Math.max(10, Math.round((d.revenue / maxDayRev) * 100)) : 4;
+                    const heightPct = (d.revenue / maxDayRev) * 100;
                     const shortAmt = d.revenue >= 1000000
                         ? `${(d.revenue / 1000000).toFixed(2)}M`
                         : (d.revenue > 0 ? `${Math.round(d.revenue / 1000)}k` : '0');
@@ -827,51 +849,167 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // 5. Staff & User Accounts (Exclude ADMIN accounts so Admin cannot lock themselves)
+    // 5. Staff & User Accounts (Role Summary Counts + Filter by Role / Search / Status)
+    let activeUserRoleFilter = 'ALL';
+
+    const syncUserRoleFilterUi = () => {
+        document.querySelectorAll('#adm-user-role-cards .user-role-kpi').forEach((card) => {
+            const match = card.dataset.role === activeUserRoleFilter;
+            card.classList.toggle('active', match);
+            card.setAttribute('aria-pressed', String(match));
+        });
+        document.querySelectorAll('#adm-user-role-tabs .fb-filter-pill').forEach((tab) => {
+            const match = tab.dataset.role === activeUserRoleFilter;
+            tab.classList.toggle('active', match);
+            tab.setAttribute('aria-selected', String(match));
+        });
+    };
+
     const renderUsersTable = () => {
         const tbody = $('adm-users-tbody');
         if (!tbody) return;
-        const nonAdminUsers = (overviewData.users || []).filter(
-            (u) => u.roleName !== 'ADMIN' && Number(u.roleId) !== 1
-        );
-        tbody.innerHTML = nonAdminUsers.map((u) => {
-            const roleBadge = u.roleName === 'STAFF' ? 'adm-badge-blue'
-                : (u.roleName === 'CHEF' ? 'adm-badge-amber' : 'adm-badge-green');
-            return `
-                <tr>
-                    <td>#${u.userId}</td>
-                    <td><strong>${u.fullName}</strong></td>
-                    <td>
-                        <div>${u.email}</div>
-                        <div style="font-size:0.73rem;color:var(--text-muted);">${u.phone || '—'}</div>
-                    </td>
-                    <td><span class="adm-badge ${roleBadge}">${u.roleName}</span></td>
-                    <td><span class="adm-badge ${u.status === 'ACTIVE' ? 'adm-badge-green' : 'adm-badge-red'}">${u.status}</span></td>
-                    <td>
-                        <button type="button" class="adm-btn-xs btn-toggle-user" data-id="${u.userId}">
-                            ${u.status === 'ACTIVE' ? '🔒 Lock' : '🔓 Unlock'}
-                        </button>
-                    </td>
-                </tr>
-            `;
-        }).join('');
 
-        tbody.querySelectorAll('.btn-toggle-user').forEach((btn) => {
-            btn.onclick = async () => {
-                try {
-                    await SavoraApp.fetchApi(`/api/admin/users/${btn.dataset.id}/toggle-status`, { method: 'POST' });
-                    showToast('Updated account status!');
-                    await loadAdminOverview();
-                } catch (err) {
-                    showToast(err.message);
-                }
-            };
+        const allUsers = overviewData.users || [];
+        const counts = {
+            ALL: allUsers.length,
+            CUSTOMER: 0,
+            STAFF: 0,
+            CHEF: 0,
+            ADMIN: 0
+        };
+        let activeCount = 0;
+        let lockedCount = 0;
+
+        allUsers.forEach((u) => {
+            const role = String(u.roleName || 'CUSTOMER').toUpperCase();
+            if (Object.prototype.hasOwnProperty.call(counts, role)) {
+                counts[role] += 1;
+            }
+            if (u.status === 'ACTIVE') activeCount += 1;
+            else if (u.status === 'LOCKED') lockedCount += 1;
         });
+
+        if ($('adm-usr-kpi-total')) $('adm-usr-kpi-total').textContent = String(counts.ALL);
+        if ($('adm-usr-kpi-total-sub')) {
+            $('adm-usr-kpi-total-sub').textContent = `${activeCount} active · ${lockedCount} locked`;
+        }
+        if ($('adm-usr-kpi-customer')) $('adm-usr-kpi-customer').textContent = String(counts.CUSTOMER);
+        if ($('adm-usr-kpi-staff')) $('adm-usr-kpi-staff').textContent = String(counts.STAFF);
+        if ($('adm-usr-kpi-chef')) $('adm-usr-kpi-chef').textContent = String(counts.CHEF);
+        if ($('adm-usr-kpi-admin')) $('adm-usr-kpi-admin').textContent = String(counts.ADMIN);
+
+        if ($('adm-tab-cnt-all')) $('adm-tab-cnt-all').textContent = String(counts.ALL);
+        if ($('adm-tab-cnt-customer')) $('adm-tab-cnt-customer').textContent = String(counts.CUSTOMER);
+        if ($('adm-tab-cnt-staff')) $('adm-tab-cnt-staff').textContent = String(counts.STAFF);
+        if ($('adm-tab-cnt-chef')) $('adm-tab-cnt-chef').textContent = String(counts.CHEF);
+        if ($('adm-tab-cnt-admin')) $('adm-tab-cnt-admin').textContent = String(counts.ADMIN);
+
+        syncUserRoleFilterUi();
+
+        const searchQ = ($('adm-user-search')?.value || '').trim().toLowerCase();
+        const statusFilter = $('adm-user-status-filter')?.value || 'ALL';
+
+        const filtered = allUsers.filter((u) => {
+            const role = String(u.roleName || 'CUSTOMER').toUpperCase();
+            const matchRole = activeUserRoleFilter === 'ALL' || role === activeUserRoleFilter;
+            const matchStatus = statusFilter === 'ALL' || u.status === statusFilter;
+            const matchQ = !searchQ || [u.fullName, u.email, u.phone, role, `#${u.userId}`]
+                .filter(Boolean).join(' ').toLowerCase().includes(searchQ);
+            return matchRole && matchStatus && matchQ;
+        });
+
+        if ($('adm-user-filter-summary')) {
+            const roleLabel = activeUserRoleFilter === 'ALL' ? 'All Roles' : activeUserRoleFilter;
+            $('adm-user-filter-summary').innerHTML = `${roleLabel}: <strong>${filtered.length}</strong> account(s)`;
+        }
+
+        if (!filtered.length) {
+            const emptyRow = document.createElement('tr');
+            const emptyCell = document.createElement('td');
+            emptyCell.colSpan = 6;
+            emptyCell.style.textAlign = 'center';
+            emptyCell.style.padding = '24px';
+            emptyCell.style.color = 'var(--text-muted)';
+            emptyCell.textContent = `No accounts found for ${activeUserRoleFilter === 'ALL' ? 'the current filter' : `${activeUserRoleFilter} role`}.`;
+            emptyRow.appendChild(emptyCell);
+            tbody.replaceChildren(emptyRow);
+            return;
+        }
+
+        const rows = filtered.map((u) => {
+            const role = String(u.roleName || 'CUSTOMER').toUpperCase();
+            const isAdmin = role === 'ADMIN' || Number(u.roleId) === 1;
+            const roleBadge = role === 'ADMIN' ? 'adm-badge-red'
+                : (role === 'STAFF' ? 'adm-badge-blue'
+                : (role === 'CHEF' ? 'adm-badge-amber' : 'adm-badge-green'));
+
+            const tr = document.createElement('tr');
+
+            const tdId = textNode('td', `#${u.userId}`);
+
+            const tdName = document.createElement('td');
+            tdName.appendChild(textNode('strong', u.fullName || 'User'));
+
+            const tdContact = document.createElement('td');
+            tdContact.appendChild(textNode('div', u.email || ''));
+            const phoneDiv = textNode('div', u.phone || '—');
+            phoneDiv.style.fontSize = '0.73rem';
+            phoneDiv.style.color = 'var(--text-muted)';
+            tdContact.appendChild(phoneDiv);
+
+            const tdRole = document.createElement('td');
+            tdRole.appendChild(textNode('span', role, `adm-badge ${roleBadge}`));
+
+            const tdStatus = document.createElement('td');
+            const statusClass = u.status === 'ACTIVE' ? 'adm-badge-green'
+                : (u.status === 'PENDING' ? 'adm-badge-amber' : 'adm-badge-red');
+            tdStatus.appendChild(textNode('span', u.status || 'ACTIVE', `adm-badge ${statusClass}`));
+
+            const tdAction = document.createElement('td');
+            if (isAdmin) {
+                tdAction.appendChild(textNode('span', '🛡 Protected', 'adm-badge adm-badge-gray'));
+            } else {
+                const btn = textNode(
+                    'button',
+                    u.status === 'ACTIVE' ? '🔒 Lock' : '🔓 Unlock',
+                    'adm-btn-xs btn-toggle-user'
+                );
+                btn.type = 'button';
+                btn.dataset.id = u.userId;
+                btn.addEventListener('click', async () => {
+                    btn.disabled = true;
+                    try {
+                        await SavoraApp.fetchApi(`/api/admin/users/${u.userId}/toggle-status`, { method: 'POST' });
+                        showToast('Updated account status!');
+                        await loadAdminOverview();
+                    } catch (err) {
+                        showToast(err.message);
+                        btn.disabled = false;
+                    }
+                });
+                tdAction.appendChild(btn);
+            }
+
+            tr.append(tdId, tdName, tdContact, tdRole, tdStatus, tdAction);
+            return tr;
+        });
+
+        tbody.replaceChildren(...rows);
     };
+
+    document.querySelectorAll('#adm-user-role-cards .user-role-kpi, #adm-user-role-tabs .fb-filter-pill').forEach((el) => {
+        el.addEventListener('click', () => {
+            activeUserRoleFilter = el.dataset.role || 'ALL';
+            renderUsersTable();
+        });
+    });
+    $('adm-user-search')?.addEventListener('input', renderUsersTable);
+    $('adm-user-status-filter')?.addEventListener('change', renderUsersTable);
 
     $('adm-user-form')?.addEventListener('submit', async (e) => {
         e.preventDefault();
         try {
+            const createdRole = $('adm-user-role').value;
             await SavoraApp.fetchApi('/api/admin/users', {
                 method: 'POST',
                 body: JSON.stringify({
@@ -880,25 +1018,57 @@ document.addEventListener('DOMContentLoaded', () => {
                     email: $('adm-user-email').value,
                     phone: $('adm-user-phone').value,
                     password: $('adm-user-pass').value,
-                    roleName: $('adm-user-role').value
+                    roleName: createdRole
                 })
             });
             showToast('Created new account successfully!');
             $('adm-user-form')?.reset();
+            if (createdRole) activeUserRoleFilter = createdRole;
             await loadAdminOverview();
         } catch (err) {
             showToast(err.message);
         }
     });
 
-    $('btn-admin-refresh')?.addEventListener('click', () => {
-        loadAdminOverview();
-        showToast('Refreshed Admin Dashboard data!');
+    $('btn-admin-refresh')?.addEventListener('click', async event => {
+        const button = event.currentTarget;
+        button.disabled = true;
+        button.textContent = 'Refreshing…';
+        try {
+            if (activeSection === 'tab-feedback') await loadFeedback();
+            else await loadAdminOverview();
+        } finally {
+            button.disabled = false;
+            button.textContent = 'Refresh';
+        }
     });
 
     // 6. User Login Date/Time, Locations & Page Navigation Tracking Dashboard (with Pagination)
     let loginCurrentPage = 1;
     let visitsCurrentPage = 1;
+    let activeTrackingPart = 'logins';
+
+    const switchTrackingPart = (part) => {
+        activeTrackingPart = part === 'visits' ? 'visits' : 'logins';
+        const isLogins = activeTrackingPart === 'logins';
+        if ($('adm-trk-pane-logins')) $('adm-trk-pane-logins').hidden = !isLogins;
+        if ($('adm-trk-pane-visits')) $('adm-trk-pane-visits').hidden = isLogins;
+
+        document.querySelectorAll('#adm-tracking-part-tabs .fb-filter-pill').forEach((tab) => {
+            const match = tab.dataset.trkPart === activeTrackingPart;
+            tab.classList.toggle('active', match);
+            tab.setAttribute('aria-selected', String(match));
+        });
+        document.querySelectorAll('#tab-tracking .tracking-kpi-btn').forEach((btn) => {
+            const match = btn.dataset.trkPart === activeTrackingPart;
+            btn.classList.toggle('active', match);
+            btn.setAttribute('aria-pressed', String(match));
+        });
+    };
+
+    document.querySelectorAll('#adm-tracking-part-tabs .fb-filter-pill, #tab-tracking .tracking-kpi-btn').forEach((el) => {
+        el.addEventListener('click', () => switchTrackingPart(el.dataset.trkPart));
+    });
 
     const roleBadgeClass = (role) => {
         if (role === 'ADMIN') return 'adm-badge-red';
@@ -962,12 +1132,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const visitLogs = logs.filter((l) => l.actionType === 'PAGE_VISIT');
 
         if ($('adm-trk-logins')) $('adm-trk-logins').textContent = String(loginLogs.length);
+        if ($('adm-trk-tab-logins')) $('adm-trk-tab-logins').textContent = String(loginLogs.length);
         if ($('adm-trk-last-login')) {
             $('adm-trk-last-login').textContent = loginLogs.length
                 ? `Latest: ${loginLogs[0].userFullName} (${loginLogs[0].createdAt.slice(11, 16)})`
                 : 'No logins recorded';
         }
         if ($('adm-trk-visits')) $('adm-trk-visits').textContent = String(visitLogs.length);
+        if ($('adm-trk-tab-visits')) $('adm-trk-tab-visits').textContent = String(visitLogs.length);
 
         const uniqueLocations = new Set(logs.map((l) => l.location).filter(Boolean));
         if ($('adm-trk-locations')) $('adm-trk-locations').textContent = String(uniqueLocations.size);
@@ -1093,5 +1265,329 @@ document.addEventListener('DOMContentLoaded', () => {
         renderTrackingTables();
     });
 
+    let feedbackPage = 0;
+    let feedbackStatusFilter = 'ALL';
+    let feedbackRequest = 0;
+    let searchTimer;
+    let feedbackItems = [];
+    let selectedFeedbackId = null;
+    let renderedDetailFeedbackId = null;
+    const feedbackPages = document.querySelector('.feedback-pages');
+
+    function textNode(tag, value, className) {
+        const element = document.createElement(tag);
+        element.textContent = value;
+        if (className) element.className = className;
+        return element;
+    }
+
+    function formatFeedbackDate(isoStr) {
+        if (!isoStr) return '';
+        const date = new Date(isoStr);
+        if (Number.isNaN(date.getTime())) return String(isoStr);
+        return date.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
+    }
+
+    function getSelectedFeedback() {
+        return feedbackItems.find((item) => String(item.id) === String(selectedFeedbackId)) || null;
+    }
+
+    function renderFeedbackDetail(item) {
+        const emptyBox = $('fb-detail-empty');
+        const detailBox = $('fb-detail-content');
+        const replyAlert = $('fb-reply-alert');
+        const isSameItem = item && String(item.id) === String(renderedDetailFeedbackId);
+        if (replyAlert && !isSameItem) replyAlert.hidden = true;
+
+        if (!item) {
+            renderedDetailFeedbackId = null;
+            if (emptyBox) emptyBox.hidden = false;
+            if (detailBox) detailBox.hidden = true;
+            return;
+        }
+        if (emptyBox) emptyBox.hidden = true;
+        if (detailBox) detailBox.hidden = false;
+
+        const isReplied = item.status === 'REPLIED';
+        const initials = (item.name || 'G').trim().split(/\s+/).slice(0, 2).map((w) => w[0]).join('').toUpperCase() || 'G';
+
+        if ($('fb-detail-avatar')) $('fb-detail-avatar').textContent = initials;
+        if ($('fb-detail-name')) $('fb-detail-name').textContent = item.name || 'Guest';
+        if ($('fb-detail-code')) $('fb-detail-code').textContent = item.feedbackCode || `FB-${item.id}`;
+
+        const stBadge = $('fb-detail-status-badge');
+        if (stBadge) {
+            stBadge.className = `adm-badge ${isReplied ? 'adm-badge-green' : 'adm-badge-amber'}`;
+            stBadge.textContent = isReplied ? '✅ REPLIED' : '⏳ PENDING REPLY';
+        }
+
+        const emailLink = $('fb-detail-email');
+        if (emailLink) {
+            emailLink.textContent = item.email || '';
+            emailLink.href = item.email ? `mailto:${item.email}` : '#';
+        }
+        if ($('fb-detail-time')) $('fb-detail-time').textContent = formatFeedbackDate(item.submittedAt);
+        if ($('fb-guest-subtime')) $('fb-guest-subtime').textContent = formatFeedbackDate(item.submittedAt);
+        if ($('fb-detail-message')) $('fb-detail-message').textContent = item.message || '';
+
+        const savedCard = $('fb-saved-reply-card');
+        if (savedCard) {
+            if (isReplied && item.adminReply) {
+                savedCard.hidden = false;
+                if ($('fb-saved-reply-body')) $('fb-saved-reply-body').textContent = item.adminReply;
+                if ($('fb-saved-reply-meta')) {
+                    $('fb-saved-reply-meta').textContent =
+                        `Replied by ${item.repliedBy || 'Savora Admin'} • ${formatFeedbackDate(item.repliedAt)}`;
+                }
+                const mailBadge = $('fb-reply-email-badge');
+                if (mailBadge) {
+                    mailBadge.className = `adm-badge ${item.emailSent ? 'adm-badge-green' : 'adm-badge-amber'}`;
+                    mailBadge.textContent = item.emailSent ? '✉️ Sent to Guest Gmail' : '⚠️ Gmail Delivery Pending/Failed';
+                }
+            } else {
+                savedCard.hidden = true;
+            }
+        }
+
+        if ($('fb-reply-heading')) {
+            $('fb-reply-heading').textContent = isReplied ? 'Update & Resend Reply via Gmail' : 'Reply via Gmail';
+        }
+        if ($('fb-recipient-pill')) {
+            $('fb-recipient-pill').textContent = `To: ${item.email || 'guest'}`;
+        }
+        if ($('fb-reply-input') && !isSameItem) {
+            $('fb-reply-input').value = isReplied && item.adminReply ? item.adminReply : '';
+        }
+        if ($('btn-fb-send-reply')) {
+            $('btn-fb-send-reply').textContent = isReplied ? '✉️ Resend Reply to Guest Gmail' : '✉️ Send Reply to Guest Gmail';
+        }
+        renderedDetailFeedbackId = item.id;
+    }
+
+    function renderFeedbackList() {
+        const list = $('feedback-messages');
+        if (!list) return;
+        if (!feedbackItems.length) {
+            list.replaceChildren(textNode('div', 'No feedback messages match this view.', 'fb-thread-empty'));
+            selectedFeedbackId = null;
+            renderFeedbackDetail(null);
+            return;
+        }
+        if (!feedbackItems.some((it) => String(it.id) === String(selectedFeedbackId))) {
+            selectedFeedbackId = feedbackItems[0].id;
+        }
+
+        const nodes = feedbackItems.map((item) => {
+            const isSelected = String(item.id) === String(selectedFeedbackId);
+            const isReplied = item.status === 'REPLIED';
+
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = `fb-thread-item ${isSelected ? 'is-selected' : ''}`;
+            btn.dataset.id = item.id;
+
+            const top = document.createElement('div');
+            top.className = 'fb-thread-item__top';
+            top.append(
+                textNode('span', item.name || 'Guest', 'fb-thread-item__name'),
+                textNode('span', isReplied ? '✅ Replied' : '⏳ Pending', `adm-badge ${isReplied ? 'adm-badge-green' : 'adm-badge-amber'}`)
+            );
+
+            const meta = document.createElement('div');
+            meta.className = 'fb-thread-item__meta';
+            meta.append(
+                textNode('span', `${item.feedbackCode || `FB-${item.id}`} • ${item.email || ''}`, 'fb-thread-item__email'),
+                textNode('time', formatFeedbackDate(item.submittedAt))
+            );
+
+            const preview = textNode('div', item.message || '', 'fb-thread-item__preview');
+            btn.append(top, meta, preview);
+
+            if (isReplied && item.adminReply) {
+                btn.append(textNode('div', `↪ Reply: ${item.adminReply}`, 'fb-thread-item__reply-tag'));
+            }
+
+            btn.addEventListener('click', () => {
+                selectedFeedbackId = item.id;
+                renderFeedbackList();
+                renderFeedbackDetail(item);
+            });
+            return btn;
+        });
+
+        list.replaceChildren(...nodes);
+        renderFeedbackDetail(getSelectedFeedback());
+    }
+
+    async function loadFeedback() {
+        const request = ++feedbackRequest;
+        const search = $('feedback-search')?.value.trim() || '';
+        const parameters = new URLSearchParams({
+            search,
+            status: feedbackStatusFilter,
+            page: feedbackPage
+        });
+        const status = $('feedback-status');
+        const list = $('feedback-messages');
+        if (status) status.textContent = 'Loading messages…';
+        if (feedbackPages) feedbackPages.hidden = true;
+        try {
+            const { data } = await SavoraApp.fetchApi('/api/admin/feedback?' + parameters);
+            if (request !== feedbackRequest) return;
+
+            feedbackItems = data.items || [];
+            const totalAll = data.totalAll ?? data.total ?? 0;
+            const pendingCount = data.pendingCount ?? 0;
+            const repliedCount = data.repliedCount ?? 0;
+
+            if ($('fb-kpi-total')) $('fb-kpi-total').textContent = String(totalAll);
+            if ($('fb-kpi-pending')) $('fb-kpi-pending').textContent = String(pendingCount);
+            if ($('fb-kpi-replied')) $('fb-kpi-replied').textContent = String(repliedCount);
+            const fbBadge = $('adm-kpi-feedback');
+            if (fbBadge) {
+                const unreadCount = Number(pendingCount || 0);
+                if (unreadCount > 0) {
+                    fbBadge.textContent = String(unreadCount);
+                    fbBadge.hidden = false;
+                } else {
+                    fbBadge.textContent = '';
+                    fbBadge.hidden = true;
+                }
+            }
+
+            if (!data.total) {
+                if (status) {
+                    status.textContent = search || feedbackStatusFilter !== 'ALL'
+                        ? 'No messages match your filter.'
+                        : 'No feedback yet. Messages from the Contact form will appear here.';
+                }
+                if (list) renderFeedbackList();
+                return;
+            }
+            if (status) {
+                status.textContent = `${data.total} ${data.total === 1 ? 'message' : 'messages'} · Newest first`;
+            }
+            renderFeedbackList();
+
+            if (feedbackPages) {
+                feedbackPages.hidden = data.pages <= 1;
+                if ($('feedback-page')) $('feedback-page').textContent = `Page ${data.page + 1} of ${data.pages}`;
+                if ($('feedback-prev')) $('feedback-prev').disabled = data.page === 0;
+                if ($('feedback-next')) $('feedback-next').disabled = data.page + 1 >= data.pages;
+            }
+        } catch (err) {
+            if (request === feedbackRequest && status) {
+                status.textContent = err.message || 'Unable to load feedback. Try Refresh.';
+            }
+        }
+    }
+
+    $('feedback-status-pills')?.querySelectorAll('.fb-filter-pill').forEach((pill) => {
+        pill.addEventListener('click', () => {
+            $('feedback-status-pills').querySelectorAll('.fb-filter-pill').forEach((p) => p.classList.remove('active'));
+            pill.classList.add('active');
+            feedbackStatusFilter = pill.dataset.status || 'ALL';
+            feedbackPage = 0;
+            loadFeedback();
+        });
+    });
+
+    $('feedback-search')?.addEventListener('input', () => {
+        feedbackPage = 0;
+        ++feedbackRequest;
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(loadFeedback, 200);
+    });
+    $('feedback-prev')?.addEventListener('click', () => { feedbackPage--; loadFeedback(); });
+    $('feedback-next')?.addEventListener('click', () => { feedbackPage++; loadFeedback(); });
+
+    document.querySelectorAll('.fb-template-chip').forEach((chip) => {
+        chip.addEventListener('click', () => {
+            const item = getSelectedFeedback();
+            const guestName = item?.name || 'Valued Guest';
+            const templates = {
+                thank: `Dear ${guestName},\n\nThank you very much for taking the time to share your valuable feedback with Savora Fine Dining & Lounge. We truly appreciate your kind words and look forward to welcoming you again soon!`,
+                apology: `Dear ${guestName},\n\nThank you for bringing this to our attention. We sincerely apologize for any inconvenience you experienced during your visit. Our management team is reviewing this carefully to ensure a better experience on your next visit.`,
+                invite: `Dear ${guestName},\n\nThank you for reaching out to Savora Fine Dining & Lounge! We would be delighted to welcome you back soon—please let us know if we can assist with reserving your preferred table.`
+            };
+            const input = $('fb-reply-input');
+            if (input) {
+                input.value = templates[chip.dataset.tpl] || '';
+                input.focus();
+            }
+        });
+    });
+
+    $('fb-reply-form')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const item = getSelectedFeedback();
+        if (!item) return;
+
+        const replyInput = $('fb-reply-input');
+        const btn = $('btn-fb-send-reply');
+        const alertBox = $('fb-reply-alert');
+        const replyMessage = (replyInput?.value || '').trim();
+        if (!replyMessage) return;
+
+        if (alertBox) alertBox.hidden = true;
+        if (btn) {
+            btn.disabled = true;
+            btn.textContent = 'Sending to Gmail…';
+        }
+
+        try {
+            const res = await SavoraApp.fetchApi(`/api/admin/feedback/${item.id}/reply`, {
+                method: 'POST',
+                body: JSON.stringify({ replyMessage })
+            });
+            const updated = res.data?.feedback;
+            const emailSent = res.data?.emailSent;
+            if (updated) {
+                const idx = feedbackItems.findIndex((x) => String(x.id) === String(updated.id));
+                if (idx >= 0) feedbackItems[idx] = updated;
+                selectedFeedbackId = updated.id;
+            }
+            if (alertBox) {
+                alertBox.hidden = false;
+                alertBox.className = `fb-reply-alert ${emailSent ? 'fb-reply-alert--success' : 'fb-reply-alert--warning'}`;
+                alertBox.textContent = res.message || 'Reply saved!';
+            }
+            showToast(res.message || 'Reply sent!');
+            await loadFeedback();
+        } catch (err) {
+            if (alertBox) {
+                alertBox.hidden = false;
+                alertBox.className = 'fb-reply-alert fb-reply-alert--error';
+                alertBox.textContent = err.message || 'Failed to send reply.';
+            }
+            showToast(err.message || 'Failed to send reply.');
+        } finally {
+            if (btn) {
+                btn.disabled = false;
+                const current = getSelectedFeedback();
+                btn.textContent = current?.status === 'REPLIED' ? '✉️ Resend Reply to Guest Gmail' : '✉️ Send Reply to Guest Gmail';
+            }
+        }
+    });
+
+    $('btn-fb-delete')?.addEventListener('click', async () => {
+        const item = getSelectedFeedback();
+        if (!item) return;
+        if (!window.confirm(`Delete feedback ${item.feedbackCode || `#${item.id}`} from ${item.name}?`)) return;
+        try {
+            await SavoraApp.fetchApi(`/api/admin/feedback/${item.id}`, { method: 'DELETE' });
+            showToast('Deleted guest feedback.');
+            selectedFeedbackId = null;
+            await loadFeedback();
+        } catch (err) {
+            showToast(err.message || 'Unable to delete feedback.');
+        }
+    });
+
+    openSection(location.hash.slice(1));
     loadAdminOverview();
+    if (activeSection !== 'tab-feedback') loadFeedback();
+    if (window.SavoraApp && SavoraApp.onRealtimeSync) {
+        SavoraApp.onRealtimeSync(() => loadFeedback());
+    }
 });

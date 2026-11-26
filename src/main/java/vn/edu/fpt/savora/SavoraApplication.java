@@ -7,9 +7,9 @@ import org.springframework.core.env.Environment;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
- * Điểm khởi chạy chính của hệ thống Quản lý Nhà hàng Savora.
- * Chạy trực tiếp trên VS Code (nhấn F5 hoặc Run) với Embedded Tomcat.
- * Không cần cài đặt hay cấu hình Tomcat ngoài như trên IntelliJ.
+ * Main entry point for the Savora Restaurant Management System.
+ * Runs directly in VS Code (F5 or Run) with Embedded Tomcat,
+ * without requiring external Tomcat installation or configuration.
  */
 @SpringBootApplication
 @EnableScheduling

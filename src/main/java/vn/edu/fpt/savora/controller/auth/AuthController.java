@@ -15,7 +15,7 @@ import vn.edu.fpt.savora.service.AuthService;
 import vn.edu.fpt.savora.service.UserActivityTrackingService;
 
 /**
- * REST API xác thực người dùng (Đăng nhập Email/Mật khẩu + Đăng ký + Google/Facebook OAuth2 + Đăng xuất)
+ * Authentication REST API (Email/Password sign-in, registration, Google OAuth2, and sign-out).
  */
 @RestController
 @RequestMapping("/api/auth")

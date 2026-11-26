@@ -14,7 +14,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Thực thể User (Nâng cấp từ User.java của SE2034-SWP391-G6 sang JPA Entity kết nối MySQL)
+ * User JPA entity mapped to the MySQL users table.
  */
 @Entity
 @Table(name = "users")

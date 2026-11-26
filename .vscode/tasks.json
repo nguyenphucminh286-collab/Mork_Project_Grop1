@@ -10,7 +10,7 @@
                 "isDefault": true
             },
             "problemMatcher": [],
-            "detail": "Chạy server Spring Boot Savora trên cổng 8080"
+            "detail": "Run the Savora Spring Boot server on port 8080"
         },
         {
             "label": "Savora: Clean & Compile",
@@ -18,14 +18,14 @@
             "command": "mvn clean compile",
             "group": "build",
             "problemMatcher": "$msCompile",
-            "detail": "Biên dịch lại toàn bộ mã nguồn Java 17"
+            "detail": "Clean and compile all Java 21 source files"
         },
         {
             "label": "Savora: Run Tests",
             "type": "shell",
             "command": "mvn test",
             "group": "test",
-            "detail": "Chạy Unit Test cho dự án"
+            "detail": "Run unit tests for the project"
         }
     ]
 }

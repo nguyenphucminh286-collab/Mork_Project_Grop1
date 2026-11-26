@@ -73,7 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Client-side fallback classifier in case backend has not been restarted yet
     const clientFallbackReply = (question) => {
         const lower = question.toLowerCase();
-        const offTopicRegex = /(\b\d+\s*[+\-*/^]\s*\d+\b|python|javascript|java code|c\+\+|write code|programming|algorithm|bitcoin|crypto|weather|president|politics|football|soccer|world cup|messi|ronaldo|capital of|who invented|physics|chemistry|homework|thời tiết|bóng đá|chính trị|tổng thống|viết code|lập trình|toán học|giải phương trình)/i;
+        const offTopicRegex = /(\b\d+\s*[+\-*/^]\s*\d+\b|python|javascript|java code|c\+\+|write code|programming|algorithm|bitcoin|crypto|weather|president|politics|football|soccer|world cup|messi|ronaldo|capital of|who invented|physics|chemistry|homework)/i;
 
         if (offTopicRegex.test(lower)) {
             return {
@@ -88,7 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
             };
         }
 
-        if (/(voucher|deal|discount|promo|offer|khuyến mãi|giảm giá|mã|ưu đãi)/i.test(lower)) {
+        if (/(voucher|deal|discount|promo|offer)/i.test(lower)) {
             return {
                 blocked: false,
                 answer: '🎁 **Active Savora Promotional Vouchers:**\n• **VIPPARTY20 (-20%)**: 20% OFF VIP Suite & group bookings\n• **WELCOME50 (-15%)**: 15% OFF first online table reservation\n• **SAVORA10 (-10%)**: 10% OFF total dine-in bill\n\nClick below to apply a voucher directly to your booking:',
@@ -99,7 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
             };
         }
 
-        if (/(table|seat|available|floor|vip|terrace|zone|capacity|book|reserve|reservation|bàn|chỗ|trống|tầng|đặt bàn|lịch đặt|hủy)/i.test(lower)) {
+        if (/(table|seat|available|floor|vip|terrace|zone|capacity|book|reserve|reservation)/i.test(lower)) {
             return {
                 blocked: false,
                 answer: '🪑 **Savora Online Table Booking & Floor Map:**\n• **3 Dining Zones:** 1st Floor (Main Hall, 2–8 seats), 2nd Floor (Garden Terrace, 6–8 seats), and VIP Private Suites (12–16 seats).\n• **Booking Hours:** 10:30 – 21:00 daily (120 mins dining + 10 mins cleaning turnaround).\n• Select your party size, date, and time slot using the links below:',
@@ -111,7 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
             };
         }
 
-        if (/(menu|dish|food|eat|drink|steak|tenderloin|salmon|lobster|hotpot|soup|dessert|price|món|thực đơn|ăn|giá|cá hồi|bò|tôm hùm|lẩu)/i.test(lower)) {
+        if (/(menu|dish|food|eat|drink|steak|tenderloin|salmon|lobster|hotpot|soup|dessert|price)/i.test(lower)) {
             return {
                 blocked: false,
                 answer: '🍽️ **Savora Chef’s Signature Menu:**\n• **Pan-Seared Norwegian Salmon Salad** — 149,000 VND *(★ Signature)*\n• **Lava-Stone Grilled Australian Tenderloin (250g)** — 389,000 VND *(★ Signature)*\n• **Oven-Baked Spiny Lobster with Mozzarella** — 650,000 VND *(★ Signature)*\n• **Savora Royal Seafood Hotpot Set** — 450,000 VND *(★ Signature)*\n\nExplore our full menu or reserve your table below:',
@@ -122,7 +122,7 @@ document.addEventListener('DOMContentLoaded', () => {
             };
         }
 
-        if (/(contact|feedback|email|where|location|address|hour|open|phone|hotline|liên hệ|góp ý|phản hồi|địa chỉ|ở đâu|giờ mở cửa)/i.test(lower)) {
+        if (/(contact|feedback|email|where|location|address|hour|open|phone|hotline)/i.test(lower)) {
             return {
                 blocked: false,
                 answer: '📍 **Savora Location, Opening Hours & Feedback:**\n• **Address:** Hoa Lac Hi-Tech Park, Thach That, Hanoi\n• **Opening Hours:** 10:00 AM – 10:30 PM Daily\n• **Hotline:** 1900 6868 • **Email:** concierge@savora.vn\n• Send us your feedback on our Contact page:',
@@ -133,7 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
             };
         }
 
-        if (/(account|profile|login|sign in|register|sign up|tài khoản|hồ sơ|đăng nhập|đăng ký)/i.test(lower)) {
+        if (/(account|profile|login|sign in|register|sign up)/i.test(lower)) {
             return {
                 blocked: false,
                 answer: '👤 **Savora Customer Account & Profile:**\nManage your personal details, view your booking history, or sign in via the links below:',
@@ -145,7 +145,7 @@ document.addEventListener('DOMContentLoaded', () => {
             };
         }
 
-        if (/(qr|pay|bill|vietqr|mbbank|cash|kitchen|quét mã|thanh toán|hóa đơn)/i.test(lower)) {
+        if (/(qr|pay|bill|vietqr|mbbank|cash|kitchen)/i.test(lower)) {
             return {
                 blocked: false,
                 answer: '📱 **Table QR Ordering & Checkout:**\nAt Savora, guests scan the QR code on their table (`/qr/table/{tableCode}`) to order dishes directly to the Chef Kitchen Display System and track status live (`PENDING → COOKING → READY → SERVED`), then pay via **VietQR (MBBank)** or **Cash**.',
@@ -156,7 +156,7 @@ document.addEventListener('DOMContentLoaded', () => {
             };
         }
 
-        if (/(hi|hello|hey|help|savora|project|restaurant|about|xin chào|chào|nhà hàng|dự án|giới thiệu)/i.test(lower)) {
+        if (/(hi|hello|hey|help|savora|project|restaurant|about)/i.test(lower)) {
             return {
                 blocked: false,
                 answer: '👋 I am the **Savora Fine Dining AI Concierge**! I can help you explore our signature dishes, check live table availability, apply promotional vouchers, or submit guest feedback.',

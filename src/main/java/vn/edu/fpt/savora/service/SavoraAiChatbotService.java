@@ -36,9 +36,7 @@ public class SavoraAiChatbotService {
             "weather", "temperature in", "forecast", "president", "prime minister", "politics", "election",
             "football", "soccer", "world cup", "champions league", "messi", "ronaldo", "nba", "basketball",
             "capital of", "who invented", "world war", "planet", "solar system", "physics", "quantum", "chemistry",
-            "solve equation", "integral", "derivative", "homework", "essay", "poem", "write a story", "joke",
-            "thời tiết", "bóng đá", "chính trị", "tổng thống", "viết code", "lập trình", "toán học", "giải phương trình",
-            "chứng khoán", "tiền ảo", "thủ đô của"
+            "solve equation", "integral", "derivative", "homework", "essay", "poem", "write a story", "joke"
     );
 
     private final DishRepository dishRepository;
@@ -94,8 +92,7 @@ public class SavoraAiChatbotService {
         }
 
         // 3. Vouchers / Promotions / Discounts
-        if (containsAny(lower, "voucher", "deal", "discount", "promo", "offer", "coupon", "sale", "code",
-                "khuyến mãi", "giảm giá", "mã giảm", "ưu đãi")) {
+        if (containsAny(lower, "voucher", "deal", "discount", "promo", "offer", "coupon", "sale", "code")) {
             String voucherLines = vouchers.isEmpty()
                     ? "Currently no active promotional vouchers."
                     : vouchers.stream()
@@ -114,8 +111,7 @@ public class SavoraAiChatbotService {
         }
 
         // 4. Table Availability / Floor Map / VIP / Zones
-        if (containsAny(lower, "table", "seat", "available", "floor", "vip", "terrace", "garden", "zone", "capacity", "room",
-                "bàn", "chỗ ngồi", "còn trống", "tầng", "phòng vip", "sức chứa")) {
+        if (containsAny(lower, "table", "seat", "available", "floor", "vip", "terrace", "garden", "zone", "capacity", "room")) {
             List<DiningTable> availTables = tables.stream()
                     .filter(t -> t.getStatus() == TableStatus.AVAILABLE)
                     .collect(Collectors.toList());
@@ -140,8 +136,7 @@ public class SavoraAiChatbotService {
         }
 
         // 5. How to Book / Reservation Policy / Cancel Booking
-        if (containsAny(lower, "book", "reserve", "reservation", "slot", "cancel", "party size", "adult", "child",
-                "đặt bàn", "lịch đặt", "hủy", "khung giờ", "bao lâu")) {
+        if (containsAny(lower, "book", "reserve", "reservation", "slot", "cancel", "party size", "adult", "child")) {
             String reply = "📅 **How to Reserve a Table Online at Savora:**\n"
                     + "1. Go to our **Book a Table** form on the Home page and select **Adults**, **Children** (total guests must fit table seat capacity), **Arrival Date**, and **Time Slot (10:30 – 21:00)**.\n"
                     + "2. Pick an **Available Table** on the Floor Map and attach a **Promotional Voucher** (up to 20% OFF).\n"
@@ -158,8 +153,7 @@ public class SavoraAiChatbotService {
         }
 
         // 6. Menu / Dishes / Food / Drinks
-        if (containsAny(lower, "menu", "dish", "food", "eat", "drink", "steak", "seafood", "salad", "dessert", "hotpot", "signature", "price", "culinary", "chef",
-                "thực đơn", "món ăn", "đồ ăn", "ăn gì", "đặc sản", "giá món", "đầu bếp")) {
+        if (containsAny(lower, "menu", "dish", "food", "eat", "drink", "steak", "seafood", "salad", "dessert", "hotpot", "signature", "price", "culinary", "chef")) {
             String topDishes = dishes.stream().limit(5)
                     .map(d -> "• **" + d.getDishName() + "** — " + fmtVnd(d.getDiscountPrice() != null ? d.getDiscountPrice() : d.getPrice())
                             + (Boolean.TRUE.equals(d.getIsSignature()) ? " *(★ Signature)*" : ""))
@@ -178,8 +172,7 @@ public class SavoraAiChatbotService {
         }
 
         // 7. Table QR Ordering / Payment / VietQR
-        if (containsAny(lower, "qr", "order", "kitchen", "pay", "payment", "bill", "invoice", "vietqr", "mbbank", "cash",
-                "quét mã", "gọi món", "thanh toán", "hóa đơn", "chuyển khoản", "tiền mặt")) {
+        if (containsAny(lower, "qr", "order", "kitchen", "pay", "payment", "bill", "invoice", "vietqr", "mbbank", "cash")) {
             String reply = "📱 **Table QR Ordering & Checkout Workflow:**\n"
                     + "• **At the Table:** Scan your table's unique QR code (`/qr/table/{tableCode}`) to order dishes directly to the Chef Kitchen Display System without needing to sign in.\n"
                     + "• **Live Kitchen Status:** Track every dish in real time from **PENDING → COOKING → READY → SERVED**.\n"
@@ -195,8 +188,7 @@ public class SavoraAiChatbotService {
         }
 
         // 8. Contact / Feedback / Email / Location / Opening Hours
-        if (containsAny(lower, "contact", "feedback", "email", "where", "location", "address", "hour", "open", "close", "phone", "hotline", "call",
-                "liên hệ", "góp ý", "phản hồi", "địa chỉ", "ở đâu", "giờ mở cửa", "số điện thoại")) {
+        if (containsAny(lower, "contact", "feedback", "email", "where", "location", "address", "hour", "open", "close", "phone", "hotline", "call")) {
             String reply = "📍 **Savora Fine Dining — Location, Hours & Guest Feedback:**\n"
                     + "• **Address:** Hoa Lac Hi-Tech Park, Thach That, Hanoi\n"
                     + "• **Opening Hours:** 10:00 AM – 10:30 PM Daily (Online booking slots: 10:30 – 21:00)\n"
@@ -213,10 +205,9 @@ public class SavoraAiChatbotService {
         }
 
         // 9. Account / Profile / Sign In / Register
-        if (containsAny(lower, "account", "profile", "login", "sign in", "register", "sign up", "password", "google", "facebook",
-                "tài khoản", "hồ sơ", "đăng nhập", "đăng ký")) {
+        if (containsAny(lower, "account", "profile", "login", "sign in", "register", "sign up", "password", "google")) {
             String reply = "👤 **Savora Member Account & Profile:**\n"
-                    + "• You can sign in using your **Email & Password**, **Google**, or **Facebook** account to reserve tables online.\n"
+                    + "• You can sign in using your **Email & Password** or **Google** account to reserve tables online.\n"
                     + "• Once signed in, use **My Bookings** to manage reservations and **Profile** to update your name, phone number, gender, and address.";
             return buildReply(
                     false,
@@ -231,8 +222,7 @@ public class SavoraAiChatbotService {
         }
 
         // 10. Greeting / General Project Overview
-        if (containsAny(lower, "hi", "hello", "hey", "good morning", "good evening", "help", "savora", "project", "restaurant", "about", "what is", "who are you",
-                "xin chào", "chào", "nhà hàng", "dự án", "giới thiệu", "hỗ trợ")) {
+        if (containsAny(lower, "hi", "hello", "hey", "good morning", "good evening", "help", "savora", "project", "restaurant", "about", "what is", "who are you")) {
             String reply = "👋 Welcome to **Savora Fine Dining & Lounge AI Concierge**!\n"
                     + "I am strictly dedicated to assisting you with **Savora Restaurant**:\n"
                     + "• 🍽️ **Signature Menu & Dish Prices** (" + dishes.size() + " dishes available)\n"
@@ -272,14 +262,14 @@ public class SavoraAiChatbotService {
         if (d.getDishName() == null) return false;
         String nameLower = d.getDishName().toLowerCase(Locale.ROOT);
         if (lower.contains(nameLower)) return true;
-        if (nameLower.contains("salmon") && containsAny(lower, "salmon", "cá hồi")) return true;
-        if (nameLower.contains("tenderloin") && containsAny(lower, "tenderloin", "steak", "beef", "bò", "bít tết")) return true;
-        if (nameLower.contains("lobster") && containsAny(lower, "lobster", "tôm hùm")) return true;
-        if (nameLower.contains("hotpot") && containsAny(lower, "hotpot", "hot pot", "lẩu")) return true;
-        if (nameLower.contains("pumpkin") && containsAny(lower, "pumpkin", "truffle soup", "súp bí đỏ")) return true;
-        if (nameLower.contains("chocolate") && containsAny(lower, "chocolate", "lava cake", "gelato", "bánh socola")) return true;
-        if (nameLower.contains("peach") && containsAny(lower, "peach", "lemongrass", "trà đào")) return true;
-        if (nameLower.contains("ribs") && containsAny(lower, "ribs", "pork", "iberico", "sườn")) return true;
+        if (nameLower.contains("salmon") && containsAny(lower, "salmon")) return true;
+        if (nameLower.contains("tenderloin") && containsAny(lower, "tenderloin", "steak", "beef")) return true;
+        if (nameLower.contains("lobster") && containsAny(lower, "lobster")) return true;
+        if (nameLower.contains("hotpot") && containsAny(lower, "hotpot", "hot pot")) return true;
+        if (nameLower.contains("pumpkin") && containsAny(lower, "pumpkin", "truffle soup")) return true;
+        if (nameLower.contains("chocolate") && containsAny(lower, "chocolate", "lava cake", "gelato")) return true;
+        if (nameLower.contains("peach") && containsAny(lower, "peach", "lemongrass")) return true;
+        if (nameLower.contains("ribs") && containsAny(lower, "ribs", "pork", "iberico")) return true;
         return false;
     }
 

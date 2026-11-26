@@ -14,12 +14,12 @@ import vn.edu.fpt.savora.service.UserActivityTrackingService;
 import java.io.IOException;
 
 /**
- * Bộ lọc kiểm tra đăng nhập và phân quyền theo Role (Nâng cấp từ AuthFilter.java của SE2034-SWP391-G6).
- * Role quy ước:
- * - roleId = 1: ADMIN (Quản trị viên / Chủ nhà hàng)
- * - roleId = 2: CUSTOMER (Khách hàng)
- * - roleId = 3: STAFF (Nhân viên phục vụ / Thu ngân)
- * - roleId = 4: CHEF (Nhân viên bếp)
+ * Authentication and role-based access control interceptor.
+ * Role ID conventions:
+ * - roleId = 1: ADMIN (Administrator / Restaurant Owner)
+ * - roleId = 2: CUSTOMER (Customer)
+ * - roleId = 3: STAFF (Waiter / Cashier)
+ * - roleId = 4: CHEF (Kitchen Chef)
  */
 @Component
 @RequiredArgsConstructor
@@ -32,7 +32,7 @@ public class AuthInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest req, HttpServletResponse resp, Object handler) throws IOException {
         String path = req.getRequestURI();
 
-        // Cho phép preflight OPTIONS request (CORS) và tài nguyên tĩnh
+        // Allow CORS preflight OPTIONS requests and static resources
         if ("OPTIONS".equalsIgnoreCase(req.getMethod())
                 || path.startsWith("/assets/")
                 || path.startsWith("/components/")
@@ -51,7 +51,7 @@ public class AuthInterceptor implements HandlerInterceptor {
         Integer userId = session != null ? (Integer) session.getAttribute("userId") : null;
         Integer roleId = session != null ? (Integer) session.getAttribute("roleId") : null;
 
-        // 0. Kiểm tra tài khoản bị khóa theo thời gian thực (Kể cả tài khoản đăng nhập bằng Gmail / Facebook OAuth2)
+        // 0. Check real-time account lock status (including Google OAuth2 accounts)
         if (userId != null) {
             User currentUser = userRepository.findById(userId).orElse(null);
             if (currentUser == null || currentUser.getStatus() == UserStatus.LOCKED) {
@@ -67,7 +67,7 @@ public class AuthInterceptor implements HandlerInterceptor {
             }
         }
 
-        // 1. Phân quyền ADMIN (roleId = 1)
+        // 1. ADMIN authorization (roleId = 1)
         if (path.startsWith("/admin/") || path.startsWith("/api/admin/")) {
             if (userId == null) {
                 return handleUnauthorized(req, resp);
@@ -77,7 +77,7 @@ public class AuthInterceptor implements HandlerInterceptor {
             }
         }
 
-        // 2. Phân quyền STAFF / CHEF (roleId = 3 hoặc 4, hoặc ADMIN = 1)
+        // 2. STAFF / CHEF authorization (roleId = 3 or 4, or ADMIN = 1)
         if (path.startsWith("/staff/") || path.startsWith("/api/staff/")) {
             if (userId == null) {
                 return handleUnauthorized(req, resp);
@@ -87,14 +87,14 @@ public class AuthInterceptor implements HandlerInterceptor {
             }
         }
 
-        // 3. Phân quyền CUSTOMER (Yêu cầu đăng nhập)
+        // 3. CUSTOMER authorization (requires authenticated session)
         if (path.startsWith("/customer/") || path.startsWith("/api/customer/")) {
             if (userId == null) {
                 return handleUnauthorized(req, resp);
             }
         }
 
-        // 4. Tự động ghi nhận lịch sử truy cập trang (Page Navigation Tracking cho Admin Dashboard)
+        // 4. Record page navigation history for the Admin Tracking Dashboard
         userActivityTrackingService.recordPageNavigation(req);
 
         return true;

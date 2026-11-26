@@ -6,7 +6,7 @@
     <title>Contact — Savora Fine Dining &amp; Restaurant</title>
     <script src="/assets/js/common/theme.js"></script>
     <link rel="stylesheet" href="/assets/css/public/global.css?v=3">
-    <link rel="stylesheet" href="/assets/css/public/contact.css?v=2">
+    <link rel="stylesheet" href="/assets/css/public/contact.css?v=3">
 </head>
 <body>
     <div th:replace="~{fragments/header :: siteHeader}"></div>
@@ -29,20 +29,20 @@
                             <label for="fb-name">Name *</label>
                             <input type="text" id="fb-name" class="contact__input"
                                    th:value="${session.fullName != null ? session.fullName : ''}"
-                                   placeholder="Your name" required>
+                                   placeholder="Your name" maxlength="150" required>
                         </div>
 
                         <div class="contact__field">
                             <label for="fb-email">Email *</label>
                             <input type="email" id="fb-email" class="contact__input"
                                    th:value="${session.authUser != null ? session.authUser.email : ''}"
-                                   placeholder="you@example.com" required>
+                                   placeholder="you@example.com" maxlength="254" required>
                         </div>
 
                         <div class="contact__field">
                             <label for="fb-message">Message *</label>
                             <textarea id="fb-message" class="contact__input contact__textarea" rows="4"
-                                      placeholder="Write your feedback or message here..." required></textarea>
+                                      placeholder="Write your feedback or message here..." maxlength="10000" required></textarea>
                         </div>
 
                         <button type="submit" class="btn btn-primary contact__submit-btn" id="btn-submit-feedback">
@@ -80,18 +80,252 @@
                             <strong>Open Daily:</strong> 10:00 AM – 10:30 PM
                         </p>
                     </section>
+
+                    <section class="contact__email-preview">
+                        <span class="contact__email-badge">GMAIL + ONLINE TRACKING</span>
+                        <h3>Receive &amp; View Official Replies</h3>
+                        <p>
+                            Once our manager responds, you will receive an official email directly in the Gmail address you entered—and you can also inspect the full reply below using your reference code.
+                        </p>
+                    </section>
                 </div>
+            </div>
+        </section>
+
+        <!-- View Feedback Replies Section -->
+        <section class="container contact__replies-section" id="feedback-replies"
+                 th:data-signed-in="${session.authUser != null}"
+                 th:data-user-email="${session.authUser != null ? session.authUser.email : ''}">
+            <div class="contact__replies-card">
+                <div class="contact__replies-head">
+                    <div>
+                        <p class="contact__eyebrow" style="color: var(--primary-color);">FEEDBACK RESPONSES</p>
+                        <h2 class="contact__feedback-title" style="margin-bottom: 4px;">View Feedback &amp; Official Replies</h2>
+                        <p class="contact__feedback-desc" style="margin-bottom: 0;">
+                            Track your submitted feedback and read replies sent by Savora management.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Lookup Form by Reference Code + Email -->
+                <form id="feedback-lookup-form" class="contact__lookup-form">
+                    <div class="contact__field">
+                        <label for="lookup-code">Reference Code *</label>
+                        <input type="text" id="lookup-code" class="contact__input" placeholder="e.g. FB-123456" maxlength="32" required>
+                    </div>
+                    <div class="contact__field">
+                        <label for="lookup-email">Email Used in Feedback *</label>
+                        <input type="email" id="lookup-email" class="contact__input"
+                               th:value="${session.authUser != null ? session.authUser.email : ''}"
+                               placeholder="you@gmail.com" maxlength="254" required>
+                    </div>
+                    <div class="contact__lookup-action">
+                        <button type="submit" class="btn btn-primary" id="btn-lookup-feedback" style="width: 100%; padding: 12px 20px;">
+                            View Reply
+                        </button>
+                    </div>
+                </form>
+
+                <div id="lookup-alert" class="contact__alert" style="display: none; margin-top: 14px; margin-bottom: 0;"></div>
+
+                <div id="feedback-replies-list" class="contact__replies-list"></div>
             </div>
         </section>
     </main>
 
     <div th:replace="~{fragments/footer :: siteFooter}"></div>
-    <script src="/assets/js/common/api.js"></script>
+    <script src="/assets/js/common/api.js?v=2"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const form = document.getElementById('user-feedback-form');
             const alertBox = document.getElementById('feedback-alert');
             const submitBtn = document.getElementById('btn-submit-feedback');
+
+            const repliesSection = document.getElementById('feedback-replies');
+            const isSignedIn = repliesSection?.dataset.signedIn === 'true';
+            const signedInEmail = repliesSection?.dataset.userEmail || '';
+            const lookupForm = document.getElementById('feedback-lookup-form');
+            const lookupCodeInput = document.getElementById('lookup-code');
+            const lookupEmailInput = document.getElementById('lookup-email');
+            const lookupAlert = document.getElementById('lookup-alert');
+            const repliesList = document.getElementById('feedback-replies-list');
+            const RECENT_STORAGE_KEY = 'savora_recent_feedback';
+
+            const textEl = (tag, text, className) => {
+                const el = document.createElement(tag);
+                if (className) el.className = className;
+                el.textContent = text;
+                return el;
+            };
+
+            const formatDate = (iso) => {
+                if (!iso) return '';
+                const d = new Date(iso);
+                return Number.isNaN(d.getTime()) ? String(iso) : d.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
+            };
+
+            const getStoredLookups = () => {
+                try {
+                    const raw = localStorage.getItem(RECENT_STORAGE_KEY);
+                    const parsed = raw ? JSON.parse(raw) : [];
+                    return Array.isArray(parsed) ? parsed : [];
+                } catch {
+                    return [];
+                }
+            };
+
+            const saveStoredLookup = (code, email) => {
+                if (!code || !email) return;
+                const current = getStoredLookups().filter(
+                    (it) => !(String(it.code).toUpperCase() === String(code).toUpperCase() && String(it.email).toLowerCase() === String(email).toLowerCase())
+                );
+                current.unshift({ code, email });
+                try {
+                    localStorage.setItem(RECENT_STORAGE_KEY, JSON.stringify(current.slice(0, 5)));
+                } catch {}
+            };
+
+            const renderReplyCards = (items, emptyText) => {
+                if (!repliesList) return;
+                if (!items || !items.length) {
+                    const empty = textEl('div', emptyText, 'contact__replies-empty');
+                    repliesList.replaceChildren(empty);
+                    return;
+                }
+
+                const cards = items.map((item) => {
+                    const isReplied = item.status === 'REPLIED';
+                    const card = document.createElement('article');
+                    card.className = 'contact__reply-thread';
+
+                    const header = document.createElement('div');
+                    header.className = 'contact__reply-thread-head';
+
+                    const left = document.createElement('div');
+                    left.className = 'contact__reply-meta';
+                    left.append(
+                        textEl('span', item.feedbackCode || `FB-${item.id}`, 'contact__code-pill'),
+                        textEl('strong', item.name || 'Guest'),
+                        textEl('span', item.email || '', 'contact__reply-email')
+                    );
+
+                    const right = document.createElement('div');
+                    right.className = 'contact__reply-meta';
+                    right.append(
+                        textEl('time', formatDate(item.submittedAt), 'contact__reply-time'),
+                        textEl('span', isReplied ? '✅ Replied' : '⏳ Awaiting Reply',
+                            `contact__status-pill ${isReplied ? 'is-replied' : 'is-pending'}`)
+                    );
+                    header.append(left, right);
+
+                    const guestBox = document.createElement('div');
+                    guestBox.className = 'contact__msg-box';
+                    guestBox.append(
+                        textEl('div', 'Your Feedback', 'contact__msg-label'),
+                        textEl('p', item.message || '', 'contact__msg-text')
+                    );
+
+                    const replyBox = document.createElement('div');
+                    if (isReplied && item.adminReply) {
+                        replyBox.className = 'contact__answer-box is-replied';
+                        const head = document.createElement('div');
+                        head.className = 'contact__answer-head';
+                        head.append(
+                            textEl('span', '✦ Official Response from Savora', 'contact__msg-label'),
+                            textEl('span', item.emailSent ? '✉️ Also sent to your Gmail' : 'Saved online', 'contact__mail-note')
+                        );
+                        replyBox.append(
+                            head,
+                            textEl('p', item.adminReply, 'contact__msg-text'),
+                            textEl('div', `Replied by ${item.repliedBy || 'Savora Management'} • ${formatDate(item.repliedAt)}`, 'contact__answer-foot')
+                        );
+                    } else {
+                        replyBox.className = 'contact__answer-box is-pending';
+                        replyBox.append(
+                            textEl('p', 'Our concierge team has received your feedback and will reply to your Gmail shortly.', 'contact__pending-text')
+                        );
+                    }
+
+                    card.append(header, guestBox, replyBox);
+                    return card;
+                });
+
+                repliesList.replaceChildren(...cards);
+            };
+
+            const loadInitialReplies = async () => {
+                const params = new URLSearchParams(window.location.search);
+                const paramCode = params.get('code')?.trim();
+                const paramEmail = params.get('email')?.trim();
+
+                if (paramCode && paramEmail) {
+                    if (lookupCodeInput) lookupCodeInput.value = paramCode;
+                    if (lookupEmailInput) lookupEmailInput.value = paramEmail;
+                    await performLookup(paramCode, paramEmail);
+                    return;
+                }
+
+                if (isSignedIn) {
+                    try {
+                        const res = await SavoraApp.fetchApi('/api/customer/feedback');
+                        const list = res.data || [];
+                        if (list.length) {
+                            renderReplyCards(list, '');
+                            return;
+                        }
+                    } catch {}
+                }
+
+                const recent = getStoredLookups();
+                if (recent.length) {
+                    const loaded = [];
+                    for (const ref of recent) {
+                        try {
+                            const res = await SavoraApp.fetchApi(
+                                `/api/public/contact/feedback/lookup?code=${encodeURIComponent(ref.code)}&email=${encodeURIComponent(ref.email)}`
+                            );
+                            if (res.data) loaded.push(res.data);
+                        } catch {}
+                    }
+                    if (loaded.length) {
+                        renderReplyCards(loaded, '');
+                        return;
+                    }
+                }
+
+                renderReplyCards(
+                    [],
+                    isSignedIn
+                        ? `No feedback found yet for ${signedInEmail}. Submit the form above or look up by reference code.`
+                        : 'Enter your Feedback Reference Code and Gmail address above to view Savora’s reply.'
+                );
+            };
+
+            const performLookup = async (code, email) => {
+                if (lookupAlert) lookupAlert.style.display = 'none';
+                try {
+                    const res = await SavoraApp.fetchApi(
+                        `/api/public/contact/feedback/lookup?code=${encodeURIComponent(code)}&email=${encodeURIComponent(email)}`
+                    );
+                    if (res.data) {
+                        saveStoredLookup(res.data.feedbackCode, res.data.email);
+                        renderReplyCards([res.data], '');
+                    }
+                } catch (err) {
+                    if (lookupAlert) {
+                        lookupAlert.className = 'contact__alert contact__alert--error';
+                        lookupAlert.textContent = err.message || 'Could not find matching feedback.';
+                        lookupAlert.style.display = 'block';
+                    }
+                }
+            };
+
+            lookupForm?.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const code = lookupCodeInput?.value.trim() || '';
+                const email = lookupEmailInput?.value.trim() || '';
+                await performLookup(code, email);
+            });
 
             form?.addEventListener('submit', async (e) => {
                 e.preventDefault();
@@ -105,16 +339,24 @@
                 submitBtn.textContent = 'Sending...';
 
                 try {
-                    await SavoraApp.fetchApi('/api/public/contact/feedback', {
+                    const result = await SavoraApp.fetchApi('/api/public/contact/feedback', {
                         method: 'POST',
                         body: JSON.stringify({ name, email, message })
                     });
 
                     alertBox.className = 'contact__alert contact__alert--success';
-                    alertBox.textContent = '✓ Thank you for your feedback! We value your feedback and will get back to you soon.';
+                    alertBox.textContent = result.message;
                     alertBox.style.display = 'block';
 
                     document.getElementById('fb-message').value = '';
+
+                    const created = result.data?.feedback;
+                    if (created) {
+                        saveStoredLookup(created.feedbackCode, created.email);
+                        if (lookupCodeInput) lookupCodeInput.value = created.feedbackCode;
+                        if (lookupEmailInput) lookupEmailInput.value = created.email;
+                        await loadInitialReplies();
+                    }
                 } catch (err) {
                     alertBox.className = 'contact__alert contact__alert--error';
                     alertBox.textContent = err.message || 'Failed to send feedback.';
@@ -124,6 +366,8 @@
                     submitBtn.textContent = originalText;
                 }
             });
+
+            loadInitialReplies();
         });
     </script>
 </body>

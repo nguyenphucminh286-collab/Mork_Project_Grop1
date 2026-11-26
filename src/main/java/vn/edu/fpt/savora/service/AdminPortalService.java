@@ -235,6 +235,12 @@ public class AdminPortalService {
         kpis.put("availableTablesCount", allTables.stream().filter(t -> t.getStatus() == TableStatus.AVAILABLE).count());
         kpis.put("occupiedTablesCount", allTables.stream().filter(t -> t.getStatus() == TableStatus.OCCUPIED).count());
         kpis.put("totalUsersCount", allUsers.size());
+        Map<String, Long> roleCounts = new LinkedHashMap<>();
+        roleCounts.put("ADMIN", userList.stream().filter(u -> "ADMIN".equalsIgnoreCase(String.valueOf(u.get("roleName")))).count());
+        roleCounts.put("CUSTOMER", userList.stream().filter(u -> "CUSTOMER".equalsIgnoreCase(String.valueOf(u.get("roleName")))).count());
+        roleCounts.put("STAFF", userList.stream().filter(u -> "STAFF".equalsIgnoreCase(String.valueOf(u.get("roleName")))).count());
+        roleCounts.put("CHEF", userList.stream().filter(u -> "CHEF".equalsIgnoreCase(String.valueOf(u.get("roleName")))).count());
+        kpis.put("userRoleCounts", roleCounts);
 
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("kpis", kpis);

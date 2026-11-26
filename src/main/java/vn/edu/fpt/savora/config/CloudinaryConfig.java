@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Spring Boot Cloudinary Configuration (Nâng cấp từ static block trong UploadImage.java của SE2034-SWP391-G6)
+ * Spring Boot Cloudinary Configuration (migrated from UploadImage.java static config).
  */
 @Configuration
 public class CloudinaryConfig {
