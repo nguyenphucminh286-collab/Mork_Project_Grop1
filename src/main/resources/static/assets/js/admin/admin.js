@@ -48,6 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
             window.scrollTo(0, 0);
         }
         if (activeSection === 'tab-feedback') loadFeedback();
+        if (activeSection === 'tab-ai') loadAiSettings();
     }
     sectionLinks.forEach(link => link.addEventListener('click', event => {
         if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
@@ -1036,6 +1037,7 @@ document.addEventListener('DOMContentLoaded', () => {
         button.textContent = 'Refreshing…';
         try {
             if (activeSection === 'tab-feedback') await loadFeedback();
+            else if (activeSection === 'tab-ai') await loadAiSettings();
             else await loadAdminOverview();
         } finally {
             button.disabled = false;
@@ -1584,10 +1586,244 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // 8. Gemini AI Assistant & API Token Configuration
+    const escapeHtml = (str) => String(str ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+
+    const renderAiSettings = (data) => {
+        if (!data) return;
+        const summary = data.usageSummary || {};
+
+        const statusVal = $('adm-ai-status-val');
+        const statusSub = $('adm-ai-status-sub');
+        const maskedPill = $('adm-ai-masked-pill');
+
+        const sourceLabel = data.tokenSource === 'ADMIN_DB'
+            ? 'Admin DB Token'
+            : (data.tokenSource === 'ENV_CONFIG' ? 'Environment / Config' : 'Not Configured');
+
+        if (statusVal) {
+            statusVal.textContent = data.hasToken
+                ? (data.aiEnabled ? 'Active (Gemini)' : 'Paused (Local)')
+                : 'Local Fallback';
+            statusVal.style.color = data.hasToken && data.aiEnabled ? '#2e7d32' : '#ed6c02';
+        }
+        if (statusSub) {
+            statusSub.textContent = `${sourceLabel} · ${data.modelName || 'gemini-3.8-flash'}`;
+        }
+        if (maskedPill) {
+            maskedPill.className = `adm-badge ${data.hasToken ? 'adm-badge-green' : 'adm-badge-amber'}`;
+            maskedPill.textContent = data.hasToken ? `${sourceLabel}: ${data.maskedToken}` : 'No token saved';
+        }
+
+        if ($('adm-ai-total-tokens')) {
+            $('adm-ai-total-tokens').textContent = Number(summary.totalTokens || 0).toLocaleString('en-US');
+        }
+        if ($('adm-ai-token-breakdown')) {
+            $('adm-ai-token-breakdown').textContent =
+                `${Number(summary.totalPromptTokens || 0).toLocaleString('en-US')} prompt · ${Number(summary.totalOutputTokens || 0).toLocaleString('en-US')} output`;
+        }
+        if ($('adm-ai-today-tokens')) {
+            $('adm-ai-today-tokens').textContent = Number(summary.todayTokens || 0).toLocaleString('en-US');
+        }
+        if ($('adm-ai-total-requests')) {
+            $('adm-ai-total-requests').textContent = Number(summary.totalRequests || 0).toLocaleString('en-US');
+        }
+        if ($('adm-ai-req-breakdown')) {
+            $('adm-ai-req-breakdown').textContent =
+                `${summary.successRequests || 0} Gemini · ${summary.blockedRequests || 0} Blocked · ${summary.fallbackRequests || 0} Fallback · ${summary.errorRequests || 0} Error`;
+        }
+
+        const modelSelect = $('adm-ai-model-select');
+        const modelCustom = $('adm-ai-model-custom');
+        const savedModel = data.modelName || 'gemini-3.8-flash';
+        if (modelSelect) {
+            const preset = [...modelSelect.options].some((o) => o.value === savedModel && o.value !== 'CUSTOM');
+            if (preset) {
+                modelSelect.value = savedModel;
+                if (modelCustom) {
+                    modelCustom.style.display = 'none';
+                    modelCustom.value = '';
+                }
+            } else {
+                modelSelect.value = 'CUSTOM';
+                if (modelCustom) {
+                    modelCustom.style.display = 'block';
+                    modelCustom.value = savedModel;
+                }
+            }
+        }
+
+        if ($('adm-ai-temp')) $('adm-ai-temp').value = String(data.temperature ?? 0.7);
+        if ($('adm-ai-max-tokens')) $('adm-ai-max-tokens').value = String(data.maxOutputTokens ?? 2048);
+        if ($('adm-ai-enabled')) $('adm-ai-enabled').checked = data.aiEnabled !== false;
+        if ($('adm-ai-system-prompt')) $('adm-ai-system-prompt').value = data.customSystemPrompt || '';
+
+        const clearBtn = $('btn-adm-ai-clear-token');
+        if (clearBtn) {
+            clearBtn.disabled = !data.hasDbToken;
+            clearBtn.style.opacity = data.hasDbToken ? '1' : '0.55';
+        }
+
+        const tbody = $('adm-ai-logs-tbody');
+        if (tbody) {
+            const logs = data.recentLogs || [];
+            if (!logs.length) {
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--text-muted);">No AI chatbox requests logged yet.</td></tr>`;
+            } else {
+                tbody.innerHTML = logs.map((l) => {
+                    const badgeCls = l.status === 'SUCCESS'
+                        ? 'adm-badge-green'
+                        : (l.status === 'FALLBACK' ? 'adm-badge-amber' : (l.status === 'BLOCKED' ? 'adm-badge-gray' : 'adm-badge-red'));
+                    const note = l.errorMessage ? `${l.userMessagePreview || ''} — ⚠ ${l.errorMessage}` : (l.userMessagePreview || '');
+                    return `
+                        <tr>
+                            <td style="font-size:0.74rem;color:var(--text-muted);white-space:nowrap;">${escapeHtml(l.createdAt)}</td>
+                            <td><span class="adm-badge ${badgeCls}">${escapeHtml(l.status)}</span></td>
+                            <td style="font-size:0.76rem;">${escapeHtml(l.modelName || l.provider)}</td>
+                            <td>${Number(l.promptTokens || 0).toLocaleString('en-US')}</td>
+                            <td>${Number(l.outputTokens || 0).toLocaleString('en-US')}</td>
+                            <td><strong>${Number(l.totalTokens || 0).toLocaleString('en-US')}</strong></td>
+                            <td style="font-size:0.76rem;">${l.latencyMs != null ? `${l.latencyMs} ms` : '–'}</td>
+                            <td style="max-width:260px;font-size:0.76rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${escapeHtml(note)}">${escapeHtml(note)}</td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+        }
+    };
+
+    const loadAiSettings = async () => {
+        try {
+            const res = await SavoraApp.fetchApi('/api/admin/ai-settings');
+            renderAiSettings(res.data);
+        } catch (err) {
+            showToast(err.message || 'Unable to load AI settings.');
+        }
+    };
+
+    const resolveSelectedAiModel = () => {
+        const sel = $('adm-ai-model-select')?.value || 'gemini-3.8-flash';
+        if (sel === 'CUSTOM') {
+            return ($('adm-ai-model-custom')?.value || '').trim() || 'gemini-3.8-flash';
+        }
+        return sel;
+    };
+
+    $('adm-ai-model-select')?.addEventListener('change', (e) => {
+        const custom = $('adm-ai-model-custom');
+        if (custom) {
+            custom.style.display = e.target.value === 'CUSTOM' ? 'block' : 'none';
+            if (e.target.value === 'CUSTOM') custom.focus();
+        }
+    });
+
+    $('btn-adm-ai-toggle-vis')?.addEventListener('click', () => {
+        const inp = $('adm-ai-token');
+        if (!inp) return;
+        inp.type = inp.type === 'password' ? 'text' : 'password';
+    });
+
+    $('adm-ai-form')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const saveBtn = $('btn-adm-ai-save');
+        if (saveBtn) saveBtn.disabled = true;
+        try {
+            const payload = {
+                apiToken: ($('adm-ai-token')?.value || '').trim(),
+                modelName: resolveSelectedAiModel(),
+                temperature: parseFloat($('adm-ai-temp')?.value || '0.7'),
+                maxOutputTokens: parseInt($('adm-ai-max-tokens')?.value || '1024', 10),
+                aiEnabled: Boolean($('adm-ai-enabled')?.checked),
+                customSystemPrompt: ($('adm-ai-system-prompt')?.value || '').trim()
+            };
+            const res = await SavoraApp.fetchApi('/api/admin/ai-settings', {
+                method: 'POST',
+                body: JSON.stringify(payload)
+            });
+            if ($('adm-ai-token')) $('adm-ai-token').value = '';
+            renderAiSettings(res.data);
+            showToast(res.message || 'Saved Gemini AI settings!');
+        } catch (err) {
+            showToast(err.message || 'Failed to save AI settings.');
+        } finally {
+            if (saveBtn) saveBtn.disabled = false;
+        }
+    });
+
+    $('btn-adm-ai-clear-token')?.addEventListener('click', async () => {
+        if (!window.confirm('Remove the saved Gemini API token from database?')) return;
+        try {
+            const res = await SavoraApp.fetchApi('/api/admin/ai-settings', {
+                method: 'POST',
+                body: JSON.stringify({ clearToken: true })
+            });
+            if ($('adm-ai-token')) $('adm-ai-token').value = '';
+            renderAiSettings(res.data);
+            showToast('Cleared saved DB token.');
+        } catch (err) {
+            showToast(err.message || 'Unable to clear DB token.');
+        }
+    });
+
+    $('btn-adm-ai-test')?.addEventListener('click', async () => {
+        const btn = $('btn-adm-ai-test');
+        const box = $('adm-ai-test-result');
+        if (btn) {
+            btn.disabled = true;
+            btn.textContent = 'Testing…';
+        }
+        if (box) box.hidden = true;
+        try {
+            const res = await SavoraApp.fetchApi('/api/admin/ai-settings/test', {
+                method: 'POST',
+                body: JSON.stringify({
+                    apiToken: ($('adm-ai-token')?.value || '').trim(),
+                    modelName: resolveSelectedAiModel()
+                })
+            });
+            const d = res.data || {};
+            if (box) {
+                box.hidden = false;
+                box.className = `ai-test-result ${d.connected ? 'ok' : 'err'}`;
+                box.innerHTML = d.connected
+                    ? `<strong>✓ Connected (${escapeHtml(d.model)})</strong> · ${d.latencyMs} ms · ${d.totalTokens} tokens (${d.promptTokens} in / ${d.outputTokens} out)<br><em>"${escapeHtml(d.reply)}"</em>`
+                    : `<strong>✕ Connection Failed (${escapeHtml(d.model)})</strong><br>${escapeHtml(d.errorMessage || 'Unknown error')}`;
+            }
+            await loadAiSettings();
+        } catch (err) {
+            if (box) {
+                box.hidden = false;
+                box.className = 'ai-test-result err';
+                box.textContent = err.message || 'Test failed.';
+            }
+        } finally {
+            if (btn) {
+                btn.disabled = false;
+                btn.textContent = '⚡ Test Token';
+            }
+        }
+    });
+
+    $('btn-adm-ai-clear-logs')?.addEventListener('click', async () => {
+        if (!window.confirm('Clear all AI token usage logs?')) return;
+        try {
+            await SavoraApp.fetchApi('/api/admin/ai-settings/logs', { method: 'DELETE' });
+            await loadAiSettings();
+            showToast('Cleared AI token usage logs.');
+        } catch (err) {
+            showToast(err.message || 'Unable to clear AI logs.');
+        }
+    });
+
     openSection(location.hash.slice(1));
     loadAdminOverview();
     if (activeSection !== 'tab-feedback') loadFeedback();
-    if (window.SavoraApp && SavoraApp.onRealtimeSync) {
+    if (activeSection === 'tab-ai') loadAiSettings();
+    if (typeof SavoraApp !== 'undefined' && SavoraApp.onRealtimeSync) {
         SavoraApp.onRealtimeSync(() => loadFeedback());
     }
 });

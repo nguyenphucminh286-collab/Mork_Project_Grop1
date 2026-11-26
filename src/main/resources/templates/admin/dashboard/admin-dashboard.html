@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin dashboard — Savora</title>
     <script src="/assets/js/common/theme.js"></script>
-    <link rel="stylesheet" href="/assets/css/public/global.css?v=2">
+    <link rel="stylesheet" href="/assets/css/public/global.css?v=4">
     <link rel="stylesheet" href="/assets/css/public/home.css?v=4">
     <link rel="stylesheet" href="/assets/css/staff/waiter.css?v=5">
-    <link rel="stylesheet" href="/assets/css/admin/admin.css?v=11">
+    <link rel="stylesheet" href="/assets/css/admin/admin.css?v=13">
 </head>
 <body class="admin-workspace">
 <div th:replace="~{fragments/header :: siteHeader}"></div>
@@ -34,6 +34,7 @@
                 <h2>Administration</h2>
                 <a href="#tab-users" class="admin-tab-btn" data-tab="tab-users"><span>Accounts</span></a>
                 <a href="#tab-tracking" class="admin-tab-btn" data-tab="tab-tracking"><span>Activity log</span></a>
+                <a href="#tab-ai" class="admin-tab-btn" data-tab="tab-ai"><span>AI &amp; API Token</span></a>
             </div>
         </nav>
     </aside>
@@ -786,6 +787,131 @@
             </div>
         </div>
     </section>
+
+    <!-- TAB 8: Gemini AI Assistant & API Token Configuration -->
+    <section class="admin-tab-pane" id="tab-ai" aria-label="AI and API Token">
+        <div class="admin-kpi-grid tracking-metrics">
+            <div class="admin-kpi-card" style="border-left: 4px solid #1565c0;">
+                <div class="admin-kpi-label">Gemini Token Status</div>
+                <div class="admin-kpi-value" id="adm-ai-status-val" style="font-size:1.15rem;">–</div>
+                <div class="admin-kpi-sub" id="adm-ai-status-sub">Checking configuration...</div>
+            </div>
+            <div class="admin-kpi-card" style="border-left: 4px solid #2e7d32;">
+                <div class="admin-kpi-label">Total Tokens Used</div>
+                <div class="admin-kpi-value" id="adm-ai-total-tokens">0</div>
+                <div class="admin-kpi-sub" id="adm-ai-token-breakdown">0 prompt · 0 output</div>
+            </div>
+            <div class="admin-kpi-card" style="border-left: 4px solid #ef6c00;">
+                <div class="admin-kpi-label">Today's Tokens</div>
+                <div class="admin-kpi-value" id="adm-ai-today-tokens">0</div>
+                <div class="admin-kpi-sub">Consumed since 00:00</div>
+            </div>
+            <div class="admin-kpi-card" style="border-left: 4px solid #8e24aa;">
+                <div class="admin-kpi-label">Chat Requests</div>
+                <div class="admin-kpi-value" id="adm-ai-total-requests">0</div>
+                <div class="admin-kpi-sub" id="adm-ai-req-breakdown">0 Gemini · 0 Fallback</div>
+            </div>
+        </div>
+
+        <div class="admin-split-grid">
+            <div class="admin-panel">
+                <div class="admin-panel-title">
+                    <span>Gemini API Token &amp; Model</span>
+                    <span class="adm-badge adm-badge-blue" id="adm-ai-masked-pill">No token</span>
+                </div>
+
+                <form id="adm-ai-form">
+                    <div class="pasgo-field">
+                        <label for="adm-ai-token">Google Gemini API Key (AQ... / AIza...)</label>
+                        <div class="ai-token-input-row">
+                            <input type="password" id="adm-ai-token" class="pasgo-control" autocomplete="off"
+                                   placeholder="Paste new AQ... or AIza... key (leave blank to keep current)">
+                            <button type="button" class="adm-btn-xs" id="btn-adm-ai-toggle-vis" title="Show/Hide Token">👁</button>
+                        </div>
+                        <small id="adm-ai-token-hint" style="display:block;margin-top:5px;font-size:0.74rem;color:var(--text-muted);">
+                            Stored safely in DB or overridden by <code>application-local.properties</code> / <code>GEMINI_API_KEY</code> env if DB token is cleared.
+                        </small>
+                    </div>
+
+                    <div class="pasgo-field">
+                        <label for="adm-ai-model-select">Gemini Model</label>
+                        <select id="adm-ai-model-select" class="pasgo-control">
+                            <option value="gemini-3.8-flash">gemini-3.8-flash (Recommended • Fast &amp; Smart)</option>
+                            <option value="gemini-3.5-flash-lite">gemini-3.5-flash-lite (Lightweight &amp; High Quota)</option>
+                            <option value="gemini-2.5-flash">gemini-2.5-flash (Legacy)</option>
+                            <option value="CUSTOM">Custom Model ID...</option>
+                        </select>
+                        <input type="text" id="adm-ai-model-custom" class="pasgo-control" style="margin-top:8px;display:none;"
+                               placeholder="Enter custom Gemini model ID">
+                    </div>
+
+                    <div class="pasgo-row-2">
+                        <div class="pasgo-field">
+                            <label for="adm-ai-temp">Temperature (0 – 2)</label>
+                            <input type="number" id="adm-ai-temp" class="pasgo-control" min="0" max="2" step="0.1" value="0.7">
+                        </div>
+                        <div class="pasgo-field">
+                            <label for="adm-ai-max-tokens">Max Output Tokens</label>
+                            <input type="number" id="adm-ai-max-tokens" class="pasgo-control" min="64" max="8192" step="64" value="2048">
+                        </div>
+                    </div>
+
+                    <div class="pasgo-field">
+                        <label class="ai-toggle-label">
+                            <input type="checkbox" id="adm-ai-enabled" checked>
+                            <span>Enable Gemini AI mode (Savora Website-Only Concierge)</span>
+                        </label>
+                    </div>
+
+                    <div class="pasgo-field">
+                        <label for="adm-ai-system-prompt">Extra System Instructions (Optional)</label>
+                        <textarea id="adm-ai-system-prompt" class="pasgo-control" rows="3"
+                                  placeholder="e.g. Always greet warmly, recommend Signature Wagyu or Lobster when asked for dinner ideas..."></textarea>
+                    </div>
+
+                    <div class="ai-form-actions">
+                        <button type="submit" class="btn btn-primary" id="btn-adm-ai-save" style="flex:1;">💾 Save AI Settings</button>
+                        <button type="button" class="btn btn-outline" id="btn-adm-ai-test">⚡ Test Token</button>
+                    </div>
+                    <button type="button" class="adm-btn-xs" id="btn-adm-ai-clear-token" style="margin-top:10px;width:100%;padding:7px 10px;">
+                        🗑 Clear Saved DB Token (Fallback to Env / Local Mode)
+                    </button>
+                </form>
+
+                <div id="adm-ai-test-result" class="ai-test-result" hidden></div>
+            </div>
+
+            <div class="admin-panel">
+                <div class="admin-panel-title">
+                    <div>
+                        <span>API Token Usage Log</span>
+                        <div style="font-size:0.75rem;color:var(--text-muted);font-weight:600;margin-top:2px;">
+                            Real-time prompt, output &amp; total token telemetry per Gemini chatbox request
+                        </div>
+                    </div>
+                    <button type="button" class="adm-btn-xs" id="btn-adm-ai-clear-logs">🗑 Clear Logs</button>
+                </div>
+
+                <div class="admin-table-wrap">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>Status</th>
+                                <th>Model</th>
+                                <th>Prompt</th>
+                                <th>Output</th>
+                                <th>Total</th>
+                                <th>Latency</th>
+                                <th>Question / Error</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adm-ai-logs-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
     </main>
 </div>
 
@@ -827,7 +953,7 @@
 
 
 
-<script src="/assets/js/common/api.js?v=2"></script>
-<script src="/assets/js/admin/admin.js?v=13"></script>
+<script src="/assets/js/common/api.js?v=3"></script>
+<script src="/assets/js/admin/admin.js?v=17"></script>
 </body>
 </html>

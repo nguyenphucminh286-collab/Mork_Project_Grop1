@@ -26,5 +26,12 @@ cloudinary:
 email:
   sender: ${MODA_EMAIL_SENDER:facc6604@gmail.com}
   password: ${MODA_EMAIL_PASSWORD:edav mted bvdh tjhu}
+ai:
+  gemini:
+    api-key: ${GEMINI_API_KEY:${gemini.api-key:}}
+    model: ${GEMINI_MODEL:${gemini.model:gemini-3.8-flash}}
+    base-url: ${GEMINI_BASE_URL:https://generativelanguage.googleapis.com/v1beta}
+    vertex-base-url: ${GEMINI_VERTEX_BASE_URL:https://aiplatform.googleapis.com/v1/publishers/google}
+    enabled: ${GEMINI_ENABLED:true}
 server:
   port: ${PORT:${SERVER_PORT:8080}}
