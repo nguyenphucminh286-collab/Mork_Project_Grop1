@@ -282,7 +282,16 @@ public class QrOrderService {
             }
         } else if ("CLOSE_TO_CLEANING".equalsIgnoreCase(action)) {
             if (activeOrder != null) {
-                activeOrder.setStatus(OrderStatus.CLOSED);
+                List<OrderItem> billableItems = orderItemRepository.findByOrder_OrderIdOrderByCreatedAtDesc(activeOrder.getOrderId())
+                        .stream()
+                        .filter(i -> i.getItemStatus() != OrderItemStatus.CANCELLED)
+                        .collect(Collectors.toList());
+                if (!billableItems.isEmpty()) {
+                    throw new IllegalArgumentException(
+                            "Cannot close table to CLEANING while there are unpaid dishes on the active order. Please complete bill checkout or remove all PENDING dishes first."
+                    );
+                }
+                activeOrder.setStatus(OrderStatus.CANCELLED);
                 activeOrder.setClosedAt(LocalDateTime.now());
                 restaurantOrderRepository.saveAndFlush(activeOrder);
                 activeOrder = null;

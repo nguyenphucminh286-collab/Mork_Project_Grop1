@@ -92,8 +92,8 @@ public class AdminApiController {
 
     @DeleteMapping("/dishes/{dishId}")
     public ApiResponse<Void> deleteDish(@PathVariable Integer dishId) {
-        adminPortalService.deleteDish(dishId);
-        return ApiResponse.ok("Deleted dish from menu!", null);
+        String message = adminPortalService.deleteDish(dishId);
+        return ApiResponse.ok(message, null);
     }
 
     @PostMapping("/tables")

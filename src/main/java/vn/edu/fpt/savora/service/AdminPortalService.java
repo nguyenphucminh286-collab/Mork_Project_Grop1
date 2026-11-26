@@ -318,7 +318,7 @@ public class AdminPortalService {
     }
 
     @Transactional
-    public void deleteDish(Integer dishId) {
+    public String deleteDish(Integer dishId) {
         Dish dish = dishRepository.findById(dishId)
                 .orElseThrow(() -> new IllegalArgumentException("Dish #" + dishId + " not found."));
 
@@ -335,11 +335,13 @@ public class AdminPortalService {
         }
 
         if (!referencedItems.isEmpty()) {
-            orderItemRepository.deleteAll(referencedItems);
-            orderItemRepository.flush();
+            dish.setStatus(DishStatus.HIDDEN);
+            dishRepository.saveAndFlush(dish);
+            return "Dish '" + dish.getDishName() + "' appears on historical orders/invoices and was soft-deleted (HIDDEN) to preserve invoice history.";
         }
         dishRepository.delete(dish);
         dishRepository.flush();
+        return "Deleted dish '" + dish.getDishName() + "' from menu!";
     }
 
     @Transactional

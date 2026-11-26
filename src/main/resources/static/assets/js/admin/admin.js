@@ -588,8 +588,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const dishName = btn.dataset.name || 'this dish';
                 if (!window.confirm(`Are you sure you want to delete dish "${dishName}"?`)) return;
                 try {
-                    await SavoraApp.fetchApi(`/api/admin/dishes/${btn.dataset.id}`, { method: 'DELETE' });
-                    showToast(`Deleted dish "${dishName}"!`);
+                    const res = await SavoraApp.fetchApi(`/api/admin/dishes/${btn.dataset.id}`, { method: 'DELETE' });
+                    showToast(res.message || `Deleted dish "${dishName}"!`);
                     await loadAdminOverview();
                 } catch (err) {
                     showToast(err.message);
