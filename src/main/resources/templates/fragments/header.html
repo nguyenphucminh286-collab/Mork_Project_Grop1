@@ -1,4 +1,4 @@
-<div th:fragment="siteHeader">
+<th:block th:fragment="siteHeader">
 <!-- Customer Topbar (Hidden for Staff/Chef/Admin internal portals) -->
 <div class="topbar" th:if="${session.roleId == null or session.roleId == 2}">
     <div class="container topbar__inner">
@@ -62,4 +62,4 @@
         </div>
     </div>
 </header>
-</div>
+</th:block>

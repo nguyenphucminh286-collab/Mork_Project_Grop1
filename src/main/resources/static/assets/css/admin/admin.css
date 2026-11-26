@@ -24,7 +24,7 @@
 }
 .admin-sidebar {
   position: sticky;
-  top: 20px;
+  top: 84px;
   padding: 14px 10px;
   color: var(--nav-ink);
   background: var(--nav-wash);
@@ -928,4 +928,45 @@
   .admin-panel .admin-panel-title :is(input,select) { min-width: 0; max-width: 100%; }
   .feedback-toolbar label, .feedback-toolbar input { width: 100%; }
   .feedback-entry summary { gap: 4px 8px; }
+}
+
+/* AI & API Token Configuration Panel */
+.ai-token-input-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ai-token-input-row .pasgo-control {
+  flex: 1;
+  min-width: 0;
+}
+.ai-toggle-label {
+  display: flex !important;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  margin-bottom: 0 !important;
+}
+.ai-form-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+.ai-test-result {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  border: 1px solid var(--border-color);
+  background: var(--subtle-surface);
+}
+.ai-test-result.ok {
+  border-color: #81c784;
+  background: rgba(46, 125, 50, 0.1);
+}
+.ai-test-result.err {
+  border-color: #e57373;
+  background: rgba(198, 40, 40, 0.1);
 }

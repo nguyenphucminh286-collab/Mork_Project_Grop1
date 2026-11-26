@@ -1,42 +1,85 @@
 /**
- * SAVORA — Domain-Locked Customer AI Chatbot with Website Navigation Links
- * Strictly answers ONLY questions about Savora Restaurant and blocks off-topic questions.
+ * SAVORA — Gemini AI Assistant & Restaurant Concierge Chatbox
+ * Supports multi-turn conversation, live Savora database context, token telemetry, and local fallback.
  */
 document.addEventListener('DOMContentLoaded', () => {
     const launcher = document.getElementById('savora-chat-launcher');
     const win = document.getElementById('savora-chat-window');
     const closeBtn = document.getElementById('savora-chat-close');
+    const clearBtn = document.getElementById('savora-chat-clear');
+    const subtitleEl = document.getElementById('savora-chat-subtitle');
     const msgBox = document.getElementById('savora-chat-messages');
     const form = document.getElementById('savora-chat-form');
     const input = document.getElementById('savora-chat-input');
+    const sendBtn = document.getElementById('savora-chat-send');
     const chipsBox = document.getElementById('savora-chat-chips');
 
     if (!launcher || !win || !msgBox) return;
 
+    const HISTORY_KEY = 'savora_ai_chat_history_v2';
+    const MAX_STORED_TURNS = 12;
+    let conversationHistory = [];
+    let isSending = false;
+
+    const escapeHtml = (str) => String(str ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+
     const formatMarkdownText = (text) => {
         if (!text) return '';
-        return String(text)
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
+        const codeBlocks = [];
+        let processed = String(text).replace(/```(?:\w+)?\n?([\s\S]*?)```/g, (_, code) => {
+            const idx = codeBlocks.length;
+            codeBlocks.push(`<pre class="savora-chat-code-block"><code>${escapeHtml(code.trim())}</code></pre>`);
+            return `__SAVORA_CODE_BLOCK_${idx}__`;
+        });
+
+        processed = escapeHtml(processed)
+            .replace(/`([^`\n]+)`/g, '<code class="savora-chat-inline-code">$1</code>')
             .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
             .replace(/\*(.+?)\*/g, '<em>$1</em>')
             .replace(/\n/g, '<br>');
+
+        codeBlocks.forEach((blockHtml, idx) => {
+            processed = processed.replace(`__SAVORA_CODE_BLOCK_${idx}__`, blockHtml);
+        });
+        return processed;
     };
 
-    const appendMessage = (sender, text, links = [], blocked = false) => {
+    const loadStoredHistory = () => {
+        try {
+            const raw = sessionStorage.getItem(HISTORY_KEY);
+            const parsed = raw ? JSON.parse(raw) : [];
+            return Array.isArray(parsed) ? parsed.slice(-MAX_STORED_TURNS) : [];
+        } catch {
+            return [];
+        }
+    };
+
+    const saveStoredHistory = () => {
+        try {
+            sessionStorage.setItem(HISTORY_KEY, JSON.stringify(conversationHistory.slice(-MAX_STORED_TURNS)));
+        } catch {
+        }
+    };
+
+    const appendMessage = (sender, text, links = [], blocked = false, meta = null) => {
         const div = document.createElement('div');
         div.className = `savora-chat-msg ${sender === 'user' ? 'savora-chat-msg--user' : 'savora-chat-msg--bot'} ${blocked ? 'savora-chat-msg--blocked' : ''}`;
 
         let html = `<div>${formatMarkdownText(text)}</div>`;
         if (sender === 'bot' && Array.isArray(links) && links.length > 0) {
             html += `<div class="savora-chat-nav-links">` +
-                links.map((l) => `<a href="${l.url}" class="savora-chat-nav-link">${l.label} →</a>`).join('') +
+                links.map((l) => `<a href="${escapeHtml(l.url)}" class="savora-chat-nav-link">${escapeHtml(l.label)} →</a>`).join('') +
                 `</div>`;
+        }
+        if (sender === 'bot' && meta && meta.label) {
+            html += `<div class="savora-chat-meta">${escapeHtml(meta.label)}</div>`;
         }
         div.innerHTML = html;
 
-        // Smooth scroll if clicking an anchor on the current page
         div.querySelectorAll('.savora-chat-nav-link').forEach((a) => {
             a.addEventListener('click', (e) => {
                 const href = a.getAttribute('href') || '';
@@ -47,7 +90,11 @@ document.addEventListener('DOMContentLoaded', () => {
                         const targetEl = document.getElementById(hashPart);
                         if (targetEl) {
                             e.preventDefault();
-                            targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            if (typeof SavoraApp !== 'undefined' && typeof SavoraApp.scrollToHomeHash === 'function') {
+                                SavoraApp.scrollToHomeHash(`#${hashPart}`, true);
+                            } else {
+                                targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            }
                         }
                     }
                 }
@@ -58,40 +105,51 @@ document.addEventListener('DOMContentLoaded', () => {
         msgBox.scrollTop = msgBox.scrollHeight;
     };
 
-    // Initial welcome message with navigation links
-    appendMessage(
-        'bot',
-        '👋 Welcome to **Savora Fine Dining AI Concierge**!\nI only answer questions about **Savora Restaurant** (our signature menu, live table availability, online reservations, vouchers, QR ordering, and contact/feedback).\n\nHow can I help you today?',
-        [
-            { label: '🪑 Book a Table', url: '/home#tables-section' },
-            { label: '🍽️ Signature Menu', url: '/home#menu' },
-            { label: '🎁 Voucher Deals', url: '/home#deals' },
-            { label: '✉️ Contact & Feedback', url: '/contact' }
-        ]
-    );
+    const renderWelcomeMessage = () => {
+        appendMessage(
+            'bot',
+            '👋 Welcome to **Savora AI Concierge**!\nI am dedicated exclusively to **Savora Restaurant’s website** (signature menu, dish prices, live table availability, online reservations, vouchers, QR ordering, and contact/feedback).\n\nHow can I help you with Savora today?',
+            [
+                { label: '🪑 Book a Table', url: '/home#tables-section' },
+                { label: '🍽️ Signature Menu', url: '/home#menu' },
+                { label: '🎁 Voucher Deals', url: '/home#deals' },
+                { label: '✉️ Contact & Feedback', url: '/contact' }
+            ]
+        );
+    };
 
-    // Client-side fallback classifier in case backend has not been restarted yet
+    const restoreOrWelcome = () => {
+        msgBox.innerHTML = '';
+        renderWelcomeMessage();
+        conversationHistory = loadStoredHistory();
+        conversationHistory.forEach((item) => {
+            appendMessage(item.role === 'bot' ? 'bot' : 'user', item.text, item.links || [], Boolean(item.blocked), item.meta || null);
+        });
+    };
+
+    const refreshAiStatus = async () => {
+        if (!subtitleEl || typeof SavoraApp === 'undefined') return;
+        try {
+            const res = await SavoraApp.fetchApi('/api/public/chatbot/status');
+            const st = res.data || {};
+            if (st.aiActive) {
+                subtitleEl.textContent = `🟢 Savora AI • ${st.model || 'gemini-3.8-flash'}`;
+                subtitleEl.style.color = '#a5d6a7';
+            } else {
+                subtitleEl.textContent = '🟡 Savora Local Mode (No Token)';
+                subtitleEl.style.color = '#ffe082';
+            }
+        } catch {
+        }
+    };
+
     const clientFallbackReply = (question) => {
         const lower = question.toLowerCase();
-        const offTopicRegex = /(\b\d+\s*[+\-*/^]\s*\d+\b|python|javascript|java code|c\+\+|write code|programming|algorithm|bitcoin|crypto|weather|president|politics|football|soccer|world cup|messi|ronaldo|capital of|who invented|physics|chemistry|homework)/i;
 
-        if (offTopicRegex.test(lower)) {
-            return {
-                blocked: true,
-                answer: '🚫 **Off-Topic Question Blocked**\nI am the **Savora Fine Dining AI Assistant**, and I am strictly configured to **only answer questions about the Savora Restaurant project** (our menu dishes, table availability, online reservations, promotional vouchers, QR ordering, opening hours, and guest feedback).\n\nI cannot answer unrelated questions. Please explore Savora using the links below:',
-                links: [
-                    { label: '🪑 Book a Table', url: '/home#tables-section' },
-                    { label: '🍽️ View Signature Menu', url: '/home#menu' },
-                    { label: '🎁 Promotional Deals', url: '/home#deals' },
-                    { label: '✉️ Contact & Feedback', url: '/contact' }
-                ]
-            };
-        }
-
-        if (/(voucher|deal|discount|promo|offer)/i.test(lower)) {
+        if (/(voucher|deal|discount|promo|offer|khuyến mãi|giảm giá)/i.test(lower)) {
             return {
                 blocked: false,
-                answer: '🎁 **Active Savora Promotional Vouchers:**\n• **VIPPARTY20 (-20%)**: 20% OFF VIP Suite & group bookings\n• **WELCOME50 (-15%)**: 15% OFF first online table reservation\n• **SAVORA10 (-10%)**: 10% OFF total dine-in bill\n\nClick below to apply a voucher directly to your booking:',
+                answer: '🎁 **Active Savora Promotional Vouchers:**\n• **VIPPARTY20 (-20%)**: 20% OFF VIP Suite & group bookings\n• **WELCOME50 (-15%)**: 15% OFF first online table reservation\n• **SAVORA10 (-10%)**: 10% OFF total dine-in bill',
                 links: [
                     { label: '🎁 Claim Promotional Deals', url: '/home#deals' },
                     { label: '🪑 Book Table with Deal', url: '/home#tables-section' }
@@ -99,22 +157,21 @@ document.addEventListener('DOMContentLoaded', () => {
             };
         }
 
-        if (/(table|seat|available|floor|vip|terrace|zone|capacity|book|reserve|reservation)/i.test(lower)) {
+        if (/(table|seat|available|floor|vip|terrace|zone|capacity|book|reserve|reservation|bàn|đặt bàn)/i.test(lower)) {
             return {
                 blocked: false,
-                answer: '🪑 **Savora Online Table Booking & Floor Map:**\n• **3 Dining Zones:** 1st Floor (Main Hall, 2–8 seats), 2nd Floor (Garden Terrace, 6–8 seats), and VIP Private Suites (12–16 seats).\n• **Booking Hours:** 10:30 – 21:00 daily (120 mins dining + 10 mins cleaning turnaround).\n• Select your party size, date, and time slot using the links below:',
+                answer: '🪑 **Savora Online Table Booking & Floor Map:**\n• **3 Dining Zones:** 1st Floor (Main Hall), 2nd Floor (Garden Terrace), and VIP Private Suites.\n• **Booking Hours:** 10:30 – 21:00 daily (120 mins dining + 10 mins cleaning turnaround).',
                 links: [
                     { label: '🪑 Live Floor Map & Booking', url: '/home#tables-section' },
-                    { label: '📅 My Table Bookings', url: '/customer/reservations' },
-                    { label: '🔐 Sign In', url: '/login' }
+                    { label: '📅 My Table Bookings', url: '/customer/reservations' }
                 ]
             };
         }
 
-        if (/(menu|dish|food|eat|drink|steak|tenderloin|salmon|lobster|hotpot|soup|dessert|price)/i.test(lower)) {
+        if (/(menu|dish|food|eat|drink|steak|tenderloin|salmon|lobster|hotpot|soup|dessert|price|món|thực đơn)/i.test(lower)) {
             return {
                 blocked: false,
-                answer: '🍽️ **Savora Chef’s Signature Menu:**\n• **Pan-Seared Norwegian Salmon Salad** — 149,000 VND *(★ Signature)*\n• **Lava-Stone Grilled Australian Tenderloin (250g)** — 389,000 VND *(★ Signature)*\n• **Oven-Baked Spiny Lobster with Mozzarella** — 650,000 VND *(★ Signature)*\n• **Savora Royal Seafood Hotpot Set** — 450,000 VND *(★ Signature)*\n\nExplore our full menu or reserve your table below:',
+                answer: '🍽️ **Savora Chef’s Signature Menu:**\n• **Pan-Seared Norwegian Salmon Salad** — 149,000 VND *(★ Signature)*\n• **Lava-Stone Grilled Australian Tenderloin (250g)** — 389,000 VND *(★ Signature)*\n• **Oven-Baked Spiny Lobster with Mozzarella** — 650,000 VND *(★ Signature)*\n• **Savora Royal Seafood Hotpot Set** — 450,000 VND *(★ Signature)*',
                 links: [
                     { label: '🍽️ Browse Full Menu', url: '/home#menu' },
                     { label: '🪑 Reserve a Table', url: '/home#tables-section' }
@@ -122,10 +179,10 @@ document.addEventListener('DOMContentLoaded', () => {
             };
         }
 
-        if (/(contact|feedback|email|where|location|address|hour|open|phone|hotline)/i.test(lower)) {
+        if (/(contact|feedback|email|where|location|address|hour|open|phone|hotline|địa chỉ|liên hệ)/i.test(lower)) {
             return {
                 blocked: false,
-                answer: '📍 **Savora Location, Opening Hours & Feedback:**\n• **Address:** Hoa Lac Hi-Tech Park, Thach That, Hanoi\n• **Opening Hours:** 10:00 AM – 10:30 PM Daily\n• **Hotline:** 1900 6868 • **Email:** concierge@savora.vn\n• Send us your feedback on our Contact page:',
+                answer: '📍 **Savora Location, Opening Hours & Feedback:**\n• **Address:** Hoa Lac Hi-Tech Park, Thach That, Hanoi\n• **Opening Hours:** 10:00 AM – 10:30 PM Daily\n• **Hotline:** 1900 6868 • **Email:** concierge@savora.vn',
                 links: [
                     { label: '✉️ Contact & Feedback Page', url: '/contact' },
                     { label: '🏠 Home Page', url: '/home' }
@@ -133,81 +190,104 @@ document.addEventListener('DOMContentLoaded', () => {
             };
         }
 
-        if (/(account|profile|login|sign in|register|sign up)/i.test(lower)) {
-            return {
-                blocked: false,
-                answer: '👤 **Savora Customer Account & Profile:**\nManage your personal details, view your booking history, or sign in via the links below:',
-                links: [
-                    { label: '👤 My Profile', url: '/customer/profile' },
-                    { label: '📅 My Bookings', url: '/customer/reservations' },
-                    { label: '🔐 Sign In', url: '/login' }
-                ]
-            };
-        }
-
-        if (/(qr|pay|bill|vietqr|mbbank|cash|kitchen)/i.test(lower)) {
-            return {
-                blocked: false,
-                answer: '📱 **Table QR Ordering & Checkout:**\nAt Savora, guests scan the QR code on their table (`/qr/table/{tableCode}`) to order dishes directly to the Chef Kitchen Display System and track status live (`PENDING → COOKING → READY → SERVED`), then pay via **VietQR (MBBank)** or **Cash**.',
-                links: [
-                    { label: '🍽️ Preview Digital Menu', url: '/home#menu' },
-                    { label: '🪑 Book a Table', url: '/home#tables-section' }
-                ]
-            };
-        }
-
-        if (/(hi|hello|hey|help|savora|project|restaurant|about)/i.test(lower)) {
-            return {
-                blocked: false,
-                answer: '👋 I am the **Savora Fine Dining AI Concierge**! I can help you explore our signature dishes, check live table availability, apply promotional vouchers, or submit guest feedback.',
-                links: [
-                    { label: '🪑 Book a Table', url: '/home#tables-section' },
-                    { label: '🍽️ Signature Menu', url: '/home#menu' },
-                    { label: '🎁 Voucher Deals', url: '/home#deals' },
-                    { label: '✉️ Contact & Feedback', url: '/contact' }
-                ]
-            };
-        }
-
         return {
             blocked: true,
-            answer: '🚫 **Off-Topic Question Blocked**\nI am the **Savora Fine Dining AI Assistant**, and I am strictly configured to **only answer questions about the Savora Restaurant project** (our menu dishes, table availability, online reservations, promotional vouchers, QR ordering, opening hours, and guest feedback).\n\nI cannot answer unrelated questions. Please explore Savora using the links below:',
+            answer: '🚫 **Out-of-Scope Question**\nI only answer questions related to the **Savora Restaurant website** (menu, tables, reservations, vouchers, QR ordering, and contact/feedback).',
             links: [
+                { label: '🍽️ Signature Menu', url: '/home#menu' },
                 { label: '🪑 Book a Table', url: '/home#tables-section' },
-                { label: '🍽️ View Signature Menu', url: '/home#menu' },
-                { label: '🎁 Promotional Deals', url: '/home#deals' },
+                { label: '🎁 Voucher Deals', url: '/home#deals' },
                 { label: '✉️ Contact & Feedback', url: '/contact' }
             ]
         };
     };
 
+    const showTypingIndicator = () => {
+        const el = document.createElement('div');
+        el.className = 'savora-chat-msg savora-chat-msg--bot';
+        el.innerHTML = `<div class="savora-chat-typing" aria-label="Savora AI is typing"><span></span><span></span><span></span></div>`;
+        msgBox.appendChild(el);
+        msgBox.scrollTop = msgBox.scrollHeight;
+        return el;
+    };
+
     const sendQuestion = async (questionText) => {
         const q = (questionText || '').trim();
-        if (!q) return;
+        if (!q || isSending) return;
+
+        isSending = true;
+        if (sendBtn) sendBtn.disabled = true;
+
+        const historySnapshot = conversationHistory.slice(-MAX_STORED_TURNS).map((m) => ({
+            role: m.role,
+            text: m.text
+        }));
+
         appendMessage('user', q);
+        conversationHistory.push({ role: 'user', text: q });
+        saveStoredHistory();
         if (input) input.value = '';
+
+        const typingEl = showTypingIndicator();
 
         try {
             const res = await SavoraApp.fetchApi('/api/public/chatbot/ask', {
                 method: 'POST',
-                body: JSON.stringify({ message: q })
+                body: JSON.stringify({ message: q, history: historySnapshot })
             });
+            typingEl.remove();
+
             const data = res.data || {};
-            appendMessage('bot', data.answer, data.links || [], Boolean(data.blocked));
+            const answer = data.answer || '';
+            const links = data.links || [];
+            const usage = data.usage || null;
+            let meta = null;
+            if (data.mode === 'GEMINI' && usage) {
+                meta = { label: `✨ ${data.model || 'gemini'} · ${usage.totalTokens || 0} tokens (${usage.latencyMs || 0} ms)` };
+            } else if (data.mode === 'GUARDRAIL') {
+                meta = { label: '🛡️ Savora Domain Guardrail' };
+            } else if (data.mode === 'FALLBACK') {
+                meta = { label: `⚡ ${data.model || 'Local Assistant'}` };
+            }
+
+            appendMessage('bot', answer, links, Boolean(data.blocked), meta);
+            conversationHistory.push({ role: 'bot', text: answer, links, blocked: Boolean(data.blocked), meta });
+            saveStoredHistory();
         } catch (_) {
+            typingEl.remove();
             const fb = clientFallbackReply(q);
-            appendMessage('bot', fb.answer, fb.links, fb.blocked);
+            const meta = { label: '⚡ Offline Fallback' };
+            appendMessage('bot', fb.answer, fb.links, fb.blocked, meta);
+            conversationHistory.push({ role: 'bot', text: fb.answer, links: fb.links, blocked: Boolean(fb.blocked), meta });
+            saveStoredHistory();
+        } finally {
+            isSending = false;
+            if (sendBtn) sendBtn.disabled = false;
+            input?.focus();
         }
     };
+
+    restoreOrWelcome();
+    refreshAiStatus();
 
     launcher.addEventListener('click', () => {
         const isHidden = win.style.display === 'none';
         win.style.display = isHidden ? 'flex' : 'none';
-        if (isHidden && input) input.focus();
+        if (isHidden) {
+            refreshAiStatus();
+            if (input) input.focus();
+        }
     });
 
     closeBtn?.addEventListener('click', () => {
         win.style.display = 'none';
+    });
+
+    clearBtn?.addEventListener('click', () => {
+        conversationHistory = [];
+        try { sessionStorage.removeItem(HISTORY_KEY); } catch {}
+        restoreOrWelcome();
+        input?.focus();
     });
 
     chipsBox?.querySelectorAll('.savora-chat-chip').forEach((chip) => {

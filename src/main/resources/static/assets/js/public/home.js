@@ -431,7 +431,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     syncTimeSlots();
     setInterval(syncTimeSlots, 30000);
-    loadVouchers();
-    loadTables();
-    loadMenu();
+    Promise.allSettled([loadVouchers(), loadTables(), loadMenu()]).then(() => {
+        if (window.location.hash && typeof SavoraApp?.scrollToHomeHash === 'function') {
+            SavoraApp.scrollToHomeHash(window.location.hash, false);
+        }
+    });
 });
